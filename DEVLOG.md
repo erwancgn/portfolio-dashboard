@@ -19,11 +19,17 @@ Démarrage du projet. Mise en place de l'environnement et de la documentation.
 - [x] Installation nvm + Node.js v20 LTS
 - [x] Initialisation Git
 - [x] Création des 4 fichiers de documentation
+- [x] Projet Next.js créé et fonctionnel sur localhost:3000
 
 ### Erreurs rencontrées
 | Erreur | Cause | Solution |
 |---|---|---|
-| `Failed to clone nvm repo` | Licence Xcode non acceptée | `sudo xcodebuild -license` puis `agree` |
+| `Failed to clone nvm repo` | Licence Xcode non acceptée | `sudo xcodebuild -license` puis `agree` | | Commit avec fichiers vides | `git add` fait avant la sauvegarde des fichiers | Toujours `Cmd+S` avant `git add` | | `Cannot find module '../server/require-hook'` | `node_modules` copié manuellement via `cp -r` — les modules ne doivent jamais être copiés | `rm -rf node_modules && npm install` |
+```
+
+**Règle à retenir pour toute la suite :**
+```
+Cmd+S → git add . → git commit
 
 ### Décisions prises
 | Décision | Raison |
@@ -32,4 +38,4 @@ Démarrage du projet. Mise en place de l'environnement et de la documentation.
 | Documentation avant le code | Garde-fou contre perte de contexte IA + maintenabilité |
 | Node v20 LTS | Stable, supporté jusqu'en 2026, requis par Next.js 14 |
 
-### Prochaine sessio
+### Prochaine session
