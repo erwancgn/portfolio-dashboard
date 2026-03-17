@@ -38,8 +38,7 @@
 | GitHub Projects + automatisations | Pilotage projet visible en entretien |
 
 ### Prochaine session
+- [ ] Installer Docker Desktop
+- [ ] Installer Supabase CLI
+- [ ] Créer projet Supabase prod sur supabase.com
 - [ ] TASK-005 : Configurer Supabase
-- [ ] TASK-006 : Configurer l'authentification
-- [ ] US-001 : Ajouter une position (début)
-
-### Prochaine session
