@@ -76,3 +76,32 @@ Objectif : TASK-005 Configurer Supabase.
 | Décision | Raison |
 |---|---|
 | `gen_random_uuid()` à la place de `uuid_generate_v4()` | Fonction native PostgreSQL moderne, pas besoin d'extension |
+
+### Rétro session 2
+
+#### Tickets fermés par erreur
+Les automatisations GitHub ont fermé tous les tickets lors de l'import dans le board.
+Script `scripts/reopen-issues.sh` créé pour rouvrir les 21 tickets concernés.
+
+#### Nouveaux tickets créés suite à la rétro
+| Ticket | Priorité | Raison |
+|---|---|---|
+| [TASK] Clients Supabase browser + server | P0 | Bloque toute l'auth et les données |
+| [TASK] Générer types TypeScript Supabase | P0 | TypeScript doit connaître le schéma DB |
+| [TASK] Configurer Supabase production | P1 | Nécessaire avant déploiement Vercel |
+
+#### Ce qui manquait dans le backlog initial
+- Les clients Supabase n'étaient pas des tickets explicites
+- La génération des types TypeScript n'était pas prévue
+- La config prod Supabase était implicite dans TASK-008 Déploiement Vercel
+
+#### Décisions de priorisation
+- Clients Supabase et types TypeScript en P0 car ils bloquent TASK-006 Auth
+- Config prod en P1 car on travaille en local pour l'instant
+
+### Prochaine session
+- [ ] Commiter scripts/reopen-issues.sh
+- [ ] Créer src/lib/supabase/client.ts
+- [ ] Créer src/lib/supabase/server.ts
+- [ ] Générer les types TypeScript : `supabase gen types typescript --local > src/types/database.ts`
+- [ ] TASK-006 : Configurer l'authentification
