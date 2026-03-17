@@ -28,7 +28,7 @@
 | Commit fichiers vides | `git add` avant `Cmd+S` | Toujours `Cmd+S` → `git add` → `git commit` |
 | `remote origin already exists` | Mauvaise URL copiée | `git remote remove origin` puis bonne URL |
 | `node_modules` corrompus | Copie manuelle via `cp -r` | `rm -rf node_modules && npm install` |
-| `gh issue close` multi-args | Syntaxe incorrecte | Fermer une issue à la fois | Vulnérabilité modérée npm | Dépendance Next.js signalée | Ne pas lancer --force, surveiller les updates officielles Next.js 14 |
+| `gh issue close` multi-args | Syntaxe incorrecte | Fermer une issue à la fois | Vulnérabilité modérée npm | Dépendance Next.js signalée | Ne pas lancer --force, surveiller les updates officielles Next.js 14 | | `uuid_generate_v4() does not exist` | PostgreSQL moderne utilise gen_random_uuid() nativement | Remplacer uuid_generate_v4() par gen_random_uuid() partout, supprimer l'extension uuid-ossp |npm audit moderate | CWE-352/444/400/770 dans Next.js 14 | CVSS score 0, risque théorique, usage personnel. Surveiller Next.js 14.x patch releases. Ne pas upgrader en force vers Next.js 16. |
 
 ### Décisions prises
 | Décision | Raison |
