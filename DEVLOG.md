@@ -42,3 +42,37 @@
 - [ ] Installer Supabase CLI
 - [ ] Créer projet Supabase prod sur supabase.com
 - [ ] TASK-005 : Configurer Supabase
+
+---
+
+## Session 2 — [17/03/2026]
+
+### Contexte
+Installation de l'environnement base de données local.
+Objectif : TASK-005 Configurer Supabase.
+
+### Ce qu'on a fait
+- [x] Mise à jour Command Line Tools Xcode
+- [x] Docker Desktop v29.2.1 installé et lancé
+- [x] Supabase CLI v2.78 installé via Homebrew
+- [x] Supabase initialisé dans le projet (`supabase init`)
+- [x] Projet Supabase lié (`supabase link`)
+- [x] `.env.local.example` créé
+- [x] `.env.local` rempli avec les clés locales Supabase
+- [x] Migration SQL initiale créée (6 tables)
+- [x] Migration appliquée via `supabase db reset`
+- [x] 6 tables vérifiées dans Supabase Studio
+- [x] TASK-005 fermée sur GitHub
+
+### Erreurs rencontrées
+| Erreur | Cause | Solution |
+|---|---|---|
+| Command Line Tools obsolètes | Xcode CLT pas à jour | Software Update Mac |
+| `uuid_generate_v4() does not exist` | PostgreSQL moderne n'utilise plus cette fonction | Remplacer par `gen_random_uuid()` partout |
+| Tables absentes après `db push` | Migration enregistrée mais pas exécutée correctement | `supabase db reset` pour tout réappliquer |
+| npm audit moderate | CWE-352/444/400/770 dans Next.js 14 | CVSS score 0, risque théorique — surveiller Next.js 14.x patches |
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| `gen_random_uuid()` à la place de `uuid_generate_v4()` | Fonction native PostgreSQL moderne, pas besoin d'extension |
