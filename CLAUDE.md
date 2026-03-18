@@ -7,12 +7,23 @@
 
 ## Identité du projet
 
-Portfolio Dashboard IA — application Next.js 14 de suivi de portfolio financier personnel.
-Stack : Next.js 14 · TypeScript · Tailwind · Supabase · Vercel
+Portfolio Dashboard IA — application Next.js 16 + React 19 de suivi de portfolio financier personnel.
+Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Vercel
 
 ---
 
 ## Règles absolues — ne jamais enfreindre
+
+### Code
+- Toujours lire le fichier concerné avant de proposer du code
+- Jamais de réécriture complète sans avoir lu l'original
+- Proposer uniquement des modifications ciblées et vérifiées
+- Ne jamais proposer du code qui n'a pas été vérifié contre le contexte existant
+
+### Style
+- Tailwind CSS pour le layout et l'espacement
+- CSS variables (`var(--color-*)`) uniquement pour les couleurs du thème
+- Jamais de style inline `style={{}}` dans les composants
 
 ### Sécurité
 - Ne jamais lire, afficher ou utiliser le contenu de `.env.local`
@@ -39,22 +50,25 @@ Stack : Next.js 14 · TypeScript · Tailwind · Supabase · Vercel
 
 ## Workflow obligatoire
 ```
-1. Lire le DEVLOG.md pour le contexte de la session
-2. Identifier la tâche précise dans le backlog
-3. Générer le code
-4. Expliquer ce qui a été fait et pourquoi
-5. Attendre la validation PO avant tout commit
+1. Lire le DEVLOG.md — section "Prochaine session"
+2. Lire les fichiers concernés par la tâche avant de proposer du code
+3. Identifier la tâche précise dans le backlog
+4. Générer uniquement les modifications nécessaires
+5. Expliquer ce qui a été fait et pourquoi
+6. Attendre la validation PO avant tout commit
 ```
 
 ---
 
 ## Architecture — rappels clés
 
-- App Router Next.js 14 — pas de Pages Router
+- App Router Next.js 16 — pas de Pages Router
+- `proxy.ts` au lieu de `middleware.ts` (convention Next.js 16)
 - TypeScript strict — pas de `any`
-- Appels API externes (Finnhub, CoinGecko) → uniquement dans `/app/api/*`
+- Appels API externes (Finnhub, CoinGecko) → uniquement dans `src/app/api/*`
 - Jamais de `NEXT_PUBLIC_` sur une clé secrète
 - RLS Supabase activé sur toutes les tables
+- Server Components pour les pages — Client Components uniquement si interaction utilisateur requise
 
 ---
 
@@ -86,5 +100,4 @@ Nouveau PRU (DCA)  = (ancienne_quantité × ancien_pru + montant)
 Après chaque tâche complétée, mettre à jour :
 - `DEVLOG.md` → ce qui a été fait, erreurs rencontrées, solutions
 - `CHANGELOG.md` → si une fonctionnalité est livrée
-
----
+- `ARCHITECTURE.md` → si une décision technique a été prise
