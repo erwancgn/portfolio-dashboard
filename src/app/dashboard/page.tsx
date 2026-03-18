@@ -1,34 +1,37 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import LogoutButton from '@/components/layout/LogoutButton'
 
 /**
- * Page dashboard principale
+ * Page dashboard principale — Server Component
  * Protegee par proxy.ts — redirect vers /auth/login si non connecte
  */
 export default async function DashboardPage() {
   const supabase = await createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/auth/login')
-  }
+  if (!user) redirect('/auth/login')
 
   return (
-    <div style={{ backgroundColor: 'var(--color-bg-primary)', minHeight: '100vh', padding: '40px' }}>
-      <div style={{ maxWidth: 800, margin: '0 auto' }}>
-        <h1 style={{ color: 'var(--color-text)', fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
-          Portfolio Dashboard
-        </h1>
-        <p style={{ color: 'var(--color-text-sub)', marginBottom: 32 }}>
-          Connecte en tant que : {user.email}
-        </p>
-        <div style={{
-          background: 'var(--color-bg-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 12, padding: 24
-        }}>
-          <p style={{ color: 'var(--color-text-sub)', fontSize: 14 }}>
+    <div className="min-h-screen p-10" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-extrabold mb-1" style={{ color: 'var(--color-text)' }}>
+              Portfolio Dashboard
+            </h1>
+            <p className="text-sm" style={{ color: 'var(--color-text-sub)' }}>
+              {user?.email}
+            </p>
+          </div>
+          <LogoutButton />
+        </div>
+        <div className="rounded-xl p-6"
+          style={{
+            backgroundColor: 'var(--color-bg-surface)',
+            border: '1px solid var(--color-border)'
+          }}>
+          <p className="text-sm" style={{ color: 'var(--color-text-sub)' }}>
             Dashboard en construction — les positions arrivent bientot.
           </p>
         </div>
