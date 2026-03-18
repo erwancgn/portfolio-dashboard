@@ -151,4 +151,8 @@ Ne jamais modifier ce fichier manuellement.
 4. Regénérer les types : `supabase gen types typescript --local > src/types/database.ts`
 5. Commiter les deux fichiers ensemble
 
+## Décision : Next.js 16 + React 19
+Next.js 14 ciblé initialement mais incompatible avec React 19.
+Next.js 16 est la version stable actuelle — on reste dessus.
+
 *Dernière mise à jour : Session 3*

@@ -104,4 +104,45 @@ Script `scripts/reopen-issues.sh` créé pour rouvrir les 21 tickets concernés.
 - [ ] Créer src/lib/supabase/client.ts
 - [ ] Créer src/lib/supabase/server.ts
 - [ ] Générer les types TypeScript : `supabase gen types typescript --local > src/types/database.ts`
-- [ ] TASK-006 : Configurer l'authentification
+- [ ] TASK-006 : Configurer l'authentification 
+
+---
+
+## Session 3 — [18/03/2026]
+
+### Contexte
+Configuration de l'authentification et des clients Supabase.
+Objectifs : clients Supabase, types TypeScript, page de login, middleware auth.
+
+### Ce qu'on a fait
+- [x] Clients Supabase créés (browser + server)
+- [x] Package @supabase/ssr installé
+- [x] Types TypeScript générés depuis le schéma DB
+- [x] Thème Tailwind v4 configuré dans globals.css
+- [x] Middleware d'authentification créé
+- [x] Page de login créée avec Tailwind v4
+- [x] Alias @/* corrigé dans tsconfig.json (./src/* au lieu de ./*)
+
+### Erreurs rencontrées
+| Erreur | Cause | Solution |
+|---|---|---|
+| `clients.ts` au lieu de `client.ts` | Typo à la création du fichier | `mv src/lib/supabase/clients.ts src/lib/supabase/client.ts` |
+| `Cannot find module @/lib/supabase/client` | Alias @/* pointait vers ./ au lieu de ./src/ | Corriger tsconfig.json paths |
+| `SyntaxError: Unexpected token '?'` | Node.js v12 actif au lieu de v20 | `nvm use 20` dans terminal Cursor |
+| Next.js 16 installé au lieu de 14 | Copie depuis portfolio-temp | `npm install next@14.2.29 eslint-config-next@14.2.29` |
+| `@theme` warning dans globals.css | Cursor ne reconnaît pas encore Tailwind v4 | Ignoré — fonctionne à l'exécution || Impossible de downgrader Next.js 14 | React 19 incompatible avec Next.js 14 (requiert React 18) | Décision : rester sur Next.js 16 + React 19 — stack actuelle stable || Page 404 persistante sur /auth/login | layout.tsx, page.tsx, globals.css non sauvegardés sur disque | Cmd+S sur tous les fichiers ouverts dans Cursor avant de tester || Dossier `app/` à la racine en conflit avec `src/app/` | Copie depuis portfolio-temp avait créé un dossier app/ à la racine — Next.js le prioritisait sur src/app/ | Supprimer app/ à la racine avec `rm -rf app/` |
+| UTF-8 invalide dans page.tsx | `cat >` dans le terminal corrompt les caractères spéciaux | Toujours utiliser Cursor pour écrire le contenu — terminal uniquement pour créer les fichiers vides (`touch`) |
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| Tailwind v4 avec CSS variables | Plus flexible que tailwind.config.ts, natif v4 |
+| Rester sur Next.js 14 | Next.js 16 hors plage stable pour notre projet |
+| Style mixte Tailwind + CSS variables | Tailwind pour le layout, variables pour les couleurs du thème |
+
+### Prochaine session
+- [ ] Vérifier que npm run dev fonctionne avec Next.js 14
+- [ ] Tester la page de login sur localhost:3000/auth/login
+- [ ] Créer le callback route `/auth/callback/route.ts`
+- [ ] Créer la page `/dashboard/page.tsx`
+- [ ] Tester le flux complet : login → dashboard → redirect si non connecté
