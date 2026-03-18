@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📈 Portfolio Dashboard IA
 
-## Getting Started
+Dashboard financier personnel de niveau professionnel, enrichi d'agents IA
+pour surveiller, analyser et synthétiser l'état du portfolio et les marchés.
 
-First, run the development server:
+## Stack technique
 
+| Couche | Technologie | Rôle |
+|---|---|---|
+| Frontend | Next.js 16 + TypeScript | Structure et pages de l'app |
+| Style | Tailwind CSS v4 | Design système noir/bleu |
+| Auth + BDD | Supabase (PostgreSQL) | Données utilisateur + sécurité |
+| Hébergement | Vercel | Déploiement et crons |
+| Prix actions/ETF | Finnhub API | Cours temps réel |
+| Prix crypto | CoinGecko API | Cours crypto temps réel |
+| Taux de change | Frankfurter API | Conversion EUR/USD/etc |
+| Agents IA | Claude (Anthropic) | Surveillance + analyse |
+
+## Prérequis
+
+- Node.js v20 LTS (`nvm use 20`)
+- Docker Desktop (pour Supabase local)
+- Compte Supabase (gratuit)
+- Compte Vercel (gratuit)
+- Clé API Finnhub (gratuit)
+- Clé API Anthropic
+
+## Installation
 ```bash
+# 1. Cloner le projet
+git clone https://github.com/erwancgn/portfolio-dashboard
+cd portfolio-dashboard
+
+# 2. Installer les dépendances
+npm install
+
+# 3. Configurer les variables d'environnement
+cp .env.local.example .env.local
+# Remplir les valeurs dans .env.local
+
+# 4. Lancer Supabase en local
+supabase start
+
+# 5. Appliquer les migrations
+supabase db reset
+
+# 6. Lancer en développement
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# → http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Structure du projet
+```
+src/
+├── app/          → Pages et API Routes (Next.js App Router)
+├── components/   → Composants React réutilisables
+├── lib/          → Logique métier (calculs, APIs, utils)
+├── agents/       → Agents IA (surveillance, newsletter)
+└── types/        → Types TypeScript
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variables d'environnement
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Voir `.env.local.example` pour la liste complète.
+Ne jamais committer `.env.local`.
 
-## Learn More
+## Documentation
 
-To learn more about Next.js, take a look at the following resources:
+| Fichier | Contenu |
+|---|---|
+| `DEVLOG.md` | Journal de bord technique — erreurs et solutions |
+| `ARCHITECTURE.md` | Décisions techniques et pourquoi |
+| `CHANGELOG.md` | Historique des versions |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Versions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Voir `CHANGELOG.md`

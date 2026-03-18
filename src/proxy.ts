@@ -6,7 +6,7 @@ import { NextResponse, type NextRequest } from 'next/server'
  * Vérifie si l'utilisateur est connecté
  * Redirige vers /auth/login si non connecté
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
