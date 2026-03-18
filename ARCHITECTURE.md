@@ -138,4 +138,17 @@ Nouveau PRU        : (1000 + 200) / (10 + 2.1) = 99.17€
 
 ---
 
-*Dernière mise à jour : Session 1*
+## 11. Gestion du schéma de base de données
+
+**Règle absolue :** `src/types/database.ts` est toujours généré automatiquement.
+Ne jamais modifier ce fichier manuellement.
+
+**Workflow d'évolution du schéma :**
+1. Créer un nouveau fichier dans `supabase/migrations/`
+   Nommage : `YYYYMMDDHHMMSS_description.sql`
+2. Écrire le SQL de modification (ALTER TABLE, CREATE TABLE, etc.)
+3. Appliquer : `supabase db push`
+4. Regénérer les types : `supabase gen types typescript --local > src/types/database.ts`
+5. Commiter les deux fichiers ensemble
+
+*Dernière mise à jour : Session 3*
