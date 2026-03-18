@@ -108,41 +108,53 @@ Script `scripts/reopen-issues.sh` créé pour rouvrir les 21 tickets concernés.
 
 ---
 
+---
+
 ## Session 3 — [18/03/2026]
 
 ### Contexte
 Configuration de l'authentification et des clients Supabase.
-Objectifs : clients Supabase, types TypeScript, page de login, middleware auth.
+Objectifs : clients Supabase, types TypeScript, page de login, proxy auth.
 
 ### Ce qu'on a fait
-- [x] Clients Supabase créés (browser + server)
-- [x] Package @supabase/ssr installé
-- [x] Types TypeScript générés depuis le schéma DB
-- [x] Thème Tailwind v4 configuré dans globals.css
-- [x] Middleware d'authentification créé
-- [x] Page de login créée avec Tailwind v4
-- [x] Alias @/* corrigé dans tsconfig.json (./src/* au lieu de ./*)
+- [x] Clients Supabase créés (browser `client.ts` + server `server.ts`)
+- [x] Package `@supabase/ssr` installé
+- [x] Types TypeScript générés depuis le schéma DB (`src/types/database.ts`)
+- [x] Thème Tailwind v4 configuré dans `globals.css`
+- [x] Proxy d'authentification créé (`src/proxy.ts`)
+- [x] Page de login créée avec Tailwind v4 (`/auth/login`)
+- [x] Alias `@/*` corrigé dans `tsconfig.json` (`./src/*` au lieu de `./`)
+- [x] Suppression dossier `app/` racine (conflit avec `src/app/`)
+- [x] Suppression `src/app/test/` (dossier de debug temporaire)
+- [x] Migration `middleware.ts` → `proxy.ts` (Next.js 16)
+- [x] README.md mis à jour avec notre stack réelle
+- [x] Page de login fonctionnelle sur `localhost:3000/auth/login`
 
 ### Erreurs rencontrées
 | Erreur | Cause | Solution |
 |---|---|---|
 | `clients.ts` au lieu de `client.ts` | Typo à la création du fichier | `mv src/lib/supabase/clients.ts src/lib/supabase/client.ts` |
-| `Cannot find module @/lib/supabase/client` | Alias @/* pointait vers ./ au lieu de ./src/ | Corriger tsconfig.json paths |
+| `Cannot find module @/lib/supabase/client` | Alias `@/*` pointait vers `./` au lieu de `./src/` | Corriger `tsconfig.json` paths |
 | `SyntaxError: Unexpected token '?'` | Node.js v12 actif au lieu de v20 | `nvm use 20` dans terminal Cursor |
-| Next.js 16 installé au lieu de 14 | Copie depuis portfolio-temp | `npm install next@14.2.29 eslint-config-next@14.2.29` |
-| `@theme` warning dans globals.css | Cursor ne reconnaît pas encore Tailwind v4 | Ignoré — fonctionne à l'exécution || Impossible de downgrader Next.js 14 | React 19 incompatible avec Next.js 14 (requiert React 18) | Décision : rester sur Next.js 16 + React 19 — stack actuelle stable || Page 404 persistante sur /auth/login | layout.tsx, page.tsx, globals.css non sauvegardés sur disque | Cmd+S sur tous les fichiers ouverts dans Cursor avant de tester || Dossier `app/` à la racine en conflit avec `src/app/` | Copie depuis portfolio-temp avait créé un dossier app/ à la racine — Next.js le prioritisait sur src/app/ | Supprimer app/ à la racine avec `rm -rf app/` |
-| UTF-8 invalide dans page.tsx | `cat >` dans le terminal corrompt les caractères spéciaux | Toujours utiliser Cursor pour écrire le contenu — terminal uniquement pour créer les fichiers vides (`touch`) |
+| Next.js 16 installé au lieu de 14 | Copie depuis `portfolio-temp` | Décision : rester sur Next.js 16 + React 19 |
+| Impossible de downgrader Next.js 14 | React 19 incompatible avec Next.js 14 (requiert React 18) | Rester sur Next.js 16 + React 19 — stack actuelle stable |
+| `@theme` warning dans `globals.css` | Cursor ne reconnaît pas encore Tailwind v4 | Ignoré — fonctionne à l'exécution |
+| 404 persistant sur `/auth/login` | `layout.tsx`, `page.tsx`, `globals.css` non sauvegardés sur disque | `Cmd+S` sur tous les fichiers avant de tester |
+| Dossier `app/` racine en conflit avec `src/app/` | Copie depuis `portfolio-temp` avait créé un `app/` à la racine | `rm -rf app/` |
+| UTF-8 invalide dans `page.tsx` | `cat >` dans le terminal corrompt les caractères spéciaux | Toujours utiliser Cursor pour écrire le contenu — `touch` uniquement pour créer les fichiers vides |
+| Warning middleware déprécié | Next.js 16 renomme `middleware.ts` en `proxy.ts` | `mv src/middleware.ts src/proxy.ts` + renommer la fonction |
 
 ### Décisions prises
 | Décision | Raison |
 |---|---|
-| Tailwind v4 avec CSS variables | Plus flexible que tailwind.config.ts, natif v4 |
-| Rester sur Next.js 14 | Next.js 16 hors plage stable pour notre projet |
+| Next.js 16 + React 19 | Next.js 14 incompatible avec React 19 — stack actuelle stable et à jour |
+| Tailwind v4 avec CSS variables | Plus flexible que `tailwind.config.ts`, natif v4 |
 | Style mixte Tailwind + CSS variables | Tailwind pour le layout, variables pour les couleurs du thème |
+| `proxy.ts` au lieu de `middleware.ts` | Convention Next.js 16 — même logique, nouveau nom |
+| Terminal uniquement pour `touch` | `cat >` corrompt les caractères spéciaux — Cursor pour le contenu |
 
 ### Prochaine session
-- [ ] Vérifier que npm run dev fonctionne avec Next.js 14
-- [ ] Tester la page de login sur localhost:3000/auth/login
 - [ ] Créer le callback route `/auth/callback/route.ts`
 - [ ] Créer la page `/dashboard/page.tsx`
 - [ ] Tester le flux complet : login → dashboard → redirect si non connecté
+- [ ] Fermer TASK-006 sur GitHub
