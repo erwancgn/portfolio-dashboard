@@ -1,7 +1,13 @@
 # DEVLOG — Portfolio Dashboard IA
 
-> Règle : chaque session commence par lire ce fichier.
-> Chaque session se termine par le mettre à jour.
+
+### Règles de travail (à appliquer à chaque session)
+1. `git pull` pour récupérer les dernières modifications
+2. `supabase start` pour lancer l'environnement local
+3. `nvm use 20` pour s'assurer de la bonne version Node
+4. Lire le DEVLOG — section "Prochaine session"
+5. Passer les tickets de la session en "In Progress" sur le board GitHub
+6. En fin de session : mettre à jour le DEVLOG + fermer/déplacer les tickets
 > Ce fichier est le garde-fou contre les erreurs répétées et la perte de contexte IA.
 
 ---

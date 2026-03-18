@@ -28,13 +28,24 @@ export default function LoginPage() {
   const handleSignUp = async () => {
     setLoading(true)
     setMessage(null)
-    const { error } = await supabase.auth.signUp({ email, password })
+  
+    const { data, error } = await supabase.auth.signUp({ email, password })
+  
     if (error) {
       setMessage({ text: error.message, type: 'error' })
       setLoading(false)
       return
     }
-    setMessage({ text: 'Verifie ton email pour confirmer ton compte.', type: 'success' })
+  
+    // Si l'utilisateur est créé et confirmé automatiquement → redirect dashboard
+    if (data.session) {
+      router.push('/dashboard')
+      router.refresh()
+      return
+    }
+  
+    // Fallback si confirmation email requise (prod)
+    setMessage({ text: 'Compte créé. Connecte-toi.', type: 'success' })
     setLoading(false)
   }
 
