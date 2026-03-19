@@ -86,5 +86,17 @@ Date : [date]
 - [Violations trouvées ou "Aucune violation"]
 
 ## Verdict
+
+## Nouvelles leçons (si applicable)
+- [Entrées à ajouter à LESSONS.md si des erreurs ou comportements inattendus ont été détectés]
+  Format : [SX] contexte → règle
+```
+
+**Récap de l'architecture de mémoire finale :**
+```
+CLAUDE.md      → Règles permanentes (ne change quasi jamais)
+SESSION.md     → Contexte immédiat (réécrit à chaque session)
+LESSONS.md     → Mémoire des erreurs (grandit lentement, plafonné ~100 lignes)
+DEVLOG.md      → Journal complet pour toi (grandit librement, pas lu par l'agent)
 🟢 PASS / 🔴 FAIL — [Raison si fail]
 ```
