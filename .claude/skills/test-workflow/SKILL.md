@@ -4,6 +4,9 @@ description: "Verifies acceptance criteria and runs QA checks for the Portfolio 
 context: fork
 agent: test-agent
 allowed-tools: Read, Glob, Grep, Bash
+metadata:
+  version: "2.1"
+  last-updated: "2026-03-19"
 ---
 
 # Test Workflow — Portfolio Dashboard
