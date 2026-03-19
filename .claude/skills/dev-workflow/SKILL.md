@@ -4,6 +4,9 @@ description: "Implements feature tickets for the Portfolio Dashboard (Next.js 16
 context: fork
 agent: dev-agent
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
+metadata:
+  version: "2.1"
+  last-updated: "2026-03-19"
 ---
 
 # Dev Workflow — Portfolio Dashboard
