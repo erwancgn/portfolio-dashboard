@@ -164,3 +164,66 @@ Objectifs : clients Supabase, types TypeScript, page de login, proxy auth.
 - [ ] Créer la page `/dashboard/page.tsx`
 - [ ] Tester le flux complet : login → dashboard → redirect si non connecté
 - [ ] Fermer TASK-006 sur GitHub
+
+## Session 4 — [19/03/2026]
+
+### Contexte
+Audit et hardening de l'infrastructure agents Claude Code.
+Objectif : créer des skills robustes pour le workflow dev + test.
+
+### Ce qu'on a fait
+- [x] Audit complet des skills agents v1 contre la doc officielle Anthropic
+- [x] 12 problèmes identifiés (5 critiques, 7 moyens)
+- [x] Skills v2 rédigés et adaptés au vrai projet
+- [x] Décision : pas de MCP GitHub (overhead tokens, fichiers locaux suffisent)
+- [x] Structure `.claude/` complète produite (7 fichiers)
+
+### Fichiers créés
+```
+.claude/
+├── agents/
+│   ├── dev-agent.md
+│   └── test-agent.md
+└── skills/
+    ├── dev-workflow/
+    │   ├── SKILL.md
+    │   └── references/
+    │       ├── conventions.md
+    │       └── schema.md
+    └── test-workflow/
+        ├── SKILL.md
+        └── references/
+            └── checklist-regression.md
+```
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| Pas de MCP GitHub | Overhead tokens trop élevé, fichiers locaux plus efficaces |
+| `context: fork` dans les skills | Chaque skill tourne dans un subagent isolé |
+| Agent test en read-only (tools: Read, Glob, Grep, Bash) | Garde-fou technique |
+| Formules financières : pointeur vers CLAUDE.md | Source de vérité unique |
+| Descriptions en anglais dans les skills | Meilleur matching pour le trigger automatique |
+| Progressive disclosure via `references/` | Économie de tokens, chargé à la demande |
+
+### Prochaine session
+
+#### Priorité 1 : Intégrer les fichiers .claude/ dans le repo
+- [ ] Commit : `chore: add Claude Code agents and skills configuration`
+
+#### Priorité 2 : Reprendre le dev (TASK-006 Auth)
+- [ ] Créer le callback route `/auth/callback/route.ts`
+- [ ] Créer la page `/dashboard/page.tsx`
+- [ ] Tester le flux complet : login → callback → dashboard → redirect si non connecté
+- [ ] Fermer TASK-006 sur GitHub
+
+#### Priorité 3 : Tester les agents (quand accès Mac)
+- [ ] Ouvrir Claude Code dans le repo
+- [ ] Tester `/dev-workflow` sur TASK-006
+- [ ] Tester `/test-workflow` après implémentation
+- [ ] Vérifier que l'agent test produit un rapport structuré
+- [ ] Ajuster les skills selon les résultats réels
+
+---
+
+*Dernière mise à jour : Session 4 — 19/03/2026*
