@@ -12,10 +12,11 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 
 1. **Lire SESSION.md** pour le contexte de la session en cours
 2. **Lire LESSONS.md** pour les erreurs à ne pas refaire
-3. **Identifier le ticket** : quel US/TASK, quels critères d'acceptation
-4. **Lire les fichiers impactés** avec Read/Glob avant toute modification
-5. **Vérifier `src/types/database.ts`** pour les noms de colonnes et tables exacts
-6. **Si la tâche touche la DB** : lire `references/schema.md` pour le schéma complet (6 tables, RLS, index)
+3. **Lire le ticket GitHub** : `gh issue view <numéro> --repo erwancgn/portfolio-dashboard`
+4. **Identifier les critères d'acceptation** dans le body du ticket
+5. **Lire les fichiers impactés** (listés dans "Fichiers concernés" du ticket) avec Read/Glob
+6. **Vérifier `src/types/database.ts`** pour les noms de colonnes et tables exacts
+7. **Si la tâche touche la DB** : lire `references/schema.md` pour le schéma complet
 
 ## Exécution
 
@@ -51,7 +52,7 @@ Ne pas coder si l'un de ces cas se présente. Documenter la question et attendre
 - Choix entre deux approches d'architecture
 - Nouvelle dépendance npm à installer
 - Impact sur plus de 5 fichiers existants
-- Doute sur le périmètre du ticket
+- Doute sur le périmètre du ticket (vérifier "Hors périmètre" dans le ticket)
 
 ## Après le code — Explication obligatoire avant commit
 
