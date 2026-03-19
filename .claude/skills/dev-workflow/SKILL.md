@@ -45,6 +45,13 @@ Pour chaque critère d'acceptation du ticket :
 - Tailwind v4 pour layout, CSS variables pour couleurs thème
 - Types DB générés automatiquement — ne jamais modifier `src/types/database.ts` manuellement
 
+- ## Gotchas — pièges connus
+
+- `proxy.ts` pas `middleware.ts` — Next.js 16 a renommé, mais les tutos en ligne utilisent encore l'ancien nom
+- `src/types/database.ts` est auto-généré — si tu le modifies, la prochaine regénération écrase tout
+- `createClient` existe en 2 versions (browser et server) — utiliser la mauvaise = erreur silencieuse de RLS
+- Tailwind v4 n'a pas de `tailwind.config.ts` — tout est dans `globals.css`, Cursor affiche un warning mais ça fonctionne
+
 ## Escalade obligatoire — STOP et demander au PO
 
 Ne pas coder si l'un de ces cas se présente. Documenter la question et attendre :
