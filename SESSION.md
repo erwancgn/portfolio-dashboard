@@ -6,29 +6,55 @@
 
 ---
 
-## Session 5 — Objectif : TASK-006 Auth complète
+## Session 5 — Review stratégique + TASK-006 Auth
 
-### Tickets de cette session
-1. **Créer `/auth/callback/route.ts`** — route qui reçoit le token OAuth après login
-2. **Créer `/dashboard/page.tsx`** — page principale, accessible uniquement si connecté
-3. **Tester le flux complet** : login → callback → dashboard → redirect si non connecté
-4. **Fermer TASK-006** sur GitHub
+### Phase 1 : Review stratégique avec Tech Lead (Opus)
 
-### État actuel du code
-- `/auth/login/page.tsx` existe et fonctionne
-- `src/lib/supabase/client.ts` et `server.ts` existent
-- `src/proxy.ts` existe (gère la redirection auth)
-- `src/types/database.ts` est généré et à jour
-- Build passe sans erreur
+Avant de coder, prendre du recul sur le projet.
 
-### Fichiers à créer
-- `src/app/auth/callback/route.ts`
-- `src/app/dashboard/page.tsx`
+**Objectif :** Valider que le backlog actuel (38 tickets) mène bien au MVP le plus court.
 
-### Fichiers à potentiellement modifier
-- `src/proxy.ts` (ajouter la logique de redirection si non connecté)
+**Questions à poser au Tech Lead :**
+1. Quel est le chemin le plus court vers un dashboard qui affiche mes vraies positions avec les prix en temps réel ?
+2. Parmi les 38 tickets existants, lesquels sont critiques pour le MVP, lesquels peuvent attendre la V1.5 ?
+3. L'ordre actuel des tickets est-il optimal ? Faut-il réorganiser ?
+4. Y a-t-il des tickets manquants qui bloquent le MVP ?
 
-### Ce qu'il ne faut PAS faire
+**Livrable attendu :** Une priorisation claire, des tickets à déplacer/créer/archiver.
+
+### Phase 2 : Installer les skills Vercel
+
+```bash
+npx skills add vercel-labs/agent-skills@react-best-practices
+npx skills add vercel-labs/next-skills --skill next-best-practices
+npx skills add vercel-labs/next-skills --skill next-cache-components
+npx skills list
+```
+
+### Phase 3 : TASK-006 Auth complète
+
+**Ce qui existe déjà :**
+- `/auth/login/page.tsx` — page de login
+- `/auth/callback/route.ts` — callback OAuth
+- `/dashboard/page.tsx` — page dashboard
+- `src/lib/supabase/client.ts` et `server.ts` — clients Supabase
+- `src/proxy.ts` — proxy auth
+
+**Ce qui reste à vérifier / compléter :**
+1. Le flux complet fonctionne-t-il ? login → callback → dashboard → redirect si non connecté
+2. Le proxy redirige-t-il vers `/auth/login` quand l'utilisateur n'est pas connecté ?
+3. Le dashboard utilise-t-il le client server Supabase (pas le browser) ?
+4. Si tout fonctionne → fermer TASK-006 sur GitHub
+
+**Ce qu'il ne faut PAS faire :**
 - Ne pas toucher aux clients Supabase existants
 - Ne pas modifier la migration SQL
-- Ne pas installer de nouveau package (tout est déjà là avec `@supabase/ssr`)
+- Ne pas installer de nouveau package
+
+### Phase 4 : Tester les agents
+
+- Tester `/dev-workflow` sur TASK-006
+- Tester `/test-workflow` après implémentation
+- Vérifier que l'agent test produit un rapport structuré avec la section "Leçons capturées"
+- Vérifier que l'agent test ne peut pas modifier de fichiers (allowed-tools)
+- Ajuster les skills selon les résultats réels
