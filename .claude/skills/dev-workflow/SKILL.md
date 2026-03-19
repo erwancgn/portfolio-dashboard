@@ -3,6 +3,7 @@ name: dev-workflow
 description: "Implements feature tickets for the Portfolio Dashboard (Next.js 16 / Supabase / TypeScript). Triggers on: ticket implementation, feature development, US-xxx or TASK-xxx references, building new components or API routes, database schema changes, any coding task on the portfolio project. Use when the user says 'implémente', 'code', 'développe', 'crée', or references a specific ticket."
 context: fork
 agent: dev-agent
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
 # Dev Workflow — Portfolio Dashboard
