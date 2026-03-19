@@ -85,18 +85,22 @@ Date : [date]
 ## Conventions
 - [Violations trouvées ou "Aucune violation"]
 
+## Leçons capturées
+Si l'un de ces cas s'est produit pendant la vérification, proposer une entrée LESSONS.md :
+- Une commande ou opération a échoué de manière inattendue
+- Un pattern de code incorrect a été détecté (ex: `any`, `style={{}}`, clé exposée)
+- Un comportement de build/TypeScript/lint surprenant a été observé
+- Une incohérence entre le schéma DB et le code a été trouvée
+- Un cas limite non géré a été identifié (division par zéro, null, etc.)
+
+Format : `[SX] contexte → règle`
+Si aucune leçon : "Aucune nouvelle leçon."
+
 ## Verdict
+🟢 PASS / 🔴 FAIL — [Raison si fail]
+```
 
 ## Nouvelles leçons (si applicable)
 - [Entrées à ajouter à LESSONS.md si des erreurs ou comportements inattendus ont été détectés]
   Format : [SX] contexte → règle
-```
-
-**Récap de l'architecture de mémoire finale :**
-```
-CLAUDE.md      → Règles permanentes (ne change quasi jamais)
-SESSION.md     → Contexte immédiat (réécrit à chaque session)
-LESSONS.md     → Mémoire des erreurs (grandit lentement, plafonné ~100 lignes)
-DEVLOG.md      → Journal complet pour toi (grandit librement, pas lu par l'agent)
-🟢 PASS / 🔴 FAIL — [Raison si fail]
 ```
