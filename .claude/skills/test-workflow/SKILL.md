@@ -75,6 +75,12 @@ Vérifier la conformité avec CLAUDE.md :
 - Fichiers < 200 lignes
 - Nommage correct (camelCase variables, PascalCase composants, kebab-case fichiers)
 
+- ## Gotchas — faux positifs à éviter
+
+- Un warning `@theme` dans `globals.css` n'est PAS une erreur — c'est Tailwind v4, ignorable
+- `npm run lint` peut remonter des warnings sur les imports — vérifier si c'est un vrai problème ou un faux positif ESLint
+- Le fichier `src/types/database.ts` peut sembler "non conforme" car il est auto-généré — ne pas le signaler comme violation
+
 ## Format du rapport
 
 ```markdown
