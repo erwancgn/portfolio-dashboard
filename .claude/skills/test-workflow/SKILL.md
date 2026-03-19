@@ -10,6 +10,19 @@ allowed-tools: Read, Glob, Grep, Bash
 
 ## Processus de vérification
 
+### Étape 0 — Lire le ticket
+
+Récupérer le ticket GitHub pour connaître les critères d'acceptation :
+```bash
+gh issue view <numéro> --repo erwancgn/portfolio-dashboard
+```
+
+Identifier :
+- Les **critères d'acceptation** (lignes `- [ ] CA...`)
+- Les **fichiers concernés**
+- Le **hors périmètre** (ne pas vérifier ce qui est explicitement exclu)
+- Le **Definition of Done**
+
 ### Étape 1 — Pré-checks automatiques
 
 Exécuter ces commandes et reporter les résultats :
@@ -48,7 +61,7 @@ Pour chaque critère d'acceptation du ticket :
 
 ### Étape 4 — Régression
 
-Vérifier que les fonctionnalités des sessions précédentes fonctionnent toujours :
+Vérifier les points dans `references/checklist-regression.md` et :
 - Les imports et exports ne sont pas cassés
 - Les types n'ont pas changé de signature sans raison
 - La page de login reste accessible sur `/auth/login`
@@ -63,8 +76,10 @@ Vérifier la conformité avec CLAUDE.md :
 - Nommage correct (camelCase variables, PascalCase composants, kebab-case fichiers)
 
 ## Format du rapport
+
 ```markdown
-# Rapport QA — [Ticket ID]
+# Rapport QA — [TYPE-XXX] Titre du ticket
+Issue GitHub : #XX
 Date : [date]
 
 ## Pré-checks
@@ -73,15 +88,16 @@ Date : [date]
 - Lint : ✅/❌ (X warnings)
 
 ## Critères d'acceptation
-| # | Critère | Statut | Détail |
-|---|---------|--------|--------|
-| 1 | ...     | ✅/❌  | ...    |
+| # | Critère (depuis le ticket GitHub) | Statut | Détail |
+|---|----------------------------------|--------|--------|
+| CA1 | ...                            | ✅/❌  | ...    |
+| CA2 | ...                            | ✅/❌  | ...    |
 
 ## Vérifications spécifiques
 - [Section selon le type de ticket]
 
 ## Régression
-- [Points vérifiés]
+- [Points vérifiés depuis checklist-regression.md]
 
 ## Conventions
 - [Violations trouvées ou "Aucune violation"]
@@ -89,19 +105,14 @@ Date : [date]
 ## Leçons capturées
 Si l'un de ces cas s'est produit pendant la vérification, proposer une entrée LESSONS.md :
 - Une commande ou opération a échoué de manière inattendue
-- Un pattern de code incorrect a été détecté (ex: `any`, `style={{}}`, clé exposée)
+- Un pattern de code incorrect a été détecté
 - Un comportement de build/TypeScript/lint surprenant a été observé
 - Une incohérence entre le schéma DB et le code a été trouvée
-- Un cas limite non géré a été identifié (division par zéro, null, etc.)
+- Un cas limite non géré a été identifié
 
 Format : `[SX] contexte → règle`
 Si aucune leçon : "Aucune nouvelle leçon."
 
 ## Verdict
 🟢 PASS / 🔴 FAIL — [Raison si fail]
-```
-
-## Nouvelles leçons (si applicable)
-- [Entrées à ajouter à LESSONS.md si des erreurs ou comportements inattendus ont été détectés]
-  Format : [SX] contexte → règle
 ```
