@@ -9,8 +9,8 @@ agent: dev-agent
 
 ## Avant de coder
 
-1. **Lire CLAUDE.md** pour les règles non-négociables
-2. **Lire DEVLOG.md** section "Prochaine session" pour le contexte
+1. **Lire SESSION.md** pour le contexte de la session en cours
+2. **Lire LESSONS.md** pour les erreurs à ne pas refaire
 3. **Identifier le ticket** : quel US/TASK, quels critères d'acceptation
 4. **Lire les fichiers impactés** avec Read/Glob avant toute modification
 5. **Vérifier `src/types/database.ts`** pour les noms de colonnes et tables exacts
