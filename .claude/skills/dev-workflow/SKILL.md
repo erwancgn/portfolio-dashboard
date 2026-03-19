@@ -52,9 +52,16 @@ Ne pas coder si l'un de ces cas se présente. Documenter la question et attendre
 - Impact sur plus de 5 fichiers existants
 - Doute sur le périmètre du ticket
 
-## Après le code
+## Après le code — Explication obligatoire avant commit
 
-1. Expliquer ce qui a été fait et pourquoi
-2. Lister les fichiers modifiés/créés
-3. Proposer le message de commit (format conventionnel)
-4. Attendre la validation PO avant tout commit
+Le PO apprend le développement à travers ce projet. Chaque changement doit être compréhensible.
+
+**Pour chaque fichier modifié/créé, fournir :**
+1. **Ce qui a changé** — en une phrase simple
+2. **Pourquoi** — le lien avec le critère d'acceptation du ticket
+3. **Ce qu'il faut retenir** — le concept clé que le PO doit comprendre
+
+**Puis :**
+4. Proposer le message de commit (format conventionnel)
+5. Si une erreur a été rencontrée et corrigée : proposer une entrée pour `LESSONS.md` au format `[SX] contexte → règle`
+6. Attendre la validation PO avant tout commit
