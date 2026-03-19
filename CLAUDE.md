@@ -49,14 +49,13 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 ---
 
 ## Workflow obligatoire
-```
-1. Lire le DEVLOG.md — section "Prochaine session"
-2. Lire les fichiers concernés par la tâche avant de proposer du code
-3. Identifier la tâche précise dans le backlog
-4. Générer uniquement les modifications nécessaires
-5. Expliquer ce qui a été fait et pourquoi
-6. Attendre la validation PO avant tout commit
-```
+1. Lire SESSION.md — contexte et tickets de la session en cours
+2. Lire LESSONS.md — erreurs passées à ne pas refaire
+3. Lire les fichiers concernés par la tâche
+4. Identifier la tâche précise
+5. Générer uniquement les modifications nécessaires
+6. Expliquer ce qui a été fait et pourquoi
+7. Attendre la validation PO avant tout commit
 
 ---
 
