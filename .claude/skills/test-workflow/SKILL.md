@@ -3,6 +3,7 @@ name: test-workflow
 description: "Verifies acceptance criteria and runs QA checks for the Portfolio Dashboard project. Triggers on: test verification, QA check, acceptance criteria validation, regression testing, after any dev-workflow completion. Use when the user says 'vérifie', 'teste', 'check', 'valide', 'QA', or asks to verify a ticket."
 context: fork
 agent: test-agent
+allowed-tools: Read, Glob, Grep, Bash
 ---
 
 # Test Workflow — Portfolio Dashboard
