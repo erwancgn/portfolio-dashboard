@@ -23,7 +23,12 @@ metadata:
 
 ## Exécution
 
-Pour chaque critère d'acceptation du ticket :
+**Si le ticket impacte 3+ fichiers, commencer par un plan :**
+1. Lister les fichiers à modifier/créer et ce qui change dans chacun
+2. Présenter le plan au PO pour validation
+3. Implémenter seulement après validation du plan
+
+**Pour chaque critère d'acceptation du ticket :**
 1. Identifier les fichiers à créer ou modifier
 2. Implémenter en respectant les conventions (voir CLAUDE.md)
 3. Vérifier que le build passe : `npm run build`
