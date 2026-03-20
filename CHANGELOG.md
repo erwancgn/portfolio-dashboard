@@ -10,9 +10,13 @@
 ## [Unreleased]
 > Fonctionnalités en cours de développement — pas encore livrées.
 
-### En cours
-- Mise en place de l'environnement de développement
-- Initialisation de la documentation
+### Added
+- **API Route `/api/quote`** — prix temps réel actions (Finnhub) et crypto (CoinGecko). Paramètres : `ticker`, `type` (stock|crypto). Retourne `{ ticker, price, currency, source }`.
+- **API Route `/api/exchange-rate`** — taux de change via Frankfurter (gratuit, sans clé). Paramètres : `from`, `to`. Retourne `{ from, to, rate }`.
+- Skills Vercel installés : `vercel-react-best-practices`, `next-best-practices`, `next-cache-components`
+
+### Fixed
+- Remplacement de tous les `style={{}}` inline par des classes Tailwind v4 (FIX-001)
 
 ---
 

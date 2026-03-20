@@ -21,6 +21,10 @@
 - [S3] `middleware.ts` est déprécié en Next.js 16 → utiliser `proxy.ts` avec la fonction `proxy()`
 - [S3] Dossier `app/` à la racine entre en conflit avec `src/app/` → ne jamais créer de dossier `app/` à la racine
 - [S3] Next.js 14 est incompatible avec React 19 → rester sur Next.js 16
+- [S5] `next lint` et `npm run lint` sont supprimés en Next.js 16 → utiliser `npx eslint src --ext .ts,.tsx` dans les pré-checks
+
+## Skills Vercel
+- [S5] `npx skills add vercel-labs/agent-skills@react-best-practices` échoue → le skill s'appelle `vercel-react-best-practices`, vérifier les noms exacts avec `npx skills list` d'abord
 
 ## Git / Process
 - [S1] `git add` avant `Cmd+S` = fichiers vides commités → toujours sauvegarder avant de stage

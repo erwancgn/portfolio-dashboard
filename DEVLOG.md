@@ -226,4 +226,44 @@ Objectif : créer des skills robustes pour le workflow dev + test.
 
 ---
 
-*Dernière mise à jour : Session 4 — 19/03/2026*
+## Session 5 — [20/03/2026]
+
+### Contexte
+Review stratégique MVP + installation skills Vercel + validation workflow agents.
+
+### Ce qu'on a fait
+- [x] Phase 1 : Review stratégique avec Tech Lead (en cours en parallèle)
+- [x] Phase 2 : Installation des 3 skills Vercel (`vercel-react-best-practices`, `next-best-practices`, `next-cache-components`)
+- [x] Phase 3 : TASK-006 Auth — validée lors d'une session précédente
+- [x] Phase 4 : FIX-001 — remplacement `style={{}}` par classes Tailwind — PASS, ticket #42 fermé
+- [x] Phase 5 : Test workflow agents sur TASK-043 (API Routes prix temps réel)
+  - `/dev-workflow` : implémentation des routes `/api/quote` et `/api/exchange-rate`
+  - `/test-workflow` : PASS avec réserve mineure (CA5 faux positif théorique)
+  - Anomalie détectée : `next lint` supprimé en Next.js 16 → ticket #44 créé
+- [x] TASK-043 fermée, commit `feat: ajouter les API routes`
+
+### Erreurs rencontrées
+| Erreur | Cause | Solution |
+|---|---|---|
+| `npx skills add vercel-labs/agent-skills@react-best-practices` échoue | Mauvais nom de skill | Skill s'appelle `vercel-react-best-practices` — vérifier avec `npx skills list` d'abord |
+| `npm run lint` / `next lint` échoue | `next lint` supprimé dans Next.js 16 | Remplacer par `npx eslint src --ext .ts,.tsx` — ticket #44 créé |
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| Skills Vercel installés en local (`.agents/skills/`) | Chargés automatiquement par Claude Code sur le code Next.js/React |
+| Ticket #44 créé pour le script lint | Bloque les pré-checks de l'agent test sur tous les tickets suivants |
+
+### Décisions Tech Lead (Phase 1)
+- DCA (EPIC #4, US #22 #23 #24) → basculé en v1.5, label `v1.5` ajouté sur GitHub
+- Chemin critique MVP validé : Auth → API Routes → US-001 → US-002 → US-005 → US-006 → Prod
+
+### Prochaine session (Session 6)
+- [ ] FIX : Corriger `npm run lint` dans package.json (#44) — bloque les pré-checks agent test
+- [ ] US-001 (#12) : Ajouter une position manuellement (formulaire + insert Supabase)
+- [ ] US-002 (#13) : Voir la liste des positions (tableau + données Supabase)
+- [ ] Seed data : 3-4 positions de test avant US-002
+
+---
+
+*Dernière mise à jour : Session 5 — 20/03/2026*

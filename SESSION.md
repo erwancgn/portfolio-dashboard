@@ -8,98 +8,69 @@
 
 ## Session 5 — Review stratégique + Auth + FIX-001
 
-### Phase 1 : Review stratégique avec Tech Lead (Opus)
+### État des phases
 
-Avant de coder, prendre du recul sur le projet.
+| Phase | Statut | Notes |
+|-------|--------|-------|
+| Phase 1 — Review stratégique Tech Lead | ✅ TERMINÉ | Voir décisions ci-dessous |
+| Phase 2 — Installer les skills Vercel | ✅ TERMINÉ | `vercel-react-best-practices`, `next-best-practices`, `next-cache-components` |
+| Phase 3 — TASK-006 Auth | ✅ TERMINÉ | Flux validé manuellement par le PO |
+| Phase 4 — FIX-001 styles inline | ✅ TERMINÉ | Commit `3f3f5a1`, closes #42 |
+| Phase 5 — Tester les agents | ✅ TERMINÉ | `/dev-workflow` + `/test-workflow` testés sur TASK-043 |
 
-**Objectif :** Valider que le backlog actuel (38 tickets) mène bien au MVP le plus court.
+---
 
-**Questions à poser au Tech Lead :**
-1. Quel est le chemin le plus court vers un dashboard qui affiche mes vraies positions avec les prix en temps réel ?
-2. Parmi les 38 tickets existants, lesquels sont critiques pour le MVP, lesquels peuvent attendre la V1.5 ?
-3. L'ordre actuel des tickets est-il optimal ? Faut-il réorganiser ?
-4. Y a-t-il des tickets manquants qui bloquent le MVP ?
-5. Créer les tickets identifiés via `gh issue create` (après validation PO)
+## Décisions de la Phase 1 (Review Tech Lead)
 
-**Livrable attendu :** Une priorisation claire, des tickets créés/archivés dans GitHub.
+### Backlog repriorisé
 
-### Phase 2 : Installer les skills Vercel
+**DCA basculé en v1.5 :**
+- #4 EPIC 4 DCA → v1.5
+- #22 US-011 Configurer une règle DCA → v1.5
+- #23 US-012 Enregistrer un passage DCA → v1.5
+- #24 US-013 Historique DCA → v1.5
 
-```bash
-npx skills add vercel-labs/agent-skills@react-best-practices
-npx skills add vercel-labs/next-skills --skill next-best-practices
-npx skills add vercel-labs/next-skills --skill next-cache-components
-npx skills list
+**Ticket manquant créé et livré :**
+- **#43** `[TASK] API Routes prix temps réel (Finnhub + CoinGecko + Frankfurter)` → ✅ TERMINÉ (commit `2c44e3f`)
+
+**Seed data :** à faire avant US-002 — pas de ticket dédié, à intégrer dans la session US-001/US-002.
+
+**Anomalie détectée :** `next lint` supprimé en Next.js 16 → ticket **#44** créé (FIX, p2).
+
+### Chemin critique MVP (ordre optimal)
+
+```
+✅ TASK-006 Auth
+✅ #43 API Routes prix (Finnhub + CoinGecko + Frankfurter)
+→ US-001 (#12) Ajouter une position manuellement
+→ US-002 (#13) Voir la liste des positions
+→ US-005 (#16) Rafraîchir les prix (dépend de #43 + US-002)
+→ US-006 (#17) Vue Global (stats + enveloppes)
+→ #41 Supabase production + #26 TASK-008 Vercel deploy
 ```
 
-### Phase 3 : TASK-006 Auth — tester le flux complet
+---
 
-**Ce qui existe déjà :**
-- `/auth/login/page.tsx` — page de login
-- `/auth/callback/route.ts` — callback OAuth
-- `/dashboard/page.tsx` — page dashboard
-- `src/lib/supabase/client.ts` et `server.ts` — clients Supabase
-- `src/proxy.ts` — proxy auth avec redirection
+## Prochaine session — Session 6
 
-**Ce qui reste à vérifier / compléter :**
-1. Le flux complet fonctionne-t-il ? login → callback → dashboard → redirect si non connecté
-2. Le proxy redirige-t-il vers `/auth/login` quand l'utilisateur n'est pas connecté ?
-3. Le dashboard utilise-t-il le client server Supabase (pas le browser) ?
-4. Si tout fonctionne → fermer TASK-006 sur GitHub
+**Objectif :** US-001 + US-002
 
-**Ce qu'il ne faut PAS faire :**
-- Ne pas toucher aux clients Supabase existants
-- Ne pas modifier la migration SQL
-- Ne pas installer de nouveau package
+### US-001 — Ajouter une position manuellement (#12)
 
-### Phase 4 : FIX-001 — Remplacer style={{}} inline
+Formulaire de saisie + insert Supabase.
+Champs : ticker, type (stock/crypto/etf), quantité, PRU, enveloppe, devise.
 
-**Ticket à créer dans GitHub avant de commencer :**
-```bash
-gh issue create --repo erwancgn/portfolio-dashboard \
-  --title "[FIX-001] Remplacer les style={{}} inline par des classes Tailwind" \
-  --label "bug,p1" \
-  --milestone "MVP" \
-  --body "## Contexte
-Le CLAUDE.md interdit style={{}} dans les composants. Deux fichiers violent cette règle.
-Identifié lors de l'audit Session 4.
+**Avant de commencer :** vérifier que #44 (fix lint) est traité et que `/api/quote` répond.
 
-## Ce qui doit être fait
-- [ ] Remplacer tous les style={{}} par des classes Tailwind v4
-- [ ] Utiliser la syntaxe bg-[var(--color-xxx)] pour les CSS variables
+### US-002 — Voir la liste des positions (#13)
 
-## Fichiers concernés
-- src/app/dashboard/page.tsx — modifier
-- src/app/auth/login/page.tsx — modifier
-- src/components/layout/LogoutButton.tsx — vérifier
+Tableau des positions avec données Supabase.
+Colonnes : ticker, quantité, PRU, prix actuel, valeur, P&L, P&L%.
 
-## Critères d'acceptation
-- [ ] CA1 : Aucun style={{}} dans dashboard/page.tsx
-- [ ] CA2 : Aucun style={{}} dans login/page.tsx
-- [ ] CA3 : CSS variables via bg-[var(--color-xxx)], text-[var(--color-xxx)]
-- [ ] CA4 : Rendu visuel identique
-- [ ] CA5 : Aucun style inline dans src/app/ et src/components/
+**Seed data :** créer 3-4 positions de test via US-001 avant de développer US-002.
 
-## Hors périmètre
-- Ne pas modifier la structure des composants
-- Ne pas changer les couleurs du thème
-- Ne pas toucher à globals.css
+### Ce qu'il ne faut PAS faire en session 6
 
-## Definition of Done
-- [ ] Build passe (npm run build)
-- [ ] TypeScript passe (npx tsc --noEmit)
-- [ ] Lint passe (npm run lint)
-- [ ] Aucune violation CLAUDE.md
-- [ ] PO a validé le résultat"
-```
-
-Puis l'agent dev implémente, le mentor explique, l'agent test vérifie.
-
-### Phase 5 : Tester les agents
-
-- Tester `/dev-workflow` sur FIX-001
-- Tester `/test-workflow` après implémentation
-- Vérifier que l'agent test lit les critères depuis `gh issue view`
-- Vérifier que l'agent test produit un rapport structuré avec la section "Leçons capturées"
-- Vérifier que l'agent test ne peut pas modifier de fichiers (allowed-tools)
-- Ajuster les skills selon les résultats réels
+- Ne pas commencer US-005 (rafraîchir les prix) — session 7
+- Ne pas toucher au déploiement Vercel
+- Ne pas modifier le schéma DB
