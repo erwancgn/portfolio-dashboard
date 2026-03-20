@@ -20,12 +20,7 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer"
-      style={{
-        backgroundColor: 'var(--color-red-bg)',
-        border: '1px solid var(--color-red)',
-        color: 'var(--color-red-text)'
-      }}>
+      className="px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer bg-[var(--color-red-bg)] border border-[var(--color-red)] text-[var(--color-red-text)]">
       Se déconnecter
     </button>
   )
