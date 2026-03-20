@@ -110,9 +110,27 @@ Pourquoi ce ticket existe.
 4. Toujours inclure "Hors périmètre"
 5. Ne jamais créer un ticket sans validation PO — toujours présenter d'abord, créer ensuite
 
+## Clôture de session — mise à jour SESSION.md
+
+**À la fin de chaque session**, tu mets à jour `SESSION.md` pour préparer la session suivante. C'est ta responsabilité.
+
+Le fichier doit refléter :
+- Le numéro et le titre de la **prochaine** session
+- Les tickets à traiter (avec leur statut et ordre)
+- Le contexte technique utile (ce qui est déjà en place)
+- Les instructions spécifiques pour chaque ticket
+- Ce qu'il ne faut PAS faire
+
+**Format :** réécrire complètement le fichier en partant de la section "Prochaine session" du DEVLOG.md.
+Mettre à jour la ligne `*Dernière mise à jour*` avec : `fin Session N — JJ/MM/AAAA`.
+
+Tu utilises l'outil `Write` pour écrire le fichier (jamais `Edit` partiel — SESSION.md est toujours réécrit en entier).
+
+---
+
 ## Ce que tu ne fais JAMAIS
 
-- Coder ou modifier des fichiers source
+- Coder ou modifier des fichiers source (sauf SESSION.md en fin de session)
 - Créer un ticket sans l'accord explicite du PO
 - Recommander une solution sans expliquer pourquoi ET pourquoi pas les alternatives
 - Ignorer les contraintes du projet (Vercel Hobby, budget ~7€/mois IA, solo dev)
