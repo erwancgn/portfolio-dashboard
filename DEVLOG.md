@@ -320,4 +320,36 @@ Objectifs : FIX-#44, US-001 (ajout position), US-002 (liste positions).
 
 ---
 
-*Dernière mise à jour : Session 6 — 23/03/2026*
+## Session 7 — [23/03/2026]
+
+### Contexte
+Amélioration du formulaire d'ajout de position avant les US-005/006.
+Objectifs : champ ISIN, recherche par nom/ticker, migration Yahoo Finance.
+
+### Ce qu'on a fait
+- [x] **Champ ISIN ajouté** au formulaire `AddPositionForm` — optionnel, saisi manuellement ou auto-rempli par recherche ISIN
+- [x] **Recherche auto par ISIN** — dès 12 caractères saisis, appel `/api/search` qui auto-remplit ticker + nom + type
+- [x] **Nouveau composant `SearchInput.tsx`** — remplace `TickerInput`, dropdown de suggestions debounce 400ms, actif sur les champs Ticker ET Nom
+- [x] **Nouvelle route `/api/search`** — recherche par nom ou ticker (Yahoo Finance pour stocks/ETF, CoinGecko pour crypto), retourne max 8 résultats `{ ticker, name, type }`
+- [x] **Migration Yahoo Finance** — `/api/quote` et `/api/search` migrent de Finnhub vers Yahoo Finance pour les stocks/ETF (couverture mondiale US + Europe), CoinGecko conservé pour la crypto
+- [x] **PEA-PME retiré** du select Enveloppe
+- [x] **`/api/positions` enrichi** — champ `isin` ajouté dans le payload POST et l'insert Supabase
+
+### Erreurs rencontrées
+| Erreur | Cause | Solution |
+|---|---|---|
+| Finnhub plan gratuit = US uniquement | 403 Forbidden sur les tickers européens (.PA, .MI…) | Migration complète vers Yahoo Finance — pas de clé API, couverture mondiale |
+| Fallback Yahoo non déclenché | `ApiError` lancée avec `httpStatus: 503` même pour un 403 Finnhub — condition `err.httpStatus === 403` jamais vraie | Résolu en migrant directement vers Yahoo sans fallback |
+| `setState` synchrone dans `useEffect` (ISIN lookup) | ESLint `react-hooks/set-state-in-effect` | Déplacer `setIsinStatus('idle')` dans `handleChange` |
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| Yahoo Finance remplace Finnhub (pas fallback) | Finnhub gratuit = US seulement, Yahoo couvre tout sans clé API — inutile de maintenir deux sources |
+| CoinGecko conservé pour la crypto | Yahoo utilise des tickers `BTC-USD` non standards — CoinGecko plus fiable pour la crypto |
+| ISIN lookup déclenché à 12 caractères | Format ISIN = toujours exactement 12 chars — déclenchement fiable sans bouton |
+| `FINNHUB_API_KEY` supprimé du `.env.local` | Plus nécessaire — simplification de la configuration |
+
+---
+
+*Dernière mise à jour : Session 7 — 23/03/2026*

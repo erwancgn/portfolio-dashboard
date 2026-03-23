@@ -15,115 +15,24 @@ interface ErrorResponse {
   code: string
 }
 
-/** Reponse brute de l'API Finnhub /quote */
-interface FinnhubQuote {
-  c: number   // prix actuel (current)
-  d: number   // variation du jour
-  dp: number  // variation % du jour
-  h: number   // haut du jour
-  l: number   // bas du jour
-  o: number   // ouverture
-  pc: number  // cloture precedente
-  t: number   // timestamp
-}
-
-/** Reponse brute de l'API Finnhub /stock/profile2 */
-interface FinnhubProfile {
-  name: string
-  ticker: string
+/** Reponse brute de l'API Yahoo Finance /chart */
+interface YahooChartResponse {
+  chart: {
+    result: Array<{
+      meta: {
+        regularMarketPrice: number
+        currency: string
+        longName?: string
+        shortName?: string
+        symbol: string
+      }
+    }> | null
+    error: { code: string; description: string } | null
+  }
 }
 
 /** Reponse brute de l'API CoinGecko /simple/price */
 type CoinGeckoPrice = Record<string, { usd: number }>
-
-/**
- * Recupere le prix d'une action via l'API Finnhub.
- * Utilise la variable d'environnement serveur FINNHUB_API_KEY.
- */
-async function fetchStockPrice(ticker: string): Promise<QuoteResponse> {
-  const apiKey = process.env.FINNHUB_API_KEY
-  if (!apiKey) {
-    throw new ApiError('Configuration serveur manquante : FINNHUB_API_KEY absent', 'CONFIG_ERROR', 503)
-  }
-
-  const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(ticker)}&token=${apiKey}`
-  const profileUrl = `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(ticker)}&token=${apiKey}`
-
-  const [quoteRes, profileRes] = await Promise.all([
-    fetch(quoteUrl, { cache: 'no-store' }),
-    fetch(profileUrl, { cache: 'no-store' }),
-  ])
-
-  if (quoteRes.status === 429) {
-    throw new ApiError('Quota Finnhub depassé — reessayer plus tard', 'RATE_LIMIT', 503)
-  }
-  if (!quoteRes.ok) {
-    throw new ApiError(`Finnhub indisponible (HTTP ${quoteRes.status})`, 'API_ERROR', 503)
-  }
-
-  const data = (await quoteRes.json()) as FinnhubQuote
-
-  // Finnhub retourne c=0 quand le ticker n'existe pas
-  if (!data.c || data.c === 0) {
-    throw new ApiError(`Ticker inconnu : ${ticker}`, 'TICKER_NOT_FOUND', 404)
-  }
-
-  const profile = profileRes.ok ? ((await profileRes.json()) as FinnhubProfile) : null
-
-  return {
-    ticker: ticker.toUpperCase(),
-    name: profile?.name ?? ticker.toUpperCase(),
-    price: data.c,
-    currency: 'USD',
-    updatedAt: new Date(data.t * 1000).toISOString(),
-  }
-}
-
-/**
- * Recupere le prix d'une crypto via l'API CoinGecko.
- * La cle COINGECKO_API_KEY est optionnelle (plan gratuit disponible sans cle).
- */
-async function fetchCryptoPrice(ticker: string): Promise<QuoteResponse> {
-  const coinId = ticker.toLowerCase()
-  const apiKey = process.env.COINGECKO_API_KEY
-
-  const baseUrl = 'https://api.coingecko.com/api/v3/simple/price'
-  const params = new URLSearchParams({ ids: coinId, vs_currencies: 'usd' })
-  const headers: Record<string, string> = { Accept: 'application/json' }
-
-  if (apiKey) {
-    headers['x-cg-demo-api-key'] = apiKey
-  }
-
-  const res = await fetch(`${baseUrl}?${params.toString()}`, {
-    headers,
-    cache: 'no-store',
-  })
-
-  if (res.status === 429) {
-    throw new ApiError('Quota CoinGecko depassé — reessayer plus tard', 'RATE_LIMIT', 503)
-  }
-  if (!res.ok) {
-    throw new ApiError(`CoinGecko indisponible (HTTP ${res.status})`, 'API_ERROR', 503)
-  }
-
-  const data = (await res.json()) as CoinGeckoPrice
-
-  if (!data[coinId] || data[coinId].usd === undefined) {
-    throw new ApiError(`Crypto inconnue : ${ticker}`, 'TICKER_NOT_FOUND', 404)
-  }
-
-  // Capitalise le coinId comme nom (bitcoin → Bitcoin)
-  const name = coinId.charAt(0).toUpperCase() + coinId.slice(1)
-
-  return {
-    ticker: ticker.toUpperCase(),
-    name,
-    price: data[coinId].usd,
-    currency: 'USD',
-    updatedAt: new Date().toISOString(),
-  }
-}
 
 /** Erreur metier avec code HTTP et code machine */
 class ApiError extends Error {
@@ -138,13 +47,83 @@ class ApiError extends Error {
 }
 
 /**
+ * Recupere le prix d'une action ou ETF via Yahoo Finance.
+ * Couvre les marches US et europeens (.PA, .MI, .L…) sans cle API.
+ */
+async function fetchStockPrice(ticker: string): Promise<QuoteResponse> {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1d`
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+    cache: 'no-store',
+  })
+
+  if (res.status === 404) {
+    throw new ApiError(`Ticker inconnu : ${ticker}`, 'TICKER_NOT_FOUND', 404)
+  }
+  if (!res.ok) {
+    throw new ApiError(`Yahoo Finance indisponible (HTTP ${res.status})`, 'API_ERROR', 503)
+  }
+
+  const data = (await res.json()) as YahooChartResponse
+
+  if (data.chart.error || !data.chart.result || data.chart.result.length === 0) {
+    throw new ApiError(`Ticker inconnu : ${ticker}`, 'TICKER_NOT_FOUND', 404)
+  }
+
+  const meta = data.chart.result[0].meta
+
+  return {
+    ticker: ticker.toUpperCase(),
+    name: meta.longName ?? meta.shortName ?? ticker.toUpperCase(),
+    price: meta.regularMarketPrice,
+    currency: meta.currency,
+    updatedAt: new Date().toISOString(),
+  }
+}
+
+/**
+ * Recupere le prix d'une crypto via l'API CoinGecko.
+ * La cle COINGECKO_API_KEY est optionnelle (plan gratuit disponible sans cle).
+ */
+async function fetchCryptoPrice(ticker: string): Promise<QuoteResponse> {
+  const coinId = ticker.toLowerCase()
+  const apiKey = process.env.COINGECKO_API_KEY
+  const params = new URLSearchParams({ ids: coinId, vs_currencies: 'usd' })
+  const headers: Record<string, string> = { Accept: 'application/json' }
+
+  if (apiKey) headers['x-cg-demo-api-key'] = apiKey
+
+  const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?${params}`, {
+    headers,
+    cache: 'no-store',
+  })
+
+  if (res.status === 429) throw new ApiError('Quota CoinGecko depassé — reessayer plus tard', 'RATE_LIMIT', 503)
+  if (!res.ok) throw new ApiError(`CoinGecko indisponible (HTTP ${res.status})`, 'API_ERROR', 503)
+
+  const data = (await res.json()) as CoinGeckoPrice
+
+  if (!data[coinId] || data[coinId].usd === undefined) {
+    throw new ApiError(`Crypto inconnue : ${ticker}`, 'TICKER_NOT_FOUND', 404)
+  }
+
+  return {
+    ticker: ticker.toUpperCase(),
+    name: coinId.charAt(0).toUpperCase() + coinId.slice(1),
+    price: data[coinId].usd,
+    currency: 'USD',
+    updatedAt: new Date().toISOString(),
+  }
+}
+
+/**
  * GET /api/quote
  *
- * Paramètres :
- * - ticker : symbole de l'actif (ex: AAPL, BTC)
+ * Parametres :
+ * - ticker : symbole de l'actif (ex: AAPL, MC.PA, BTC)
  * - type   : "stock" | "crypto"
  *
- * Retourne : { ticker, price, currency, updatedAt }
+ * Retourne : { ticker, name, price, currency, updatedAt }
  */
 export async function GET(request: NextRequest): Promise<NextResponse<QuoteResponse | ErrorResponse>> {
   const { searchParams } = request.nextUrl
@@ -179,8 +158,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<QuoteRespo
         { status: err.httpStatus },
       )
     }
-
-    // Erreur reseau inattendue
     return NextResponse.json(
       { error: 'Erreur serveur inattendue', code: 'INTERNAL_ERROR' },
       { status: 503 },

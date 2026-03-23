@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback, type FormEvent } from 'react'
-import TickerInput from './TickerInput'
+import { useState, useCallback, useEffect, type FormEvent } from 'react'
+import SearchInput from './SearchInput'
+import type { SearchResult } from '@/app/api/search/route'
 
 interface AddPositionFormProps {
   onPositionAdded: () => void
@@ -10,6 +11,7 @@ interface AddPositionFormProps {
 interface FormState {
   ticker: string
   name: string
+  isin: string
   type: 'stock' | 'etf' | 'crypto'
   quantity: string
   pru: string
@@ -20,6 +22,7 @@ interface FormState {
 const INITIAL_STATE: FormState = {
   ticker: '',
   name: '',
+  isin: '',
   type: 'stock',
   quantity: '',
   pru: '',
@@ -41,17 +44,52 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
   const [form, setForm] = useState<FormState>(INITIAL_STATE)
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState<string>('')
+  const [isinStatus, setIsinStatus] = useState<'idle' | 'loading' | 'found' | 'not_found'>('idle')
+
+  // Recherche par ISIN dès que 12 caractères sont saisis
+  useEffect(() => {
+    if (form.isin.trim().length !== 12) return
+    const timer = setTimeout(async () => {
+      setIsinStatus('loading')
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(form.isin.trim())}&type=stock`)
+        if (res.ok) {
+          const data = (await res.json()) as import('@/app/api/search/route').SearchResult[]
+          if (data.length > 0) {
+            setForm((prev) => ({ ...prev, ticker: data[0].ticker, name: data[0].name, type: data[0].type }))
+            setIsinStatus('found')
+          } else {
+            setIsinStatus('not_found')
+          }
+        } else {
+          setIsinStatus('not_found')
+        }
+      } catch {
+        setIsinStatus('not_found')
+      }
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [form.isin])
 
   const handleTickerChange = useCallback((ticker: string) => {
     setForm((prev) => ({ ...prev, ticker }))
   }, [])
 
-  const handleTickerValidated = useCallback((name: string) => {
+  const handleNameChange = useCallback((name: string) => {
     setForm((prev) => ({ ...prev, name }))
+  }, [])
+
+  const handleTickerSuggestionSelected = useCallback((result: SearchResult) => {
+    setForm((prev) => ({ ...prev, ticker: result.ticker, name: result.name, type: result.type }))
+  }, [])
+
+  const handleNameSuggestionSelected = useCallback((result: SearchResult) => {
+    setForm((prev) => ({ ...prev, ticker: result.ticker, name: result.name, type: result.type }))
   }, [])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target
+    if (name === 'isin') setIsinStatus('idle')
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
@@ -63,6 +101,7 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
     const payload = {
       ticker: form.ticker.trim(),
       name: form.name.trim() || undefined,
+      isin: form.isin.trim() || undefined,
       type: form.type,
       quantity: parseFloat(form.quantity),
       pru: parseFloat(form.pru),
@@ -97,19 +136,36 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
       <h2 className="text-lg font-semibold text-[var(--color-text)]">Ajouter une position</h2>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <TickerInput
+        <SearchInput
+          id="ticker"
+          label="Ticker"
+          placeholder="ex : AAPL"
           value={form.ticker}
           assetType={form.type}
+          required
           onChange={handleTickerChange}
-          onValidated={handleTickerValidated}
+          onSuggestionSelected={handleTickerSuggestionSelected}
+        />
+
+        <SearchInput
+          id="name"
+          label="Nom"
+          placeholder="ex : Apple Inc."
+          value={form.name}
+          assetType={form.type}
+          onChange={handleNameChange}
+          onSuggestionSelected={handleNameSuggestionSelected}
         />
 
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-[var(--color-text-sub)] mb-1">
-            Nom
+          <label htmlFor="isin" className="block text-sm font-medium text-[var(--color-text-sub)] mb-1">
+            ISIN
           </label>
-          <input id="name" name="name" type="text" value={form.name} onChange={handleChange}
-            placeholder="ex : Apple Inc." className={INPUT_CLASS} />
+          <input id="isin" name="isin" type="text" value={form.isin} onChange={handleChange}
+            placeholder="ex : US0378331005" className={INPUT_CLASS} maxLength={12} />
+          {isinStatus === 'loading' && <p className="mt-1 text-xs text-[var(--color-text-sub)]">Recherche…</p>}
+          {isinStatus === 'found' && <p className="mt-1 text-xs text-green-500">✓ Ticker et nom détectés</p>}
+          {isinStatus === 'not_found' && <p className="mt-1 text-xs text-red-500">ISIN introuvable — saisir le ticker manuellement</p>}
         </div>
 
         <div>
@@ -148,7 +204,6 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
             <option value="PEA">PEA</option>
             <option value="CTO">CTO</option>
             <option value="Crypto">Crypto</option>
-            <option value="PEA-PME">PEA-PME</option>
           </select>
         </div>
 
