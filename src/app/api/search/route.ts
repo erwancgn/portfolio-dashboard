@@ -23,17 +23,6 @@ interface YahooSearchResponse {
   }>
 }
 
-/** Reponse brute de l'API CoinGecko /search */
-interface CoinGeckoCoin {
-  id: string
-  name: string
-  symbol: string
-}
-
-interface CoinGeckoSearchResponse {
-  coins: CoinGeckoCoin[]
-}
-
 /** Erreur metier avec code HTTP et code machine */
 class ApiError extends Error {
   constructor(
@@ -56,11 +45,11 @@ function mapYahooType(quoteType: string): 'stock' | 'etf' | 'crypto' {
 }
 
 /**
- * Recherche des actions et ETF via Yahoo Finance.
+ * Recherche des actifs via Yahoo Finance (actions, ETF, crypto).
  * Couvre les marches US et europeens sans cle API.
  * Retourne max 8 resultats.
  */
-async function searchStocks(query: string): Promise<SearchResult[]> {
+async function searchAssets(query: string): Promise<SearchResult[]> {
   const params = new URLSearchParams({
     q: query,
     quotesCount: '8',
@@ -72,7 +61,7 @@ async function searchStocks(query: string): Promise<SearchResult[]> {
   const res = await fetch(
     `https://query2.finance.yahoo.com/v1/finance/search?${params}`,
     {
-      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+      headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' },
       cache: 'no-store',
     },
   )
@@ -94,40 +83,10 @@ async function searchStocks(query: string): Promise<SearchResult[]> {
 }
 
 /**
- * Recherche des cryptomonnaies via l'API CoinGecko.
- * La cle COINGECKO_API_KEY est optionnelle.
- * Retourne max 8 resultats.
- */
-async function searchCryptos(query: string): Promise<SearchResult[]> {
-  const apiKey = process.env.COINGECKO_API_KEY
-  const headers: Record<string, string> = { Accept: 'application/json' }
-  if (apiKey) headers['x-cg-demo-api-key'] = apiKey
-
-  const res = await fetch(
-    `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`,
-    { headers, cache: 'no-store' },
-  )
-
-  if (res.status === 429) throw new ApiError('Quota CoinGecko depassé', 'RATE_LIMIT', 503)
-  if (!res.ok) throw new ApiError(`CoinGecko indisponible (HTTP ${res.status})`, 'API_ERROR', 503)
-
-  const data = (await res.json()) as CoinGeckoSearchResponse
-
-  return (data.coins ?? [])
-    .slice(0, 8)
-    .map((coin) => ({
-      ticker: coin.symbol.toUpperCase(),
-      name: coin.name,
-      type: 'crypto' as const,
-    }))
-}
-
-/**
  * GET /api/search
  *
  * Parametres :
- * - q    : terme de recherche (min 2 caracteres)
- * - type : "stock" | "crypto"
+ * - q : terme de recherche (min 2 caracteres, ex: "Apple", "BTC-EUR", "CW8.PA")
  *
  * Retourne : SearchResult[] (max 8 elements)
  */
@@ -136,7 +95,6 @@ export async function GET(
 ): Promise<NextResponse<SearchResult[] | ErrorResponse>> {
   const { searchParams } = request.nextUrl
   const query = searchParams.get('q')
-  const type = searchParams.get('type')
 
   if (!query || query.trim().length < 2) {
     return NextResponse.json(
@@ -145,19 +103,8 @@ export async function GET(
     )
   }
 
-  if (type !== 'stock' && type !== 'crypto') {
-    return NextResponse.json(
-      { error: 'Parametre invalide : type doit etre "stock" ou "crypto"', code: 'INVALID_PARAM' },
-      { status: 400 },
-    )
-  }
-
   try {
-    const results =
-      type === 'crypto'
-        ? await searchCryptos(query.trim())
-        : await searchStocks(query.trim())
-
+    const results = await searchAssets(query.trim())
     return NextResponse.json(results, { status: 200 })
   } catch (err) {
     if (err instanceof ApiError) {

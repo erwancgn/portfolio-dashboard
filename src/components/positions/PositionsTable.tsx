@@ -1,10 +1,11 @@
+import { createClient } from '@/lib/supabase/server'
 import type { Tables } from '@/types/database'
 import type { QuoteResponse } from '@/app/api/quote/route'
 
 type Position = Tables<'positions'>
 
-interface PositionWithQuote extends Position {
-  currentPrice: number | null
+interface PositionWithPrice extends Position {
+  priceEur: number | null
 }
 
 /** Formate un nombre en €, 2 décimales */
@@ -21,54 +22,66 @@ function formatPct(value: number): string {
   return `${value >= 0 ? '+' : ''}${value.toFixed(2)} %`
 }
 
+/** Reponse brute Frankfurter */
+interface FrankfurterResponse {
+  rates: Record<string, number>
+}
+
 /**
- * Récupère le prix actuel d'une position via /api/quote.
- * Retourne null si la requête échoue ou si le ticker est inconnu.
+ * Recupere un taux de change depuis Frankfurter (gratuit, sans cle).
+ * Retourne 1 si from === to, ou un taux de repli si l'API echoue.
  */
-async function fetchCurrentPrice(
-  ticker: string,
-  type: Position['type'],
-  baseUrl: string,
-): Promise<number | null> {
-  const quoteType = type === 'crypto' ? 'crypto' : 'stock'
+async function fetchRate(from: string, to: string): Promise<number> {
+  if (from === to) return 1
   try {
     const res = await fetch(
-      `${baseUrl}/api/quote?ticker=${encodeURIComponent(ticker)}&type=${quoteType}`,
+      `https://api.frankfurter.app/latest?from=${from}&to=${to}`,
+      { cache: 'no-store' },
+    )
+    if (!res.ok) return 1
+    const data = (await res.json()) as FrankfurterResponse
+    return data.rates[to] ?? 1
+  } catch {
+    return 1
+  }
+}
+
+/**
+ * Recupere le prix actuel d'un actif via /api/quote.
+ * Retourne { price, currency } ou null en cas d'echec.
+ */
+async function fetchQuote(
+  ticker: string,
+  baseUrl: string,
+): Promise<{ price: number; currency: string } | null> {
+  try {
+    const res = await fetch(
+      `${baseUrl}/api/quote?ticker=${encodeURIComponent(ticker)}`,
       { cache: 'no-store' },
     )
     if (!res.ok) return null
     const data = (await res.json()) as QuoteResponse
-    return data.price ?? null
+    return { price: data.price, currency: data.currency }
   } catch {
     return null
   }
 }
 
 /**
- * Récupère les positions depuis /api/positions.
- * Retourne un tableau vide en cas d'erreur.
- */
-async function fetchPositions(baseUrl: string): Promise<Position[]> {
-  try {
-    const res = await fetch(`${baseUrl}/api/positions`, { cache: 'no-store' })
-    if (!res.ok) return []
-    return (await res.json()) as Position[]
-  } catch {
-    return []
-  }
-}
-
-/**
  * PositionsTable — Server Component.
  * Affiche le tableau des positions avec P&L calculé en temps réel.
+ * Les prix non-EUR sont convertis en EUR via Frankfurter.
  */
 export default async function PositionsTable() {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-  const positions = await fetchPositions(baseUrl)
+  const supabase = await createClient()
+  const { data: positions } = await supabase
+    .from('positions')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-  if (positions.length === 0) {
+  if (!positions || positions.length === 0) {
     return (
       <p className="text-sm text-[var(--color-text-sub)]">
         Aucune position enregistrée. Ajoutez votre première position ci-dessus.
@@ -76,23 +89,44 @@ export default async function PositionsTable() {
     )
   }
 
-  const positionsWithQuotes: PositionWithQuote[] = await Promise.all(
-    positions.map(async (pos) => {
-      const currentPrice = await fetchCurrentPrice(pos.ticker, pos.type, baseUrl)
-      return { ...pos, currentPrice }
-    }),
-  )
+  // Recuperation des prix et du taux USD→EUR en parallele
+  const [quotes, usdEur] = await Promise.all([
+    Promise.all(positions.map((pos) => fetchQuote(pos.ticker, baseUrl))),
+    fetchRate('USD', 'EUR'),
+  ])
+
+  /**
+   * Convertit un prix dans sa devise vers EUR.
+   * GBp (pence) → divise par 100 avant conversion GBP→EUR.
+   */
+  function toEur(price: number, currency: string, gbpEur: number): number | null {
+    if (currency === 'EUR') return price
+    if (currency === 'USD') return price * usdEur
+    if (currency === 'GBp') return (price / 100) * gbpEur
+    if (currency === 'GBP') return price * gbpEur
+    return null
+  }
+
+  // GBP→EUR uniquement si au moins une position en GBP
+  const needsGbp = quotes.some((q) => q?.currency === 'GBP' || q?.currency === 'GBp')
+  const gbpEur = needsGbp ? await fetchRate('GBP', 'EUR') : 1
+
+  const positionsWithPrice: PositionWithPrice[] = positions.map((pos, i) => {
+    const quote = quotes[i]
+    const priceEur = quote ? toEur(quote.price, quote.currency, gbpEur) : null
+    return { ...pos, priceEur }
+  })
 
   // Tri par valeur décroissante (positions sans prix à la fin)
-  positionsWithQuotes.sort((a, b) => {
-    const valA = a.currentPrice !== null ? a.quantity * a.currentPrice : -1
-    const valB = b.currentPrice !== null ? b.quantity * b.currentPrice : -1
+  positionsWithPrice.sort((a, b) => {
+    const valA = a.priceEur !== null ? a.quantity * a.priceEur : -1
+    const valB = b.priceEur !== null ? b.quantity * b.priceEur : -1
     return valB - valA
   })
 
-  // Valeur totale du portfolio (positions avec prix connu uniquement)
-  const totalValue = positionsWithQuotes.reduce((sum, pos) => {
-    return pos.currentPrice !== null ? sum + pos.quantity * pos.currentPrice : sum
+  // Valeur totale (positions avec prix connu uniquement)
+  const totalValue = positionsWithPrice.reduce((sum, pos) => {
+    return pos.priceEur !== null ? sum + pos.quantity * pos.priceEur : sum
   }, 0)
 
   return (
@@ -113,20 +147,16 @@ export default async function PositionsTable() {
           </tr>
         </thead>
         <tbody>
-          {positionsWithQuotes.map((pos) => {
-            const hasPrice = pos.currentPrice !== null
-            const valeur = hasPrice ? pos.quantity * pos.currentPrice! : null
+          {positionsWithPrice.map((pos) => {
+            const hasPrice = pos.priceEur !== null
+            const valeur = hasPrice ? pos.quantity * pos.priceEur! : null
             const invested = pos.quantity * pos.pru
             const pnl = valeur !== null ? valeur - invested : null
             const pnlPct = pnl !== null ? (pnl / invested) * 100 : null
             const poids = valeur !== null && totalValue > 0 ? (valeur / totalValue) * 100 : null
 
             const pnlColor =
-              pnl === null
-                ? ''
-                : pnl >= 0
-                  ? 'text-green-500'
-                  : 'text-red-500'
+              pnl === null ? '' : pnl >= 0 ? 'text-green-500' : 'text-red-500'
 
             return (
               <tr
@@ -136,20 +166,12 @@ export default async function PositionsTable() {
                 <td className="py-2 pr-4 font-mono font-semibold text-[var(--color-text)]">
                   {pos.ticker}
                 </td>
-                <td className="py-2 pr-4 text-[var(--color-text-sub)]">
-                  {pos.name ?? '—'}
-                </td>
-                <td className="py-2 pr-4 text-[var(--color-text-sub)] capitalize">
-                  {pos.type}
-                </td>
+                <td className="py-2 pr-4 text-[var(--color-text-sub)]">{pos.name ?? '—'}</td>
+                <td className="py-2 pr-4 text-[var(--color-text-sub)] capitalize">{pos.type}</td>
+                <td className="py-2 pr-4 text-right text-[var(--color-text)]">{pos.quantity}</td>
+                <td className="py-2 pr-4 text-right text-[var(--color-text)]">{formatEur(pos.pru)}</td>
                 <td className="py-2 pr-4 text-right text-[var(--color-text)]">
-                  {pos.quantity}
-                </td>
-                <td className="py-2 pr-4 text-right text-[var(--color-text)]">
-                  {formatEur(pos.pru)}
-                </td>
-                <td className="py-2 pr-4 text-right text-[var(--color-text)]">
-                  {hasPrice ? formatEur(pos.currentPrice!) : '—'}
+                  {hasPrice ? formatEur(pos.priceEur!) : '—'}
                 </td>
                 <td className="py-2 pr-4 text-right text-[var(--color-text)]">
                   {valeur !== null ? formatEur(valeur) : '—'}

@@ -26,7 +26,11 @@
 ### Fixed
 - Remplacement de tous les `style={{}}` inline par des classes Tailwind v4 (FIX-001)
 - Script `npm run lint` corrigé pour Next.js 16 — `npx eslint src --ext .ts,.tsx` (FIX-#44)
-- Migration Finnhub → Yahoo Finance : couverture étendue aux marchés européens (.PA, .MI, .L…)
+- Migration Finnhub → Yahoo Finance : couverture mondiale US + EU + crypto, sans clé API
+- `PositionsTable` : fetch HTTP interne remplacé par requête Supabase directe (cookies d'auth non transmis via fetch)
+- Conversion devise : prix USD/GBp/GBP convertis en EUR via Frankfurter avant affichage
+- Dropdown suggestions : ne rouvre plus après sélection d'une suggestion
+- ISIN : auto-rempli depuis la sélection d'une suggestion si Yahoo Finance le retourne
 
 ---
 

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, type FormEvent } from 'react'
 import SearchInput from './SearchInput'
 import type { SearchResult } from '@/app/api/search/route'
+import type { QuoteResponse } from '@/app/api/quote/route'
 
 interface AddPositionFormProps {
   onPositionAdded: () => void
@@ -79,12 +80,18 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
     setForm((prev) => ({ ...prev, name }))
   }, [])
 
-  const handleTickerSuggestionSelected = useCallback((result: SearchResult) => {
+  const handleSuggestionSelected = useCallback((result: SearchResult) => {
     setForm((prev) => ({ ...prev, ticker: result.ticker, name: result.name, type: result.type }))
-  }, [])
-
-  const handleNameSuggestionSelected = useCallback((result: SearchResult) => {
-    setForm((prev) => ({ ...prev, ticker: result.ticker, name: result.name, type: result.type }))
+    // Tentative de récupération de l'ISIN via /api/quote (disponible sur certains actifs EU)
+    void fetch(`/api/quote?ticker=${encodeURIComponent(result.ticker)}`)
+      .then((res) => res.ok ? res.json() as Promise<QuoteResponse> : null)
+      .then((data) => {
+        if (data?.isin) {
+          setForm((prev) => ({ ...prev, isin: data.isin! }))
+          setIsinStatus('found')
+        }
+      })
+      .catch(() => null)
   }, [])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -144,7 +151,7 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
           assetType={form.type}
           required
           onChange={handleTickerChange}
-          onSuggestionSelected={handleTickerSuggestionSelected}
+          onSuggestionSelected={handleSuggestionSelected}
         />
 
         <SearchInput
@@ -154,7 +161,7 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
           value={form.name}
           assetType={form.type}
           onChange={handleNameChange}
-          onSuggestionSelected={handleNameSuggestionSelected}
+          onSuggestionSelected={handleSuggestionSelected}
         />
 
         <div>

@@ -346,9 +346,16 @@ Objectifs : champ ISIN, recherche par nom/ticker, migration Yahoo Finance.
 | Décision | Raison |
 |---|---|
 | Yahoo Finance remplace Finnhub (pas fallback) | Finnhub gratuit = US seulement, Yahoo couvre tout sans clé API — inutile de maintenir deux sources |
-| CoinGecko conservé pour la crypto | Yahoo utilise des tickers `BTC-USD` non standards — CoinGecko plus fiable pour la crypto |
+| CoinGecko supprimé, Yahoo pour la crypto aussi | Tickers Yahoo (`BTC-EUR`, `ETH-USD`) plus naturels — une seule source pour tout |
 | ISIN lookup déclenché à 12 caractères | Format ISIN = toujours exactement 12 chars — déclenchement fiable sans bouton |
 | `FINNHUB_API_KEY` supprimé du `.env.local` | Plus nécessaire — simplification de la configuration |
+
+### Corrections post-commit (suite S7)
+- [x] Bug `PositionsTable` : fetch HTTP interne sans cookies → Supabase rejetait la requête → tableau toujours vide. Fix : requête Supabase directe dans le Server Component
+- [x] Bug devises : Yahoo retourne USD pour les actions US, affiché en "€" sans conversion. Fix : conversion USD→EUR + GBp/GBP via Frankfurter dans `PositionsTable`
+- [x] Bug crypto : `BTC-EUR` sans prix — CoinGecko supprimé, Yahoo Finance gère tout (stocks + ETF + crypto). Ticker crypto format Yahoo : `BTC-EUR`, `ETH-USD`
+- [x] Bug UX : dropdown suggestions restait ouvert après sélection. Fix : `justSelectedRef` bloque la re-recherche déclenchée par le changement de `value`
+- [x] ISIN depuis suggestion : après sélection, appel silencieux `/api/quote` → si Yahoo retourne `meta.isin`, champ ISIN pré-rempli automatiquement
 
 ---
 

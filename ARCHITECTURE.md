@@ -49,16 +49,26 @@ On passe en Pro (~20$/mois) uniquement quand l'Agent Surveillance sera développ
 
 ---
 
-## 4. Pourquoi séparer les appels API côté serveur ?
+## 4. Sources de données de marché — Yahoo Finance
 
-**Problème :** Les APIs externes (Finnhub, CoinGecko) bloquent les appels
-depuis un navigateur (politique CORS).
+**Choix : Yahoo Finance (non officiel, sans clé) pour prix et recherche**
 
-**Solution :** Toutes les API Routes Next.js (`src/app/api/*`) s'exécutent
-côté serveur. Le navigateur appelle notre serveur, notre serveur appelle Finnhub.
+| Critère | Yahoo Finance | Finnhub (gratuit) |
+|---|---|---|
+| Couverture | ✅ Mondial (US + EU + crypto) | ❌ US uniquement |
+| Clé API | ✅ Aucune | ❌ Requise |
+| ETF européens | ✅ CW8.PA, EWLD.PA… | ❌ 403 Forbidden |
+| Fiabilité | ⚠️ API non officielle | ✅ API officielle |
+| Crypto | ✅ BTC-EUR, ETH-USD… | ❌ Plan gratuit limité |
+
+**Décision S7 :** Migration complète vers Yahoo Finance. Finnhub plan gratuit retourne
+403 sur tous les actifs européens — inutilisable pour un portfolio français.
+`FINNHUB_API_KEY` supprimée du `.env.local`.
+
+**Architecture :**
 ```
-Navigateur → /api/quote?ticker=NVDA → Serveur Next.js → Finnhub API
-                                    ← { price: 142.5 } ←
+Navigateur → /api/quote?ticker=CW8.PA → Serveur Next.js → Yahoo Finance
+                                       ← { price: 598€, currency: EUR } ←
 ```
 
 **Règle absolue :** jamais de `NEXT_PUBLIC_` sur une clé secrète.
@@ -67,13 +77,17 @@ Navigateur → /api/quote?ticker=NVDA → Serveur Next.js → Finnhub API
 
 ## 5. Gestion des devises
 
-**Problème :** Finnhub retourne les prix dans la devise native (NVDA → USD, Toyota → JPY).
-Trade Republic affiche tout en EUR.
+**Problème :** Yahoo Finance retourne les prix dans la devise native (NVDA → USD, MC.PA → EUR).
+Le dashboard affiche tout en EUR.
 
-**Solution :** API Frankfurter (open source, BCE, sans clé) à chaque refresh.
+**Solution :** API Frankfurter (open source, BCE, sans clé) pour les conversions.
 ```
-NVDA prix = 142.5 USD × taux EUR/USD → 131.2 EUR
+NVDA prix = 177.5 USD × taux USD/EUR (Frankfurter) → 163.2 EUR
+BNP.PA   = 74.2 EUR → pas de conversion
+BTC-EUR  = 71000 EUR → pas de conversion
 ```
+
+**Devises gérées :** EUR (direct), USD (Frankfurter), GBp/GBP (Frankfurter ÷100 pour les pence).
 
 ---
 
@@ -89,9 +103,9 @@ Chaque user ne voit que ses propres données.
 - En production → variables Vercel Dashboard uniquement
 
 **Rate limiting :**
-Toutes les routes `/api/*` ont un rate limiter pour éviter :
-- L'épuisement du quota Finnhub (60 req/min)
-- La dérive de coût IA
+Routes `/api/*` sans authentification publique — la sécurité repose sur :
+- RLS Supabase (données utilisateur inaccessibles sans session)
+- Pas de quota à gérer côté Yahoo Finance (API non officielle, sans clé)
 
 ---
 
@@ -191,4 +205,26 @@ Puis regénérer les types : `supabase gen types typescript --local > src/types/
 
 ---
 
-*Dernière mise à jour : Session 6 — 23/03/2026*
+## 14. Server Components — requêtes Supabase directes
+
+**Règle :** Un Server Component ne doit JAMAIS appeler ses propres API Routes via `fetch`.
+
+**Problème rencontré (S7) :** `PositionsTable` appelait `/api/positions` via HTTP.
+Les cookies de session ne sont pas transmis dans un `fetch` interne → Supabase retourne
+"non authentifié" → tableau vide silencieux.
+
+**Solution :** Importer `createClient()` directement dans le Server Component et
+requêter Supabase sans passer par HTTP. Les cookies sont transmis automatiquement.
+
+```typescript
+// ❌ NE PAS FAIRE
+const res = await fetch(`${baseUrl}/api/positions`)
+
+// ✅ FAIRE
+const supabase = await createClient()
+const { data } = await supabase.from('positions').select('*')
+```
+
+---
+
+*Dernière mise à jour : Session 7 — 23/03/2026*

@@ -42,6 +42,7 @@ export default function SearchInput({
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const prevAssetType = useRef(assetType)
+  const justSelectedRef = useRef(false)
 
   // Reset suggestions quand assetType change
   useEffect(() => {
@@ -59,13 +60,17 @@ export default function SearchInput({
       setIsOpen(false)
       return
     }
+    // Bloquer la re-recherche juste après une sélection
+    if (justSelectedRef.current) {
+      justSelectedRef.current = false
+      return
+    }
 
-    const searchType = assetType === 'crypto' ? 'crypto' : 'stock'
     const timer = setTimeout(async () => {
       setIsLoading(true)
       try {
         const res = await fetch(
-          `/api/search?q=${encodeURIComponent(value)}&type=${searchType}`,
+          `/api/search?q=${encodeURIComponent(value)}`,
         )
         if (res.ok) {
           const data = (await res.json()) as SearchResult[]
@@ -88,6 +93,7 @@ export default function SearchInput({
 
   const handleSelect = useCallback(
     (result: SearchResult) => {
+      justSelectedRef.current = true
       onSuggestionSelected(result)
       setIsOpen(false)
       setSuggestions([])

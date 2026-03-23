@@ -6,6 +6,7 @@ export interface QuoteResponse {
   name: string
   price: number
   currency: string
+  isin?: string
   updatedAt: string
 }
 
@@ -25,14 +26,12 @@ interface YahooChartResponse {
         longName?: string
         shortName?: string
         symbol: string
+        isin?: string
       }
     }> | null
     error: { code: string; description: string } | null
   }
 }
-
-/** Reponse brute de l'API CoinGecko /simple/price */
-type CoinGeckoPrice = Record<string, { usd: number }>
 
 /** Erreur metier avec code HTTP et code machine */
 class ApiError extends Error {
@@ -47,13 +46,14 @@ class ApiError extends Error {
 }
 
 /**
- * Recupere le prix d'une action ou ETF via Yahoo Finance.
- * Couvre les marches US et europeens (.PA, .MI, .L…) sans cle API.
+ * Recupere le prix d'un actif via Yahoo Finance.
+ * Couvre actions, ETF et crypto (ex: BTC-EUR, ETH-USD) sans cle API.
+ * Marches US et europeens (.PA, .MI, .L…) supportes.
  */
-async function fetchStockPrice(ticker: string): Promise<QuoteResponse> {
+async function fetchPrice(ticker: string): Promise<QuoteResponse> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1d`
   const res = await fetch(url, {
-    headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+    headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' },
     cache: 'no-store',
   })
 
@@ -77,41 +77,7 @@ async function fetchStockPrice(ticker: string): Promise<QuoteResponse> {
     name: meta.longName ?? meta.shortName ?? ticker.toUpperCase(),
     price: meta.regularMarketPrice,
     currency: meta.currency,
-    updatedAt: new Date().toISOString(),
-  }
-}
-
-/**
- * Recupere le prix d'une crypto via l'API CoinGecko.
- * La cle COINGECKO_API_KEY est optionnelle (plan gratuit disponible sans cle).
- */
-async function fetchCryptoPrice(ticker: string): Promise<QuoteResponse> {
-  const coinId = ticker.toLowerCase()
-  const apiKey = process.env.COINGECKO_API_KEY
-  const params = new URLSearchParams({ ids: coinId, vs_currencies: 'usd' })
-  const headers: Record<string, string> = { Accept: 'application/json' }
-
-  if (apiKey) headers['x-cg-demo-api-key'] = apiKey
-
-  const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?${params}`, {
-    headers,
-    cache: 'no-store',
-  })
-
-  if (res.status === 429) throw new ApiError('Quota CoinGecko depassé — reessayer plus tard', 'RATE_LIMIT', 503)
-  if (!res.ok) throw new ApiError(`CoinGecko indisponible (HTTP ${res.status})`, 'API_ERROR', 503)
-
-  const data = (await res.json()) as CoinGeckoPrice
-
-  if (!data[coinId] || data[coinId].usd === undefined) {
-    throw new ApiError(`Crypto inconnue : ${ticker}`, 'TICKER_NOT_FOUND', 404)
-  }
-
-  return {
-    ticker: ticker.toUpperCase(),
-    name: coinId.charAt(0).toUpperCase() + coinId.slice(1),
-    price: data[coinId].usd,
-    currency: 'USD',
+    ...(meta.isin ? { isin: meta.isin } : {}),
     updatedAt: new Date().toISOString(),
   }
 }
@@ -120,15 +86,14 @@ async function fetchCryptoPrice(ticker: string): Promise<QuoteResponse> {
  * GET /api/quote
  *
  * Parametres :
- * - ticker : symbole de l'actif (ex: AAPL, MC.PA, BTC)
- * - type   : "stock" | "crypto"
+ * - ticker : symbole de l'actif (ex: AAPL, MC.PA, BTC-EUR, ETH-USD)
+ * - type   : "stock" | "crypto" (conserve pour compatibilite, non utilise)
  *
  * Retourne : { ticker, name, price, currency, updatedAt }
  */
 export async function GET(request: NextRequest): Promise<NextResponse<QuoteResponse | ErrorResponse>> {
   const { searchParams } = request.nextUrl
   const ticker = searchParams.get('ticker')
-  const type = searchParams.get('type')
 
   if (!ticker || ticker.trim() === '') {
     return NextResponse.json(
@@ -137,19 +102,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<QuoteRespo
     )
   }
 
-  if (type !== 'stock' && type !== 'crypto') {
-    return NextResponse.json(
-      { error: 'Parametre invalide : type doit etre "stock" ou "crypto"', code: 'INVALID_PARAM' },
-      { status: 400 },
-    )
-  }
-
   try {
-    const quote =
-      type === 'stock'
-        ? await fetchStockPrice(ticker.trim())
-        : await fetchCryptoPrice(ticker.trim())
-
+    const quote = await fetchPrice(ticker.trim())
     return NextResponse.json(quote, { status: 200 })
   } catch (err) {
     if (err instanceof ApiError) {
