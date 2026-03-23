@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import LogoutButton from '@/components/layout/LogoutButton'
+import PositionsSectionClient from '@/components/positions/PositionsSectionClient'
+import PositionsTable from '@/components/positions/PositionsTable'
 
 /**
  * Page dashboard principale — Server Component
@@ -14,7 +16,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen p-10 bg-[var(--color-bg-primary)]">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-extrabold mb-1 text-[var(--color-text)]">
@@ -26,10 +28,16 @@ export default async function DashboardPage() {
           </div>
           <LogoutButton />
         </div>
+
+        <div className="rounded-xl p-6 mb-6 bg-[var(--color-bg-surface)] border border-[var(--color-border)]">
+          <PositionsSectionClient />
+        </div>
+
         <div className="rounded-xl p-6 bg-[var(--color-bg-surface)] border border-[var(--color-border)]">
-          <p className="text-sm text-[var(--color-text-sub)]">
-            Dashboard en construction — les positions arrivent bientot.
-          </p>
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">
+            Mes positions
+          </h2>
+          <PositionsTable />
         </div>
       </div>
     </div>

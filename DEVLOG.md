@@ -266,4 +266,58 @@ Review stratégique MVP + installation skills Vercel + validation workflow agent
 
 ---
 
-*Dernière mise à jour : Session 5 — 20/03/2026*
+## Session 6 — [23/03/2026]
+
+### Contexte
+Migration DB + préparation session de dev US-001 / US-002.
+Objectifs : FIX-#44, US-001 (ajout position), US-002 (liste positions).
+
+### Ce qu'on a fait
+- [x] Décision architecture : ajout colonne `type` (stock/etf/crypto) à la table `positions`
+- [x] Migration SQL créée : `supabase/migrations/20260323000000_add_asset_type_to_positions.sql`
+  - Enum PostgreSQL `asset_type` avec valeurs `'stock'`, `'etf'`, `'crypto'`
+  - Colonne `type asset_type NOT NULL DEFAULT 'stock'` ajoutée entre `ticker` et `name`
+- [x] Migration appliquée en local via `supabase db reset` (confirmé via debug)
+- [x] Migration appliquée en remote via `supabase db push`
+- [x] Types TypeScript régénérés : `src/types/database.ts` reflète le nouvel enum
+
+### Erreurs rencontrées
+| Erreur | Cause | Solution |
+|---|---|---|
+| `supabase db reset` échoue sans flag | Timeout container sans debug mode | Relancer avec `--debug` — le reset s'est exécuté correctement |
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| Enum PostgreSQL `asset_type` (pas `TEXT CHECK`) | Contrainte d'intégrité forte au niveau DB, valeurs strictement bornées, type TypeScript automatiquement généré |
+| `DEFAULT 'stock'` sur la colonne | Valeur la plus courante — évite les erreurs si le champ est omis temporairement |
+
+### Ce qu'on a fait (suite — implémentation)
+- [x] FIX-#44 : `package.json` — `next lint` remplacé par `npx eslint src --ext .ts,.tsx`
+- [x] US-001 (#12) : API Route `POST /api/positions` + `GET /api/positions` avec auth Supabase
+- [x] US-001 (#12) : Composant `AddPositionForm.tsx` — formulaire 7 champs avec nom auto-rempli
+- [x] US-001 (#12) : Composant `TickerInput.tsx` — auto-complétion debounce 500ms, feedback visuel 4 états
+- [x] US-001 (#12) : Wrapper `PositionsSectionClient.tsx` — relie `router.refresh()` à `onPositionAdded`
+- [x] US-002 (#13) : Server Component `PositionsTable.tsx` — 10 colonnes, tri valeur décroissante, poids %
+- [x] US-002 (#13) : `dashboard/page.tsx` mis à jour — intègre formulaire + tableau
+- [x] `/api/quote` enrichi — retourne `name` via Finnhub `/stock/profile2` en parallèle du prix
+
+### Erreurs rencontrées
+| Erreur | Cause | Solution |
+|---|---|---|
+| `database.ts` ligne 1 : `Connecting to db 5432` | Artefact `supabase gen types` — texte de debug injecté en début de fichier | Supprimer manuellement la ligne 1 après chaque `supabase gen types` |
+| `setState` synchrone dans `useEffect` | ESLint `react-hooks/set-state-in-effect` interdit les setState directs dans le corps d'un effet | Déplacer le reset dans `handleChange`, mettre `setState` à l'intérieur du callback async |
+| `AddPositionForm` > 200 lignes | Logique ticker + debounce mélangée au formulaire | Extraire dans `TickerInput.tsx` — formulaire retombe à 176 lignes |
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| `router.refresh()` dans le wrapper client | Recharge le Server Component `PositionsTable` après ajout sans state global |
+| ETF mappé sur `stock` pour `/api/quote` | Finnhub traite les ETF comme des actions — route n'accepte que `stock` ou `crypto` |
+| `TickerInput` en composant séparé | Responsabilité unique + respect limite 200 lignes |
+| Appels Finnhub quote + profile2 en `Promise.all` | Temps d'attente identique, double information récupérée |
+| Nom crypto = capitalize du coinId | CoinGecko `/simple/price` ne retourne pas le nom — évite un appel supplémentaire pour un gain marginal |
+
+---
+
+*Dernière mise à jour : Session 6 — 23/03/2026*

@@ -199,6 +199,7 @@ export type Database = {
           quantity: number
           sector: string | null
           ticker: string
+          type: Database["public"]["Enums"]["asset_type"]
           updated_at: string | null
           user_id: string
         }
@@ -215,6 +216,7 @@ export type Database = {
           quantity?: number
           sector?: string | null
           ticker: string
+          type?: Database["public"]["Enums"]["asset_type"]
           updated_at?: string | null
           user_id: string
         }
@@ -231,6 +233,7 @@ export type Database = {
           quantity?: number
           sector?: string | null
           ticker?: string
+          type?: Database["public"]["Enums"]["asset_type"]
           updated_at?: string | null
           user_id?: string
         }
@@ -277,7 +280,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      asset_type: "stock" | "etf" | "crypto"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -407,7 +410,9 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      asset_type: ["stock", "etf", "crypto"],
+    },
   },
 } as const
 

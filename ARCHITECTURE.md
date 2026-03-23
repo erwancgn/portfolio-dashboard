@@ -150,7 +150,28 @@ Ne jamais modifier ce fichier manuellement.
 
 ---
 
-## 11. Style — Tailwind v4 + CSS variables
+## 11. Typage des actifs — enum `asset_type`
+
+**Décision :** utiliser un enum PostgreSQL plutôt qu'un `TEXT` avec `CHECK` constraint.
+
+**Valeurs :** `'stock'` | `'etf'` | `'crypto'`
+
+**Raison du choix :**
+- Contrainte d'intégrité forte au niveau DB (impossible d'insérer une valeur hors enum)
+- Le type TypeScript `"stock" | "etf" | "crypto"` est généré automatiquement par `supabase gen types`
+- Plus explicite qu'un `sector` détourné de sa sémantique
+
+**Migration :** `supabase/migrations/20260323000000_add_asset_type_to_positions.sql`
+
+**Workflow pour ajouter une valeur à l'enum :**
+```sql
+ALTER TYPE asset_type ADD VALUE 'reit';  -- ne nécessite pas de recreate
+```
+Puis regénérer les types : `supabase gen types typescript --local > src/types/database.ts`
+
+---
+
+## 12. Style — Tailwind v4 + CSS variables
 
 **Choix :** Tailwind v4 sans `tailwind.config.ts` — configuration dans `globals.css`.
 
@@ -161,7 +182,7 @@ Ne jamais modifier ce fichier manuellement.
 
 ---
 
-## 12. Server Components vs Client Components
+## 13. Server Components vs Client Components
 
 **Règle :**
 - Pages = Server Components par défaut (meilleure performance, accès direct à Supabase)
@@ -170,4 +191,4 @@ Ne jamais modifier ce fichier manuellement.
 
 ---
 
-*Dernière mise à jour : Session 4 — 18/03/2026*
+*Dernière mise à jour : Session 6 — 23/03/2026*

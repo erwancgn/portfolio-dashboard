@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 /** Reponse retournee par cette route */
 export interface QuoteResponse {
   ticker: string
+  name: string
   price: number
   currency: string
   updatedAt: string
@@ -26,6 +27,12 @@ interface FinnhubQuote {
   t: number   // timestamp
 }
 
+/** Reponse brute de l'API Finnhub /stock/profile2 */
+interface FinnhubProfile {
+  name: string
+  ticker: string
+}
+
 /** Reponse brute de l'API CoinGecko /simple/price */
 type CoinGeckoPrice = Record<string, { usd: number }>
 
@@ -39,25 +46,33 @@ async function fetchStockPrice(ticker: string): Promise<QuoteResponse> {
     throw new ApiError('Configuration serveur manquante : FINNHUB_API_KEY absent', 'CONFIG_ERROR', 503)
   }
 
-  const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(ticker)}&token=${apiKey}`
-  const res = await fetch(url, { cache: 'no-store' })
+  const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(ticker)}&token=${apiKey}`
+  const profileUrl = `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(ticker)}&token=${apiKey}`
 
-  if (res.status === 429) {
+  const [quoteRes, profileRes] = await Promise.all([
+    fetch(quoteUrl, { cache: 'no-store' }),
+    fetch(profileUrl, { cache: 'no-store' }),
+  ])
+
+  if (quoteRes.status === 429) {
     throw new ApiError('Quota Finnhub depassé — reessayer plus tard', 'RATE_LIMIT', 503)
   }
-  if (!res.ok) {
-    throw new ApiError(`Finnhub indisponible (HTTP ${res.status})`, 'API_ERROR', 503)
+  if (!quoteRes.ok) {
+    throw new ApiError(`Finnhub indisponible (HTTP ${quoteRes.status})`, 'API_ERROR', 503)
   }
 
-  const data = (await res.json()) as FinnhubQuote
+  const data = (await quoteRes.json()) as FinnhubQuote
 
   // Finnhub retourne c=0 quand le ticker n'existe pas
   if (!data.c || data.c === 0) {
     throw new ApiError(`Ticker inconnu : ${ticker}`, 'TICKER_NOT_FOUND', 404)
   }
 
+  const profile = profileRes.ok ? ((await profileRes.json()) as FinnhubProfile) : null
+
   return {
     ticker: ticker.toUpperCase(),
+    name: profile?.name ?? ticker.toUpperCase(),
     price: data.c,
     currency: 'USD',
     updatedAt: new Date(data.t * 1000).toISOString(),
@@ -98,8 +113,12 @@ async function fetchCryptoPrice(ticker: string): Promise<QuoteResponse> {
     throw new ApiError(`Crypto inconnue : ${ticker}`, 'TICKER_NOT_FOUND', 404)
   }
 
+  // Capitalise le coinId comme nom (bitcoin → Bitcoin)
+  const name = coinId.charAt(0).toUpperCase() + coinId.slice(1)
+
   return {
     ticker: ticker.toUpperCase(),
+    name,
     price: data[coinId].usd,
     currency: 'USD',
     updatedAt: new Date().toISOString(),

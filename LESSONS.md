@@ -26,6 +26,13 @@
 ## Skills Vercel
 - [S5] `npx skills add vercel-labs/agent-skills@react-best-practices` échoue → le skill s'appelle `vercel-react-best-practices`, vérifier les noms exacts avec `npx skills list` d'abord
 
+## React / Composants
+- [S6] `setState` synchrone dans le corps d'un `useEffect` déclenche l'erreur ESLint `react-hooks/set-state-in-effect` → mettre les setState soit dans `handleChange`, soit à l'intérieur du callback async (setTimeout/fetch)
+- [S6] Un Server Component ne peut pas avoir d'état interactif (tri par colonne, filtres) → anticiper un wrapper Client Component dès qu'une UI nécessite de l'interactivité
+
+## Supabase / DB
+- [S6] `supabase gen types` peut injecter du texte de debug (`Connecting to db 5432`) en ligne 1 → toujours vérifier et nettoyer la ligne 1 de `database.ts` après régénération
+
 ## Git / Process
 - [S1] `git add` avant `Cmd+S` = fichiers vides commités → toujours sauvegarder avant de stage
 - [S2] Les automatisations GitHub Board ferment les issues à l'import → vérifier le board après chaque manipulation
