@@ -384,4 +384,29 @@ Alignement avec recommandations Anthropic : critères d'acceptation explicites p
 
 ---
 
-*Dernière mise à jour : Session 8 — 25/03/2026*
+---
+
+## Session 9 — [25/03/2026]
+
+### Contexte
+US-004 (suppression position) + Supabase prod + déploiement Vercel. Premier MVP en ligne.
+
+### Ce qu'on a fait
+- [x] **US-004** — `DELETE /api/positions/[id]` + `DeletePositionButton` Client Component (confirmation, état loading, message d'erreur visible, count null géré)
+- [x] **Supabase prod** — projet créé sur supabase.com (West EU Ireland), `supabase link` + `db push` — 6 tables + RLS appliqués
+- [x] **Vercel** — déploiement via CLI, 3 variables d'environnement configurées (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
+- [x] **Email confirmation désactivée** — Supabase Auth, plan free limité à 3 emails/heure
+
+### Problèmes rencontrés
+| Problème | Cause | Fix |
+|---|---|---|
+| Build Vercel échoue (1er deploy) | Variables d'environnement Supabase manquantes | Ajout via `vercel env add` |
+| Crash dashboard en prod (digest 305880392) | `SUPABASE_SERVICE_ROLE_KEY` manquante | Ajout de la variable secrète dans Vercel |
+| Email rate limit exceeded | Plan free Supabase = 3 emails/heure | Désactivation confirmation email dans Auth settings |
+
+### URL de production
+https://portfolio-zeta-fawn-73.vercel.app
+
+---
+
+*Dernière mise à jour : Session 9 — 25/03/2026*

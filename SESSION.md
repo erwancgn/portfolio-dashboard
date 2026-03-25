@@ -9,9 +9,9 @@
 
 | Ticket | Titre | Statut |
 |--------|-------|--------|
-| #15 US-004 | Supprimer une position | 🔴 À faire |
-| #41 TASK | Configurer Supabase production | 🔴 À faire |
-| #26 TASK-008 | Déploiement Vercel | 🔴 À faire |
+| #15 US-004 | Supprimer une position | ✅ Livré |
+| #41 TASK | Configurer Supabase production | ✅ Livré |
+| #26 TASK-008 | Déploiement Vercel | ✅ Livré |
 
 ---
 

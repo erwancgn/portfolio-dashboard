@@ -20,6 +20,10 @@
 - [S5] Skills Vercel : vérifier les noms exacts avec `npx skills list` avant d'installer
 - [S6] `supabase gen types` peut injecter du texte de debug en ligne 1 → vérifier et nettoyer après régénération
 
+## Déploiement Vercel
+- [S9] Variables d'environnement Vercel : `NEXT_PUBLIC_*` via `vercel env add` suffisent pas — ajouter aussi les clés secrètes serveur (`SUPABASE_SERVICE_ROLE_KEY`) séparément, sans préfixe `NEXT_PUBLIC_`
+- [S9] Supabase plan free = 3 emails auth/heure → désactiver "Confirm email" pour un projet MVP solo
+
 ## React / Performance
 - [S8] Deux Server Components appelant la même fonction dans le même rendu → utiliser `cache()` de React 19 pour dédupliquer — la fonction n'est exécutée qu'une fois, le résultat est partagé
 

@@ -7,6 +7,15 @@
 
 ---
 
+## [0.1.0] — 2026-03-25 — MVP en ligne
+
+### Added
+- **Suppression de position** — bouton par ligne avec confirmation, feedback erreur visible (US-004)
+- **Supabase production** — base de données prod sur supabase.com, migrations appliquées, RLS actif
+- **Déploiement Vercel** — app en production sur https://portfolio-zeta-fawn-73.vercel.app
+
+---
+
 ## [Unreleased]
 > Fonctionnalités en cours de développement — pas encore livrées.
 
