@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import LogoutButton from '@/components/layout/LogoutButton'
 import PositionsSectionClient from '@/components/positions/PositionsSectionClient'
 import PositionsTable from '@/components/positions/PositionsTable'
+import PortfolioSummary from '@/components/portfolio/PortfolioSummary'
 
 /**
  * Page dashboard principale — Server Component
@@ -28,6 +29,8 @@ export default async function DashboardPage() {
           </div>
           <LogoutButton />
         </div>
+
+        <PortfolioSummary />
 
         <div className="rounded-xl p-6 mb-6 bg-[var(--color-bg-surface)] border border-[var(--color-border)]">
           <PositionsSectionClient />

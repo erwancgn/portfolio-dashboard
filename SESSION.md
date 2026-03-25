@@ -14,6 +14,26 @@
 
 ---
 
+## Critères d'acceptation
+
+### US-005 — Rafraîchissement auto
+- [ ] Les prix se rafraîchissent automatiquement sans action utilisateur
+- [ ] Intervalle : toutes les 60 secondes
+- [ ] Pas de rechargement complet de page (router.refresh uniquement)
+- [ ] Le Server Component `PositionsTable` est préservé (pas transformé en Client Component)
+- [ ] Aucune régression sur l'affichage existant des positions
+
+### US-006 — Vue globale
+- [ ] Total investi affiché en EUR (Σ quantité × PRU)
+- [ ] Valeur actuelle affichée en EUR (Σ quantité × prix_actuel converti EUR)
+- [ ] P&L global affiché en € et en %
+- [ ] Nombre de positions affiché
+- [ ] Composant placé en haut du dashboard, avant le tableau des positions
+- [ ] Données cohérentes avec les calculs de `PositionsTable`
+- [ ] Aucune régression sur les fonctionnalités existantes
+
+---
+
 ## Stack en place
 
 - Auth Supabase ✅ · API `/api/quote` Yahoo Finance ✅ · API `/api/search` ✅
@@ -55,4 +75,10 @@ Les données sont calculées depuis Supabase + `/api/quote`, même pattern que `
 
 ---
 
-*Mis à jour : fin Session 7 — 23/03/2026*
+## Protocole de validation (alignement Anthropic)
+
+Après chaque US : appel obligatoire au `test-agent` pour vérifier les critères d'acceptation ci-dessus avant de considérer le ticket terminé.
+
+---
+
+*Mis à jour : début Session 8 — 25/03/2026*

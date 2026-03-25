@@ -359,4 +359,27 @@ Objectifs : champ ISIN, recherche par nom/ticker, migration Yahoo Finance.
 
 ---
 
-*Dernière mise à jour : Session 7 — 23/03/2026*
+## Session 8 — [25/03/2026]
+
+### Contexte
+Implémentation US-006 — Vue globale du portefeuille.
+Objectif : composant `PortfolioSummary` affiché en haut du dashboard.
+
+### Ce qu'on a fait
+- [x] **`src/lib/quote.ts` créé** — extraction des fonctions `fetchQuote`, `fetchRate`, `toEur` depuis `PositionsTable.tsx` vers une lib partagée (JSDoc, TypeScript strict)
+- [x] **`PositionsTable.tsx` allégé** — suppression des 3 fonctions locales dupliquées, import depuis `@/lib/quote`, suppression de `baseUrl` et du fetch HTTP interne résiduel
+- [x] **`src/components/portfolio/PortfolioSummary.tsx` créé** — Server Component, requête Supabase directe (colonnes `id, ticker, quantity, pru` uniquement), calcul total investi + valeur actuelle + P&L€ + P&L%, 4 cartes en grille responsive
+- [x] **`dashboard/page.tsx` mis à jour** — `PortfolioSummary` ajouté avant le formulaire et le tableau
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| Extraction dans `src/lib/quote.ts` | Éviter la duplication entre `PortfolioSummary` et `PositionsTable` — source de vérité unique pour les calculs de conversion |
+| `select('id, ticker, quantity, pru')` dans PortfolioSummary | Minimise la charge réseau — seuls les champs nécessaires aux calculs sont récupérés |
+| `return null` si aucune position | Composant absent du DOM si le portfolio est vide — évite un bloc vide affiché |
+| `positionsWithPrice > 0` comme garde | Affiche `—` si aucun prix n'a pu être récupéré, évite d'afficher 0 € trompeur |
+| Grille `grid-cols-2 sm:grid-cols-4` | Responsive mobile — 2 colonnes sur petit écran, 4 sur sm et plus |
+
+---
+
+*Dernière mise à jour : Session 8 — 25/03/2026*

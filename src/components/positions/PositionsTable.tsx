@@ -1,70 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
+import { fetchQuote, fetchRate, toEur } from '@/lib/quote'
+import { formatEur, formatPct } from '@/lib/format'
 import type { Tables } from '@/types/database'
-import type { QuoteResponse } from '@/app/api/quote/route'
 
 type Position = Tables<'positions'>
 
 interface PositionWithPrice extends Position {
   priceEur: number | null
-}
-
-/** Formate un nombre en €, 2 décimales */
-function formatEur(value: number): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-  }).format(value)
-}
-
-/** Formate un pourcentage */
-function formatPct(value: number): string {
-  return `${value >= 0 ? '+' : ''}${value.toFixed(2)} %`
-}
-
-/** Reponse brute Frankfurter */
-interface FrankfurterResponse {
-  rates: Record<string, number>
-}
-
-/**
- * Recupere un taux de change depuis Frankfurter (gratuit, sans cle).
- * Retourne 1 si from === to, ou un taux de repli si l'API echoue.
- */
-async function fetchRate(from: string, to: string): Promise<number> {
-  if (from === to) return 1
-  try {
-    const res = await fetch(
-      `https://api.frankfurter.app/latest?from=${from}&to=${to}`,
-      { cache: 'no-store' },
-    )
-    if (!res.ok) return 1
-    const data = (await res.json()) as FrankfurterResponse
-    return data.rates[to] ?? 1
-  } catch {
-    return 1
-  }
-}
-
-/**
- * Recupere le prix actuel d'un actif via /api/quote.
- * Retourne { price, currency } ou null en cas d'echec.
- */
-async function fetchQuote(
-  ticker: string,
-  baseUrl: string,
-): Promise<{ price: number; currency: string } | null> {
-  try {
-    const res = await fetch(
-      `${baseUrl}/api/quote?ticker=${encodeURIComponent(ticker)}`,
-      { cache: 'no-store' },
-    )
-    if (!res.ok) return null
-    const data = (await res.json()) as QuoteResponse
-    return { price: data.price, currency: data.currency }
-  } catch {
-    return null
-  }
 }
 
 /**
@@ -73,8 +15,6 @@ async function fetchQuote(
  * Les prix non-EUR sont convertis en EUR via Frankfurter.
  */
 export default async function PositionsTable() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-
   const supabase = await createClient()
   const { data: positions } = await supabase
     .from('positions')
@@ -91,21 +31,9 @@ export default async function PositionsTable() {
 
   // Recuperation des prix et du taux USD→EUR en parallele
   const [quotes, usdEur] = await Promise.all([
-    Promise.all(positions.map((pos) => fetchQuote(pos.ticker, baseUrl))),
+    Promise.all(positions.map((pos) => fetchQuote(pos.ticker))),
     fetchRate('USD', 'EUR'),
   ])
-
-  /**
-   * Convertit un prix dans sa devise vers EUR.
-   * GBp (pence) → divise par 100 avant conversion GBP→EUR.
-   */
-  function toEur(price: number, currency: string, gbpEur: number): number | null {
-    if (currency === 'EUR') return price
-    if (currency === 'USD') return price * usdEur
-    if (currency === 'GBp') return (price / 100) * gbpEur
-    if (currency === 'GBP') return price * gbpEur
-    return null
-  }
 
   // GBP→EUR uniquement si au moins une position en GBP
   const needsGbp = quotes.some((q) => q?.currency === 'GBP' || q?.currency === 'GBp')
@@ -113,7 +41,7 @@ export default async function PositionsTable() {
 
   const positionsWithPrice: PositionWithPrice[] = positions.map((pos, i) => {
     const quote = quotes[i]
-    const priceEur = quote ? toEur(quote.price, quote.currency, gbpEur) : null
+    const priceEur = quote ? toEur(quote.price, quote.currency, usdEur, gbpEur) : null
     return { ...pos, priceEur }
   })
 
