@@ -409,4 +409,29 @@ https://portfolio-zeta-fawn-73.vercel.app
 
 ---
 
-*Dernière mise à jour : Session 9 — 25/03/2026*
+---
+
+## Session 10 — [25/03/2026]
+
+### Contexte
+US-003 (achat DCA) + US-010 (P&L stats) + TECH (ISIN/secteur) + bandeau environnement + 10 nouveaux tickets créés.
+
+### Ce qu'on a fait
+- [x] **US-003** — `PATCH /api/positions/[id]` recalcul PRU DCA côté serveur + `AddBuyButton` Client Component (mini-form inline qty + prix)
+- [x] **US-010** — `PnlStats` Server Component : 4 StatCards (meilleure/pire position €+%, nb gains, nb pertes) — tableau trié par P&L décroissant
+- [x] **TECH ISIN/Secteur** — `/api/quote` enrichi (Yahoo quoteSummary → secteur), `AddPositionForm` refactorisé en `useAddPositionForm` hook, lookup ticker au blur, colonne Secteur dans PositionsTable
+- [x] **EnvironmentBanner** — bandeau orange "DEV — Supabase local" en local, invisible en prod (lit `VERCEL_ENV`)
+- [x] **CLAUDE.md** — workflow 2 environnements documenté (dev localhost / prod Vercel)
+- [x] **10 tickets GitHub créés** (#45→#54) : transactions, vente, historique, refonte UI, shadcn/ui, graphiques, enveloppe, export
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| 2 environnements uniquement (dev + prod) | Projet solo — preview inutile, dev = localhost, prod = Vercel |
+| `useAddPositionForm` hook extrait | `AddPositionForm` dépassait 200 lignes après ajout secteur |
+| Table `transactions` priorité P0 (S11) | Décision irréversible — chaque session sans elle fait perdre de l'historique |
+| shadcn/ui retenu pour refonte UI | Standard Next.js, copy-paste, pas de vendor lock-in |
+
+---
+
+*Dernière mise à jour : Session 10 — 25/03/2026*
