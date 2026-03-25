@@ -12,6 +12,8 @@ interface SearchInputProps {
   required?: boolean
   onChange: (value: string) => void
   onSuggestionSelected: (result: SearchResult) => void
+  /** Callback optionnel appele apres la fermeture du dropdown (blur) */
+  onBlur?: () => void
 }
 
 const INPUT_CLASS =
@@ -37,6 +39,7 @@ export default function SearchInput({
   required,
   onChange,
   onSuggestionSelected,
+  onBlur: onBlurProp,
 }: SearchInputProps) {
   const [suggestions, setSuggestions] = useState<SearchResult[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -104,6 +107,7 @@ export default function SearchInput({
   function handleBlur() {
     setTimeout(() => {
       setIsOpen(false)
+      onBlurProp?.()
     }, 150)
   }
 

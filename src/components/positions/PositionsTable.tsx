@@ -3,6 +3,7 @@ import { fetchQuote, fetchRate, toEur } from '@/lib/quote'
 import { formatEur, formatPct } from '@/lib/format'
 import type { Tables } from '@/types/database'
 import DeletePositionButton from './DeletePositionButton'
+import AddBuyButton from './AddBuyButton'
 
 type Position = Tables<'positions'>
 
@@ -46,11 +47,14 @@ export default async function PositionsTable() {
     return { ...pos, priceEur }
   })
 
-  // Tri par valeur décroissante (positions sans prix à la fin)
+  // Tri par P&L décroissant (positions sans prix à la fin)
   positionsWithPrice.sort((a, b) => {
-    const valA = a.priceEur !== null ? a.quantity * a.priceEur : -1
-    const valB = b.priceEur !== null ? b.quantity * b.priceEur : -1
-    return valB - valA
+    const pnlA = a.priceEur !== null ? a.quantity * a.priceEur - a.quantity * a.pru : null
+    const pnlB = b.priceEur !== null ? b.quantity * b.priceEur - b.quantity * b.pru : null
+    if (pnlA === null && pnlB === null) return 0
+    if (pnlA === null) return 1
+    if (pnlB === null) return -1
+    return pnlB - pnlA
   })
 
   // Valeur totale (positions avec prix connu uniquement)
@@ -66,6 +70,7 @@ export default async function PositionsTable() {
             <th className="py-2 pr-4 font-semibold">Ticker</th>
             <th className="py-2 pr-4 font-semibold">Nom</th>
             <th className="py-2 pr-4 font-semibold">Type</th>
+            <th className="py-2 pr-4 font-semibold">Secteur</th>
             <th className="py-2 pr-4 font-semibold text-right">Quantité</th>
             <th className="py-2 pr-4 font-semibold text-right">PRU</th>
             <th className="py-2 pr-4 font-semibold text-right">Prix actuel</th>
@@ -98,6 +103,7 @@ export default async function PositionsTable() {
                 </td>
                 <td className="py-2 pr-4 text-[var(--color-text-sub)]">{pos.name ?? '—'}</td>
                 <td className="py-2 pr-4 text-[var(--color-text-sub)] capitalize">{pos.type}</td>
+                <td className="py-2 pr-4 text-[var(--color-text-sub)]">{pos.sector ?? '—'}</td>
                 <td className="py-2 pr-4 text-right text-[var(--color-text)]">{pos.quantity}</td>
                 <td className="py-2 pr-4 text-right text-[var(--color-text)]">{formatEur(pos.pru)}</td>
                 <td className="py-2 pr-4 text-right text-[var(--color-text)]">
@@ -116,7 +122,10 @@ export default async function PositionsTable() {
                   {poids !== null ? `${poids.toFixed(1)} %` : '—'}
                 </td>
                 <td className="py-2 pl-4 text-right">
-                  <DeletePositionButton id={pos.id} ticker={pos.ticker} />
+                  <div className="flex flex-col items-end gap-1">
+                    <AddBuyButton id={pos.id} ticker={pos.ticker} />
+                    <DeletePositionButton id={pos.id} ticker={pos.ticker} />
+                  </div>
                 </td>
               </tr>
             )

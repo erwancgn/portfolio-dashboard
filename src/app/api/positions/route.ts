@@ -13,6 +13,7 @@ interface CreatePositionBody {
   envelope?: string
   currency?: string
   isin?: string
+  sector?: string
 }
 
 /** Réponse d'erreur standardisée */
@@ -53,7 +54,7 @@ export async function POST(
     )
   }
 
-  const { ticker, type, quantity, pru, envelope, currency, isin } = body
+  const { ticker, type, quantity, pru, envelope, currency, isin, sector } = body
 
   if (!ticker || ticker.trim() === '') {
     return NextResponse.json(
@@ -88,6 +89,7 @@ export async function POST(
     envelope: envelope ?? null,
     currency: currency ?? 'EUR',
     isin: isin ?? null,
+    sector: sector ?? null,
     user_id: user.id,
   }
 

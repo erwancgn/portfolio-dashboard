@@ -7,6 +7,7 @@ export interface QuoteResponse {
   price: number
   currency: string
   isin?: string
+  sector?: string
   updatedAt: string
 }
 
@@ -30,6 +31,14 @@ interface YahooChartResponse {
       }
     }> | null
     error: { code: string; description: string } | null
+  }
+}
+
+/** Reponse brute de l'API Yahoo Finance /quoteSummary */
+interface YahooSummaryResponse {
+  quoteSummary: {
+    result: Array<{ summaryProfile?: { sector?: string } }> | null
+    error: unknown
   }
 }
 
@@ -72,12 +81,29 @@ async function fetchPrice(ticker: string): Promise<QuoteResponse> {
 
   const meta = data.chart.result[0].meta
 
+  // Second appel optionnel pour recuperer le secteur (summaryProfile)
+  let sector: string | undefined
+  try {
+    const summaryUrl = `https://query1.finance.yahoo.com/v11/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=summaryProfile`
+    const summaryRes = await fetch(summaryUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' },
+      cache: 'no-store',
+    })
+    if (summaryRes.ok) {
+      const summaryData = (await summaryRes.json()) as YahooSummaryResponse
+      sector = summaryData.quoteSummary.result?.[0]?.summaryProfile?.sector
+    }
+  } catch {
+    // Secteur optionnel — echec silencieux
+  }
+
   return {
     ticker: ticker.toUpperCase(),
     name: meta.longName ?? meta.shortName ?? ticker.toUpperCase(),
     price: meta.regularMarketPrice,
     currency: meta.currency,
     ...(meta.isin ? { isin: meta.isin } : {}),
+    ...(sector ? { sector } : {}),
     updatedAt: new Date().toISOString(),
   }
 }

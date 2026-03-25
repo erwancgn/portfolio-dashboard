@@ -1,34 +1,10 @@
 'use client'
 
-import { useState, useCallback, useEffect, type FormEvent } from 'react'
 import SearchInput from './SearchInput'
-import type { SearchResult } from '@/app/api/search/route'
-import type { QuoteResponse } from '@/app/api/quote/route'
+import { useAddPositionForm } from './useAddPositionForm'
 
 interface AddPositionFormProps {
   onPositionAdded: () => void
-}
-
-interface FormState {
-  ticker: string
-  name: string
-  isin: string
-  type: 'stock' | 'etf' | 'crypto'
-  quantity: string
-  pru: string
-  envelope: string
-  currency: string
-}
-
-const INITIAL_STATE: FormState = {
-  ticker: '',
-  name: '',
-  isin: '',
-  type: 'stock',
-  quantity: '',
-  pru: '',
-  envelope: '',
-  currency: 'EUR',
 }
 
 const SELECT_CLASS =
@@ -39,104 +15,21 @@ const INPUT_CLASS =
 
 /**
  * Formulaire d'ajout d'une position — Client Component.
- * Envoie un POST vers /api/positions et notifie le parent via onPositionAdded.
+ * Toute la logique metier est dans useAddPositionForm.
  */
 export default function AddPositionForm({ onPositionAdded }: AddPositionFormProps) {
-  const [form, setForm] = useState<FormState>(INITIAL_STATE)
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
-  const [message, setMessage] = useState<string>('')
-  const [isinStatus, setIsinStatus] = useState<'idle' | 'loading' | 'found' | 'not_found'>('idle')
-
-  // Recherche par ISIN dès que 12 caractères sont saisis
-  useEffect(() => {
-    if (form.isin.trim().length !== 12) return
-    const timer = setTimeout(async () => {
-      setIsinStatus('loading')
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(form.isin.trim())}&type=stock`)
-        if (res.ok) {
-          const data = (await res.json()) as import('@/app/api/search/route').SearchResult[]
-          if (data.length > 0) {
-            setForm((prev) => ({ ...prev, ticker: data[0].ticker, name: data[0].name, type: data[0].type }))
-            setIsinStatus('found')
-          } else {
-            setIsinStatus('not_found')
-          }
-        } else {
-          setIsinStatus('not_found')
-        }
-      } catch {
-        setIsinStatus('not_found')
-      }
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [form.isin])
-
-  const handleTickerChange = useCallback((ticker: string) => {
-    setForm((prev) => ({ ...prev, ticker }))
-  }, [])
-
-  const handleNameChange = useCallback((name: string) => {
-    setForm((prev) => ({ ...prev, name }))
-  }, [])
-
-  const handleSuggestionSelected = useCallback((result: SearchResult) => {
-    setForm((prev) => ({ ...prev, ticker: result.ticker, name: result.name, type: result.type }))
-    // Tentative de récupération de l'ISIN via /api/quote (disponible sur certains actifs EU)
-    void fetch(`/api/quote?ticker=${encodeURIComponent(result.ticker)}`)
-      .then((res) => res.ok ? res.json() as Promise<QuoteResponse> : null)
-      .then((data) => {
-        if (data?.isin) {
-          setForm((prev) => ({ ...prev, isin: data.isin! }))
-          setIsinStatus('found')
-        }
-      })
-      .catch(() => null)
-  }, [])
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    const { name, value } = e.target
-    if (name === 'isin') setIsinStatus('idle')
-    setForm((prev) => ({ ...prev, [name]: value }))
-  }
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setStatus('loading')
-    setMessage('')
-
-    const payload = {
-      ticker: form.ticker.trim(),
-      name: form.name.trim() || undefined,
-      isin: form.isin.trim() || undefined,
-      type: form.type,
-      quantity: parseFloat(form.quantity),
-      pru: parseFloat(form.pru),
-      envelope: form.envelope || undefined,
-      currency: form.currency,
-    }
-
-    try {
-      const res = await fetch('/api/positions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const json = (await res.json()) as { error?: string }
-      if (!res.ok) {
-        setStatus('error')
-        setMessage(json.error ?? 'Erreur lors de l\'ajout de la position')
-        return
-      }
-      setStatus('success')
-      setMessage('Position ajoutée avec succès.')
-      setForm(INITIAL_STATE)
-      onPositionAdded()
-    } catch {
-      setStatus('error')
-      setMessage('Erreur réseau — veuillez réessayer.')
-    }
-  }
+  const {
+    form,
+    status,
+    message,
+    isinStatus,
+    handleTickerChange,
+    handleNameChange,
+    handleTickerBlur,
+    handleSuggestionSelected,
+    handleChange,
+    handleSubmit,
+  } = useAddPositionForm(onPositionAdded)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -152,6 +45,7 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
           required
           onChange={handleTickerChange}
           onSuggestionSelected={handleSuggestionSelected}
+          onBlur={handleTickerBlur}
         />
 
         <SearchInput
@@ -171,8 +65,16 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
           <input id="isin" name="isin" type="text" value={form.isin} onChange={handleChange}
             placeholder="ex : US0378331005" className={INPUT_CLASS} maxLength={12} />
           {isinStatus === 'loading' && <p className="mt-1 text-xs text-[var(--color-text-sub)]">Recherche…</p>}
-          {isinStatus === 'found' && <p className="mt-1 text-xs text-green-500">✓ Ticker et nom détectés</p>}
+          {isinStatus === 'found' && <p className="mt-1 text-xs text-green-500">Ticker et nom détectés</p>}
           {isinStatus === 'not_found' && <p className="mt-1 text-xs text-red-500">ISIN introuvable — saisir le ticker manuellement</p>}
+        </div>
+
+        <div>
+          <label htmlFor="sector" className="block text-sm font-medium text-[var(--color-text-sub)] mb-1">
+            Secteur
+          </label>
+          <input id="sector" name="sector" type="text" value={form.sector} onChange={handleChange}
+            placeholder="ex : Technology" className={INPUT_CLASS} />
         </div>
 
         <div>
