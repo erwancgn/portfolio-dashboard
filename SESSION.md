@@ -1,4 +1,4 @@
-# SESSION.md — Session 10
+# SESSION.md — Session 11
 
 > Format ultra-compact pour économiser les tokens de contexte.
 > Historique complet → DEVLOG.md
@@ -9,32 +9,24 @@
 
 | Ticket | Titre | Statut |
 |--------|-------|--------|
-| #14 US-003 | Ajouter un achat sur position existante (recalcul PRU) | 🔴 À faire |
-| #21 US-010 | P&L détaillé (StatCards + tri) | 🔴 À faire |
-| TECH | ISIN/Ticker/Nom/Secteur interconnectés | 🔴 À faire |
+| #47 TASK | Table transactions (historique achats/ventes) | 🔴 À faire |
+| #50 EPIC 13 | Refonte UI/UX — Moning + Trade Republic | 🔴 À faire |
+| #51 TASK | Setup shadcn/ui | 🔴 À faire |
 
 ---
 
 ## Critères d'acceptation
 
-### US-003 — Ajouter un achat sur position existante
-- [ ] Bouton « + Achat » visible sur chaque ligne du tableau
-- [ ] Mini-formulaire : quantité achetée + prix d'achat
-- [ ] PRU recalculé : (old_qty × old_pru + new_qty × prix_achat) / (old_qty + new_qty)
-- [ ] Quantité mise à jour : old_qty + new_qty
-- [ ] Aucun doublon créé en base
-- [ ] Dashboard rafraîchi après validation
+### #47 — Table transactions
+- [ ] Migration SQL créée et appliquée en local
+- [ ] Table `transactions` avec colonnes : id, user_id, position_id, ticker, type, quantity, price, total, executed_at
+- [ ] PATCH /api/positions/[id] insère une transaction à chaque achat DCA
+- [ ] RLS activé sur la table
 
-### US-010 — P&L détaillé
-- [ ] 4 StatCards : meilleure position, pire position, nb positions en gain, nb en perte
-- [ ] Tableau trié par P&L décroissant (pas par valeur)
-- [ ] Couleurs vert/rouge cohérentes
-
-### TECH — ISIN/Ticker/Nom/Secteur
-- [ ] `/api/quote` retourne le secteur (Yahoo Finance quoteSummary)
-- [ ] Ticker saisi manuellement → lookup ISIN + secteur au blur
-- [ ] Secteur stocké en base à l'ajout d'une position
-- [ ] Colonne Secteur visible dans PositionsTable
+### #51 — Setup shadcn/ui
+- [ ] shadcn/ui initialisé dans le projet
+- [ ] Composants Dialog, Sheet, Table disponibles dans `src/components/ui/`
+- [ ] Aucune régression sur l'existant
 
 ---
 
@@ -92,4 +84,4 @@ Après chaque US/TASK : appel obligatoire au `test-agent` pour vérifier les cri
 
 ---
 
-*Mis à jour : début Session 10 — 25/03/2026*
+*Mis à jour : clôture Session 10 — 25/03/2026*
