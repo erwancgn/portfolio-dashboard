@@ -36,6 +36,17 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 - Ne jamais commiter sans validation explicite du PO
 - Chaque commit doit être validé et compris par le PO avant d'être exécuté
 
+### Environnements (2 uniquement)
+| Env | URL | Supabase | Bandeau |
+|---|---|---|---|
+| **Dev** | `http://localhost:3000` | Docker local | Orange "DEV — local" |
+| **Prod** | `https://portfolio-zeta-fawn-73.vercel.app` | Supabase prod | Aucun |
+
+**Workflow :**
+1. Développer + tester en local (`npm run dev`) — bandeau orange visible
+2. Valider avec le PO
+3. `git push` sur `main` → Vercel déploie automatiquement en prod
+
 ### Base de données
 - Ne jamais modifier la base de données de production
 - Toujours travailler sur l'environnement local (Docker + Supabase CLI)
