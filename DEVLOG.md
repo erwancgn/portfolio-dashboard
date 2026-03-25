@@ -362,23 +362,25 @@ Objectifs : champ ISIN, recherche par nom/ticker, migration Yahoo Finance.
 ## Session 8 — [25/03/2026]
 
 ### Contexte
-Implémentation US-006 — Vue globale du portefeuille.
-Objectif : composant `PortfolioSummary` affiché en haut du dashboard.
+US-005 (polling auto) + US-006 (vue globale) + correction dette technique.
+Alignement avec recommandations Anthropic : critères d'acceptation explicites par ticket + test-agent systématique.
 
 ### Ce qu'on a fait
-- [x] **`src/lib/quote.ts` créé** — extraction des fonctions `fetchQuote`, `fetchRate`, `toEur` depuis `PositionsTable.tsx` vers une lib partagée (JSDoc, TypeScript strict)
-- [x] **`PositionsTable.tsx` allégé** — suppression des 3 fonctions locales dupliquées, import depuis `@/lib/quote`, suppression de `baseUrl` et du fetch HTTP interne résiduel
-- [x] **`src/components/portfolio/PortfolioSummary.tsx` créé** — Server Component, requête Supabase directe (colonnes `id, ticker, quantity, pru` uniquement), calcul total investi + valeur actuelle + P&L€ + P&L%, 4 cartes en grille responsive
-- [x] **`dashboard/page.tsx` mis à jour** — `PortfolioSummary` ajouté avant le formulaire et le tableau
+- [x] **US-005** — `PositionsSectionClient.tsx` : `setInterval` 60s → `router.refresh()` + cleanup `clearInterval`. Constante `REFRESH_INTERVAL_MS = 60_000`.
+- [x] **US-006** — `src/components/portfolio/PortfolioSummary.tsx` créé : Server Component, requête Supabase directe, 4 cartes (total investi, valeur actuelle, P&L€, P&L%), grille responsive `grid-cols-2 sm:grid-cols-4`.
+- [x] **`src/lib/quote.ts` créé** — `fetchQuote`, `fetchRate`, `toEur` extraits en lib partagée, wrappés avec `cache()` de React 19 pour dédupliquer les appels entre `PortfolioSummary` et `PositionsTable` dans le même cycle de rendu.
+- [x] **`src/lib/format.ts` créé** — `formatEur` et `formatPct` extraits en source unique (suppression des doublons dans les deux composants).
+- [x] **`PositionsTable.tsx` allégé** — import depuis `@/lib/quote` et `@/lib/format`, suppression des fonctions locales et du fetch HTTP interne résiduel.
+- [x] **`dashboard/page.tsx`** — `PortfolioSummary` ajouté avant le formulaire et le tableau.
 
 ### Décisions prises
 | Décision | Raison |
 |---|---|
-| Extraction dans `src/lib/quote.ts` | Éviter la duplication entre `PortfolioSummary` et `PositionsTable` — source de vérité unique pour les calculs de conversion |
-| `select('id, ticker, quantity, pru')` dans PortfolioSummary | Minimise la charge réseau — seuls les champs nécessaires aux calculs sont récupérés |
-| `return null` si aucune position | Composant absent du DOM si le portfolio est vide — évite un bloc vide affiché |
-| `positionsWithPrice > 0` comme garde | Affiche `—` si aucun prix n'a pu être récupéré, évite d'afficher 0 € trompeur |
-| Grille `grid-cols-2 sm:grid-cols-4` | Responsive mobile — 2 colonnes sur petit écran, 4 sur sm et plus |
+| `cache()` React sur `fetchQuote`/`fetchRate` | Déduplique les appels réseau si deux Server Components appellent la même fonction dans le même rendu — pas de refacto props nécessaire |
+| `src/lib/format.ts` | Source unique pour le formatage monétaire — cohérence garantie entre tous les composants |
+| `select('id, ticker, quantity, pru')` dans PortfolioSummary | Minimise la charge réseau — seuls les champs nécessaires aux calculs |
+| `return null` si aucune position | Pas de bloc vide affiché |
+| SESSION.md : critères d'acceptation + protocole test-agent | Alignement recommandations Anthropic engineering (article harness-design-long-running-apps) |
 
 ---
 

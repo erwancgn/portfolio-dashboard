@@ -22,8 +22,10 @@
 - **Composant `SearchInput`** — champ texte avec dropdown de suggestions debounce 400ms, badges colorés par type (stock/etf/crypto), active sur Ticker et Nom
 - **Composant `PositionsTable`** — Server Component, 10 colonnes (ticker, nom, type, qté, PRU, prix actuel, valeur, P&L€, P&L%, poids%), tri par valeur décroissante (US-002)
 - **Lookup ISIN** — saisie de 12 caractères dans le champ ISIN déclenche automatiquement la recherche et remplit ticker + nom + type
-- **Lib `src/lib/quote.ts`** — fonctions partagées `fetchQuote`, `fetchRate`, `toEur` extraites pour éviter la duplication entre composants
+- **Rafraîchissement automatique des prix** — polling toutes les 60s via `setInterval` → `router.refresh()`, sans rechargement de page (US-005)
 - **Composant `PortfolioSummary`** — Server Component affiché en haut du dashboard : total investi, valeur actuelle, P&L global (€ et %), nombre de positions (US-006)
+- **Lib `src/lib/quote.ts`** — `fetchQuote`, `fetchRate`, `toEur` en source unique, wrappés avec `cache()` React 19 pour zéro doublon d'appel réseau
+- **Lib `src/lib/format.ts`** — `formatEur` et `formatPct` en source unique
 
 ### Fixed
 - Remplacement de tous les `style={{}}` inline par des classes Tailwind v4 (FIX-001)

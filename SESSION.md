@@ -1,4 +1,4 @@
-# SESSION.md — Session 8
+# SESSION.md — Session 9
 
 > Format ultra-compact pour économiser les tokens de contexte.
 > Historique complet → DEVLOG.md
@@ -9,28 +9,26 @@
 
 | Ticket | Titre | Statut |
 |--------|-------|--------|
-| #16 US-005 | Rafraîchir les prix automatiquement | 🔴 À faire |
-| #17 US-006 | Vue globale du portefeuille (total investi, valeur, P&L) | 🔴 À faire |
+| #15 US-004 | Supprimer une position | 🔴 À faire |
+| #41 TASK | Configurer Supabase production | 🔴 À faire |
+| #26 TASK-008 | Déploiement Vercel | 🔴 À faire |
 
 ---
 
 ## Critères d'acceptation
 
-### US-005 — Rafraîchissement auto
-- [ ] Les prix se rafraîchissent automatiquement sans action utilisateur
-- [ ] Intervalle : toutes les 60 secondes
-- [ ] Pas de rechargement complet de page (router.refresh uniquement)
-- [ ] Le Server Component `PositionsTable` est préservé (pas transformé en Client Component)
-- [ ] Aucune régression sur l'affichage existant des positions
+### US-004 — Supprimer une position
+- [ ] Bouton supprimer visible sur chaque ligne du tableau
+- [ ] Confirmation demandée avant suppression (éviter suppression accidentelle)
+- [ ] Suppression effective en base Supabase (RLS respecté — l'utilisateur ne peut supprimer que ses propres positions)
+- [ ] Dashboard se rafraîchit après suppression (positions + vue globale)
+- [ ] Aucune régression sur l'affichage
 
-### US-006 — Vue globale
-- [ ] Total investi affiché en EUR (Σ quantité × PRU)
-- [ ] Valeur actuelle affichée en EUR (Σ quantité × prix_actuel converti EUR)
-- [ ] P&L global affiché en € et en %
-- [ ] Nombre de positions affiché
-- [ ] Composant placé en haut du dashboard, avant le tableau des positions
-- [ ] Données cohérentes avec les calculs de `PositionsTable`
-- [ ] Aucune régression sur les fonctionnalités existantes
+### TASK-008 — Déploiement Vercel
+- [ ] Projet créé sur Vercel et lié au repo GitHub
+- [ ] Variables d'environnement configurées (Supabase prod URL + anon key)
+- [ ] Premier déploiement réussi (build sans erreur)
+- [ ] App accessible via URL Vercel
 
 ---
 
@@ -38,47 +36,47 @@
 
 - Auth Supabase ✅ · API `/api/quote` Yahoo Finance ✅ · API `/api/search` ✅
 - `AddPositionForm` (ISIN + suggestions) ✅ · `PositionsTable` Server Component ✅
-- Conversion devises USD/GBp → EUR (Frankfurter) ✅
+- `PortfolioSummary` (total investi, valeur, P&L) ✅
+- Polling auto 60s (`PositionsSectionClient`) ✅
+- `src/lib/quote.ts` (fetchQuote + fetchRate avec `cache()`) ✅ · `src/lib/format.ts` ✅
 
 ## Fichiers clés
 
 ```
 src/app/dashboard/page.tsx
-src/components/positions/PositionsTable.tsx      ← Server Component, requête Supabase directe
-src/components/positions/PositionsSectionClient.tsx ← wrapper router.refresh()
-src/app/api/quote/route.ts                       ← Yahoo Finance, retourne { price, currency, isin? }
+src/components/positions/PositionsTable.tsx       ← Server Component, requête Supabase directe
+src/components/positions/PositionsSectionClient.tsx ← wrapper Client, polling 60s
+src/components/portfolio/PortfolioSummary.tsx     ← Server Component, vue globale
+src/lib/quote.ts                                  ← fetchQuote + fetchRate (React cache())
+src/lib/format.ts                                 ← formatEur + formatPct
 ```
 
 ---
 
 ## Plan technique
 
-**US-005 — Rafraîchissement auto**
-Option retenue : polling client — `setInterval` dans un wrapper Client Component → `router.refresh()` toutes les 60s. Preserve le Server Component `PositionsTable`.
+**US-004 — Suppression**
+Bouton "Supprimer" sur chaque ligne de `PositionsTable`. Comme `PositionsTable` est un Server Component, la logique de suppression sera dans un Client Component dédié `DeletePositionButton.tsx` → appel `DELETE /api/positions/[id]` → `router.refresh()`.
 
-**US-006 — Vue globale**
-Nouveau Server Component `PortfolioSummary.tsx` en haut du dashboard :
-- Total investi = Σ(quantité × PRU)
-- Valeur totale = Σ(quantité × prix_actuel_en_EUR)
-- P&L global en € et %
-- Nombre de positions
+**TASK — Supabase production**
+Créer le projet sur supabase.com, appliquer les migrations via `supabase db push`, récupérer `SUPABASE_URL` et `SUPABASE_ANON_KEY` de prod.
 
-Les données sont calculées depuis Supabase + `/api/quote`, même pattern que `PositionsTable`.
+**TASK-008 — Vercel**
+Import du repo GitHub sur Vercel, injection des variables d'environnement prod, premier deploy.
 
 ---
 
 ## Contraintes
-- Pas de déploiement Vercel (session suivante)
-- Pas de modification schéma DB
-- Server Components : toujours requête Supabase directe (jamais `fetch /api/*` interne)
-- Crypto : ticker format Yahoo → `BTC-EUR`, `ETH-USD`
+- RLS Supabase activé — la suppression doit passer par l'auth (service role ou RLS policy)
+- Server Components : toujours requête Supabase directe
+- Jamais de clé secrète côté client (`NEXT_PUBLIC_`)
 
 ---
 
 ## Protocole de validation (alignement Anthropic)
 
-Après chaque US : appel obligatoire au `test-agent` pour vérifier les critères d'acceptation ci-dessus avant de considérer le ticket terminé.
+Après chaque US/TASK : appel obligatoire au `test-agent` pour vérifier les critères d'acceptation avant de considérer le ticket terminé.
 
 ---
 
-*Mis à jour : début Session 8 — 25/03/2026*
+*Mis à jour : clôture Session 8 — 25/03/2026*

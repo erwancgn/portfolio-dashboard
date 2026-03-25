@@ -20,6 +20,9 @@
 - [S5] Skills Vercel : vérifier les noms exacts avec `npx skills list` avant d'installer
 - [S6] `supabase gen types` peut injecter du texte de debug en ligne 1 → vérifier et nettoyer après régénération
 
+## React / Performance
+- [S8] Deux Server Components appelant la même fonction dans le même rendu → utiliser `cache()` de React 19 pour dédupliquer — la fonction n'est exécutée qu'une fois, le résultat est partagé
+
 ## APIs externes
 - [S7] Finnhub plan gratuit = US uniquement (403 sur .PA, .MI…) → Yahoo Finance sans clé couvre tout (US + EU + crypto)
 - [S7] Yahoo Finance chart API : `meta.isin` présent sur certains actifs EU, absent sur US — ne pas supposer sa présence
