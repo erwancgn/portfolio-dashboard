@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { fetchQuote, fetchRate, toEur } from '@/lib/quote'
 import { formatEur, formatPct } from '@/lib/format'
 import type { Tables } from '@/types/database'
+import DeletePositionButton from './DeletePositionButton'
 
 type Position = Tables<'positions'>
 
@@ -72,6 +73,7 @@ export default async function PositionsTable() {
             <th className="py-2 pr-4 font-semibold text-right">P&L (€)</th>
             <th className="py-2 pr-4 font-semibold text-right">P&L (%)</th>
             <th className="py-2 font-semibold text-right">Poids</th>
+            <th className="py-2 pl-4 font-semibold text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -112,6 +114,9 @@ export default async function PositionsTable() {
                 </td>
                 <td className="py-2 text-right text-[var(--color-text-sub)]">
                   {poids !== null ? `${poids.toFixed(1)} %` : '—'}
+                </td>
+                <td className="py-2 pl-4 text-right">
+                  <DeletePositionButton id={pos.id} ticker={pos.ticker} />
                 </td>
               </tr>
             )
