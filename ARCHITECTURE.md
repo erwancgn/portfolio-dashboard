@@ -227,4 +227,66 @@ const { data } = await supabase.from('positions').select('*')
 
 ---
 
-*Dernière mise à jour : Session 7 — 23/03/2026*
+## 15. Déduplication des appels réseau — React cache() [S8]
+
+**Problème :** Plusieurs Server Components appelant `fetchQuote()` dans le même rendu
+déclenchent plusieurs requêtes Yahoo Finance identiques.
+
+**Solution :** `cache()` de React 19 dans `src/lib/quote.ts`.
+La fonction n'est exécutée qu'une fois par cycle de rendu, le résultat est partagé.
+
+```typescript
+export const fetchQuote = cache(async function fetchQuote(ticker) { ... })
+```
+
+---
+
+## 16. Transactions atomiques — RPCs PostgreSQL [S11]
+
+**Problème :** Un achat ou une vente touche plusieurs tables (positions + transactions).
+Si une requête échoue à mi-chemin, la DB est dans un état incohérent.
+
+**Solution :** RPCs PostgreSQL (`buy_position`, `sell_position`, `deposit_liquidity`)
+encapsulant chaque opération dans une transaction SQL complète.
+
+**Avantage :** Le serveur Next.js appelle un seul RPC → atomicité garantie par PostgreSQL.
+
+---
+
+## 17. UI/UX — Thème light + shadcn/ui [S11]
+
+**Décision :** Thème light blanc/noir/bleu inspiré de Trade Republic et Moning.
+Variables CSS dans `globals.css` (`--color-bg-primary`, `--color-accent`…).
+shadcn/ui pour les composants Dialog, Sheet, Table — compatibles Tailwind v4.
+
+**Règle :** CSS variables pour les couleurs, Tailwind pour layout/espacement, jamais de `style={{}}`.
+
+---
+
+## 18. Fiscalité — Flat tax 30% [S11]
+
+**Implémentation :** Taxe calculée à la vente selon l'enveloppe :
+- PEA → 0% (exonéré)
+- CTO / Crypto → 30% (flat tax française)
+
+La taxe s'applique uniquement sur la **plus-value** (gain réalisé).
+Stockée dans la table `transactions` comme colonne `tax_amount`.
+
+---
+
+## 19. Enrichissement ISIN/Secteur [S12]
+
+**Problème :** Yahoo Finance retourne l'ISIN seulement sur certains actifs EU.
+Le secteur est absent pour les ETF via `summaryProfile`.
+
+**Architecture en cascade :**
+1. DB d'abord — si ticker connu avec ISIN → réutilisation immédiate
+2. Yahoo `/chart` — prix + `meta.isin` (quand disponible)
+3. Yahoo `/quoteSummary` — `summaryProfile.sector` (actions) ou `topHoldings.sectorWeightings` (ETF)
+4. Saisie manuelle — toujours possible en fallback
+
+**Note :** OpenFIGI évalué mais ne retourne pas les ISIN directement — écarté.
+
+---
+
+*Dernière mise à jour : Session 12 — 28/03/2026*

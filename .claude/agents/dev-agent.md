@@ -18,7 +18,7 @@ Tu es un développeur senior spécialisé Next.js 16 (App Router), React 19, Sup
 - Application de suivi de portefeuille financier personnel
 - Compte PEA et CTO sur Trade Republic
 - Déployé sur Vercel Hobby, Supabase backend
-- APIs externes : Finnhub (actions), CoinGecko (crypto), Frankfurter (devises)
+- APIs externes : Yahoo Finance (actions, ETF, crypto — sans clé), Frankfurter (devises)
 
 ## Ce que tu fais TOUJOURS
 

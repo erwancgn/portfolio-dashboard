@@ -17,7 +17,12 @@
 ---
 
 ## [Unreleased]
-> Fonctionnalités en cours de développement — pas encore livrées.
+> Fonctionnalités en cours de développement — pas encore livrées en version taguée.
+
+### Added (Session 12)
+- **Graphique allocation** — donut chart Recharts par enveloppe (PEA/CTO/Crypto) et par secteur, onglets, légende avec %, intégré dans le dashboard (#52/#53)
+- **ISIN/Secteur enrichi** — `/api/quote` : DB cache d'abord, puis Yahoo Finance chart + quoteSummary (summaryProfile pour actions, topHoldings.sectorWeightings pour ETF), fallback saisie manuelle
+- **Secteur ETF** — extraction du secteur dominant depuis sectorWeightings Yahoo, normalisé (ex: "technology" → "Technology")
 
 ### Added (Session 11)
 - **shadcn/ui** — composants `Dialog`, `Sheet`, `Table` disponibles dans `src/components/ui/`, lib `cn()` dans `src/lib/utils.ts` (#51)
@@ -58,7 +63,9 @@
 
 ## Versions livrées
 
-Aucune version livrée pour le moment.
+| Version | Date | Statut |
+|---------|------|--------|
+| [0.1.0] | 2026-03-25 | ✅ Déployé sur Vercel — MVP (auth, positions, prix temps réel) |
 
 ---
 

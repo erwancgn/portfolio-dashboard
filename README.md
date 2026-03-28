@@ -11,8 +11,7 @@ pour surveiller, analyser et synthétiser l'état du portfolio et les marchés.
 | Style | Tailwind CSS v4 | Design système noir/bleu |
 | Auth + BDD | Supabase (PostgreSQL) | Données utilisateur + sécurité |
 | Hébergement | Vercel | Déploiement et crons |
-| Prix actions/ETF | Finnhub API | Cours temps réel |
-| Prix crypto | CoinGecko API | Cours crypto temps réel |
+| Prix actions/ETF/Crypto | Yahoo Finance | Cours temps réel (sans clé API) |
 | Taux de change | Frankfurter API | Conversion EUR/USD/etc |
 | Agents IA | Claude (Anthropic) | Surveillance + analyse |
 
@@ -22,7 +21,6 @@ pour surveiller, analyser et synthétiser l'état du portfolio et les marchés.
 - Docker Desktop (pour Supabase local)
 - Compte Supabase (gratuit)
 - Compte Vercel (gratuit)
-- Clé API Finnhub (gratuit)
 - Clé API Anthropic
 
 ## Installation
