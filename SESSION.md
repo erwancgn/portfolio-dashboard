@@ -11,7 +11,7 @@
 |--------|-------|--------|
 | #47 TASK | Table transactions (historique achats/ventes) | 🔴 À faire |
 | #50 EPIC 13 | Refonte UI/UX — Moning + Trade Republic | 🔴 À faire |
-| #51 TASK | Setup shadcn/ui | 🔴 À faire |
+| #51 TASK | Setup shadcn/ui | 🟡 En cours |
 
 ---
 
@@ -84,4 +84,15 @@ Après chaque US/TASK : appel obligatoire au `test-agent` pour vérifier les cri
 
 ---
 
-*Mis à jour : clôture Session 10 — 25/03/2026*
+---
+
+## Notes Session 11 — 28/03/2026
+
+### #51 — shadcn/ui
+- shadcn/ui **supporte officiellement Tailwind v4** depuis février 2025 (CLI 3.0, CSS-first config)
+- Commande à lancer : `npx shadcn@latest init` (mode Tailwind v4, non-interactif si possible)
+- Composants à installer : `npx shadcn@latest add dialog sheet table`
+- ⚠️ Vérifier que les variables CSS custom `--color-*` dans `globals.css` sont préservées après init
+- Après install, Origin UI et Tremor (copy-paste) identifiés comme compléments possibles
+
+*Mis à jour : Session 11 — 28/03/2026*
