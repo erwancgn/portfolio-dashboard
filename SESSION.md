@@ -1,80 +1,82 @@
-# SESSION.md — Session 11
+# SESSION.md — Session 12
 
 > Format ultra-compact pour économiser les tokens de contexte.
 > Historique complet → DEVLOG.md
 
 ---
 
-## Objectif
+## Session 11 — Clôturée ✅ (28/03/2026)
 
 | Ticket | Titre | Statut |
 |--------|-------|--------|
-| #47 TASK | Table transactions (historique achats/ventes) | 🔴 À faire |
-| #50 EPIC 13 | Refonte UI/UX — Moning + Trade Republic | 🔴 À faire |
-| #51 TASK | Setup shadcn/ui | 🟡 En cours |
+| #51 TASK | Setup shadcn/ui | ✅ Livré |
+| #47 TASK | Transactions atomiques (buy/sell RPCs) | ✅ Livré |
+| #50 EPIC 13 | Refonte UI/UX — light theme + drawer | ✅ Livré |
+| #55 TASK | Liquidités + fiscalité + apports | ✅ Livré |
 
 ---
 
-## Critères d'acceptation
+## Objectif Session 12
 
-### #47 — Table transactions
-- [ ] Migration SQL créée et appliquée en local
-- [ ] Table `transactions` avec colonnes : id, user_id, position_id, ticker, type, quantity, price, total, executed_at
-- [ ] PATCH /api/positions/[id] insère une transaction à chaque achat DCA
-- [ ] RLS activé sur la table
-
-### #51 — Setup shadcn/ui
-- [ ] shadcn/ui initialisé dans le projet
-- [ ] Composants Dialog, Sheet, Table disponibles dans `src/components/ui/`
-- [ ] Aucune régression sur l'existant
+| Ticket | Titre | Priorité |
+|--------|-------|----------|
+| TECH | ISIN/Secteur — fiabiliser Yahoo Finance | P1 |
+| NEW | Graphique allocation (camembert enveloppe/secteur) | P2 |
 
 ---
 
 ## Stack en place
 
-- Auth Supabase ✅ · API `/api/quote` Yahoo Finance ✅ · API `/api/search` ✅
-- `AddPositionForm` (ISIN + suggestions) ✅ · `PositionsTable` Server Component ✅
-- `PortfolioSummary` (total investi, valeur, P&L) ✅ · `DeletePositionButton` ✅
-- Polling auto 60s (`PositionsSectionClient`) ✅
-- `src/lib/quote.ts` (fetchQuote + fetchRate avec `cache()`) ✅ · `src/lib/format.ts` ✅
+- Auth Supabase ✅ · Yahoo Finance `/api/quote` + `/api/search` ✅
+- `AddPositionForm` (ISIN + suggestions) ✅ · `PositionsTable` + `PositionsTableView` ✅
+- `PortfolioSummary` hero ✅ · `PnlStats` compact ✅ · `LiquidityWidget` ✅
+- Polling auto 60s ✅ · shadcn/ui Dialog/Sheet/Table ✅
+- Transactions atomiques (RPCs PostgreSQL) ✅ · Historique `/dashboard/historique` ✅
+- Fiscalité flat tax 30% CTO/Crypto, 0% PEA ✅
+- Thème light blanc/noir/bleu ✅
 - Production : https://portfolio-zeta-fawn-73.vercel.app ✅
 
 ## Fichiers clés
 
 ```
 src/app/dashboard/page.tsx
-src/app/api/quote/route.ts                        ← à enrichir (secteur via quoteSummary)
-src/app/api/positions/[id]/route.ts               ← à enrichir (PATCH pour achat)
-src/components/positions/PositionsTable.tsx       ← Server Component
-src/components/positions/AddPositionForm.tsx      ← à enrichir (secteur + lookup ticker)
-src/components/portfolio/PortfolioSummary.tsx     ← StatCards US-010 à ajouter ici ou composant séparé
-src/lib/quote.ts                                  ← fetchQuote + fetchRate (React cache())
-src/lib/format.ts                                 ← formatEur + formatPct
+src/app/dashboard/historique/page.tsx
+src/app/api/positions/[id]/route.ts          ← PATCH buy_position RPC
+src/app/api/positions/[id]/sell/route.ts     ← POST sell_position RPC
+src/app/api/liquidities/route.ts             ← POST deposit_liquidity RPC
+src/components/positions/PositionsTable.tsx  ← Server Component → PositionsTableView
+src/components/positions/PositionsTableView.tsx ← Client, tableau + Sheet drawer
+src/components/positions/AddBuyButton.tsx
+src/components/positions/SellButton.tsx      ← prévisualisation P&L + taxe
+src/components/portfolio/PortfolioSummary.tsx
+src/components/portfolio/PnlStats.tsx
+src/components/portfolio/LiquidityWidget.tsx
+src/components/portfolio/DepositButton.tsx
+src/components/transactions/TransactionsTable.tsx
+src/lib/quote.ts                             ← fetchQuote + fetchRate (React cache())
+src/lib/format.ts                            ← formatEur + formatPct
+supabase/migrations/                         ← 3 nouvelles migrations S11
+src/types/database.ts                        ← regénéré avec types RPC complets
 ```
 
 ---
 
-## Plan technique
+## Plan technique S12
 
-**US-003 — Achat sur position existante**
-`PATCH /api/positions/[id]` → recalcul PRU + quantité côté serveur.
-`AddBuyButton.tsx` Client Component sur chaque ligne → mini-form (qty + prix) → PATCH → router.refresh().
+**TECH — ISIN/Secteur**
+Yahoo Finance `quoteSummary` ne retourne pas toujours l'ISIN ni le secteur.
+Pistes : enrichir `/api/quote` avec fallback OpenFIGI pour l'ISIN, ou saisie manuelle obligatoire.
 
-**US-010 — P&L détaillé**
-4 StatCards dans `PortfolioSummary` ou composant `PnlStats.tsx` dédié.
-Tri par P&L dans `PositionsTable` (remplace tri par valeur).
-
-**TECH — ISIN/Ticker/Nom/Secteur**
-`/api/quote` : appel Yahoo `quoteSummary` pour secteur.
-`AddPositionForm` : au blur du champ Ticker → fetch `/api/quote` → remplir ISIN + secteur.
-`PositionsTable` : colonne Secteur. Secteur stocké dans `positions.sector`.
+**Graphique allocation**
+Camembert par enveloppe (PEA/CTO/Autre) + camembert par secteur.
+Librairie pressentie : Recharts (léger, React-natif) ou Chart.js.
 
 ---
 
-## Contraintes
-- Server Components : toujours requête Supabase directe
-- Recalcul PRU côté serveur uniquement (jamais côté client)
-- Secteur : optionnel, ne pas bloquer l'ajout si Yahoo ne le retourne pas
+## Référence UX/UI
+
+**Moning est la référence absolue** pour toutes les décisions de design et de features.
+Reproduire fidèlement les features et l'UX de Moning pour investisseur particulier français.
 
 ---
 
@@ -84,15 +86,4 @@ Après chaque US/TASK : appel obligatoire au `test-agent` pour vérifier les cri
 
 ---
 
----
-
-## Notes Session 11 — 28/03/2026
-
-### #51 — shadcn/ui
-- shadcn/ui **supporte officiellement Tailwind v4** depuis février 2025 (CLI 3.0, CSS-first config)
-- Commande à lancer : `npx shadcn@latest init` (mode Tailwind v4, non-interactif si possible)
-- Composants à installer : `npx shadcn@latest add dialog sheet table`
-- ⚠️ Vérifier que les variables CSS custom `--color-*` dans `globals.css` sont préservées après init
-- Après install, Origin UI et Tremor (copy-paste) identifiés comme compléments possibles
-
-*Mis à jour : Session 11 — 28/03/2026*
+*Mis à jour : clôture Session 11 — 28/03/2026*
