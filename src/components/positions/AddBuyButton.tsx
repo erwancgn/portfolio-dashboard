@@ -75,7 +75,7 @@ export default function AddBuyButton({ id, ticker }: AddBuyButtonProps) {
       <button
         onClick={handleOpen}
         aria-label={`Ajouter un achat sur ${ticker}`}
-        className="text-xs text-blue-500 hover:text-blue-400 transition-colors"
+        className="text-xs font-medium px-2 py-1 rounded border border-[var(--color-accent)] text-[var(--color-accent)] hover:bg-[var(--color-accent-sub)] transition-colors"
       >
         + Achat
       </button>
@@ -95,7 +95,7 @@ export default function AddBuyButton({ id, ticker }: AddBuyButtonProps) {
           disabled={loading}
           required
           aria-label="Quantité achetée"
-          className="w-24 text-xs px-1.5 py-0.5 rounded border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] placeholder-[var(--color-text-sub)] focus:outline-none focus:border-blue-500"
+          className="w-24 text-xs px-1.5 py-0.5 rounded border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text)] placeholder-[var(--color-text-sub)] focus:outline-none focus:border-[var(--color-accent)]"
         />
         <input
           type="number"
@@ -107,13 +107,13 @@ export default function AddBuyButton({ id, ticker }: AddBuyButtonProps) {
           disabled={loading}
           required
           aria-label="Prix d'achat"
-          className="w-24 text-xs px-1.5 py-0.5 rounded border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] placeholder-[var(--color-text-sub)] focus:outline-none focus:border-blue-500"
+          className="w-24 text-xs px-1.5 py-0.5 rounded border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text)] placeholder-[var(--color-text-sub)] focus:outline-none focus:border-[var(--color-accent)]"
         />
         <div className="flex gap-2">
           <button
             type="submit"
             disabled={loading}
-            className="text-xs text-blue-500 hover:text-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="text-xs text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Enregistrement…' : 'Valider'}
           </button>

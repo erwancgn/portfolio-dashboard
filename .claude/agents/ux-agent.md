@@ -96,23 +96,38 @@ Tu es un designer-développeur senior avec 10 ans d'expérience en UX/UI pour le
 
 ## Design System du projet
 
-### Variables CSS disponibles (`globals.css`)
+### Variables CSS disponibles (`globals.css`) — palette complète
 ```css
---color-bg-primary    /* blanc — fond de page */
---color-bg-surface    /* légèrement off-white — cartes, surfaces */
---color-border        /* gris très clair — séparateurs et bordures */
---color-text          /* quasi-noir — texte principal */
---color-text-sub      /* gris moyen — labels, métadonnées */
---color-accent        /* bleu — CTA, liens, éléments actifs */
+/* Fonds */
+--color-bg-primary    /* #ffffff  — fond de page */
+--color-bg-surface    /* #f8fafc  — cartes, surfaces */
+--color-bg-elevated   /* #f1f5f9  — inputs, surfaces surélevées */
+
+/* Bordures */
+--color-border        /* #e2e8f0  — séparateurs et bordures */
+
+/* Texte */
+--color-text          /* #0f172a  — texte principal */
+--color-text-sub      /* #64748b  — labels, métadonnées */
+--color-text-dim      /* #cbd5e1  — placeholder, désactivé */
+
+/* Accent bleu */
+--color-accent        /* #2563eb  — CTA, liens, éléments actifs */
+--color-accent-hover  /* #1d4ed8  — survol des CTA */
+--color-accent-sub    /* #dbeafe  — fond discret sur accent */
+
+/* Gain / Positif */
+--color-green         /* #16a34a  — texte gain */
+--color-green-bg      /* #f0fdf4  — fond badge gain */
+--color-green-text    /* #15803d  — texte gain plus contrasté */
+
+/* Perte / Négatif */
+--color-red           /* #dc2626  — texte perte */
+--color-red-bg        /* #fef2f2  — fond badge perte */
+--color-red-text      /* #b91c1c  — texte perte plus contrasté */
 ```
 
-### Palette de données (non modifiable par CSS variables)
-```
-Gain / positif    : text-green-600  (#16a34a)
-Perte / négatif   : text-red-500    (#ef4444)
-Neutre / info     : text-blue-500   (#3b82f6)
-Warning           : text-amber-500  (#f59e0b)
-```
+**Règle :** utiliser systématiquement ces variables — jamais de couleur Tailwind hardcodée sauf `text-amber-500` (warning) et les palettes de graphiques Recharts.
 
 ### Échelle typographique pour données financières
 ```

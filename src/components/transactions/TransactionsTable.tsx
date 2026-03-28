@@ -56,7 +56,7 @@ export default function TransactionsTable({ transactions }: TransactionsTablePro
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="text-sm px-2 py-1 rounded border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:border-blue-500"
+            className="text-sm px-2 py-1 rounded border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)]"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -68,7 +68,7 @@ export default function TransactionsTable({ transactions }: TransactionsTablePro
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="text-sm px-2 py-1 rounded border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:border-blue-500"
+            className="text-sm px-2 py-1 rounded border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)]"
           />
         </div>
         {(dateFrom || dateTo) && (
@@ -127,10 +127,10 @@ export default function TransactionsTable({ transactions }: TransactionsTablePro
                     </span>
                   )}
                 </TableCell>
-                <TableCell className="text-right text-[var(--color-text)]">{t.quantity}</TableCell>
-                <TableCell className="text-right text-[var(--color-text)]">{formatEur(t.price)}</TableCell>
-                <TableCell className="text-right text-[var(--color-text)]">{formatEur(t.total)}</TableCell>
-                <TableCell className="text-right text-[var(--color-text-sub)]">
+                <TableCell className="text-right text-[var(--color-text)] tabular-nums">{t.quantity}</TableCell>
+                <TableCell className="text-right text-[var(--color-text)] tabular-nums">{formatEur(t.price)}</TableCell>
+                <TableCell className="text-right text-[var(--color-text)] tabular-nums">{formatEur(t.total)}</TableCell>
+                <TableCell className="text-right text-[var(--color-text-sub)] tabular-nums">
                   {t.tax_amount > 0 ? formatEur(t.tax_amount) : '—'}
                 </TableCell>
               </TableRow>

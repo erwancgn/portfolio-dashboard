@@ -145,7 +145,7 @@ export default function SearchInput({
             <li
               key={`${result.ticker}-${result.type}`}
               onMouseDown={() => handleSelect(result)}
-              className="px-3 py-2 text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] flex justify-between items-center"
+              className="px-3 py-2 text-sm cursor-pointer hover:bg-[var(--color-bg-elevated)] flex justify-between items-center"
             >
               <span className="text-[var(--color-text)]">
                 <span className="font-medium">{result.ticker}</span>

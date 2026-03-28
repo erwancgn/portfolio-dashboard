@@ -50,18 +50,18 @@ export default function PositionsTableView({ rows }: Props) {
                       <p className="text-xs text-[var(--color-text-sub)] truncate max-w-[140px]">{row.name}</p>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right font-medium text-[var(--color-text)]">
+                  <td className="px-4 py-3 text-right font-medium tabular-nums text-[var(--color-text)]">
                     {row.valeur !== null ? formatEur(row.valeur) : '—'}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <p className={`font-semibold ${pnlColor}`}>
+                    <p className={`font-semibold tabular-nums ${pnlColor}`}>
                       {row.pnl !== null ? formatEur(row.pnl) : '—'}
                     </p>
                     {row.pnlPct !== null && (
-                      <p className={`text-xs ${pnlColor}`}>{formatPct(row.pnlPct)}</p>
+                      <p className={`text-xs tabular-nums ${pnlColor}`}>{formatPct(row.pnlPct)}</p>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right text-[var(--color-text-sub)] text-xs">
+                  <td className="px-4 py-3 text-right text-[var(--color-text-sub)] tabular-nums text-xs">
                     {row.poids !== null ? `${row.poids.toFixed(1)}%` : '—'}
                   </td>
                   <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
@@ -108,7 +108,7 @@ export default function PositionsTableView({ rows }: Props) {
                       className="flex justify-between items-center py-2 border-b border-[var(--color-border)] last:border-0"
                     >
                       <span className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide">{label}</span>
-                      <span className={`text-sm font-semibold ${
+                      <span className={`text-sm font-semibold tabular-nums ${
                         colored
                           ? itemIsGain ? 'text-[var(--color-green-text)]' : 'text-[var(--color-red-text)]'
                           : 'text-[var(--color-text)]'

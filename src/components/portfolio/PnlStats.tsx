@@ -45,7 +45,7 @@ export default async function PnlStats() {
       <div className="flex items-center gap-3">
         <span className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide">Meilleure</span>
         <span className="text-sm font-semibold text-[var(--color-text)]">{best.ticker}</span>
-        <span className="text-sm font-semibold text-[var(--color-green-text)]">
+        <span className="text-sm font-semibold tabular-nums text-[var(--color-green-text)]">
           {formatEur(best.pnl)} ({formatPct(best.pnlPct)})
         </span>
       </div>
@@ -53,14 +53,14 @@ export default async function PnlStats() {
       <div className="flex items-center gap-3">
         <span className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide">Pire</span>
         <span className="text-sm font-semibold text-[var(--color-text)]">{worst.ticker}</span>
-        <span className="text-sm font-semibold text-[var(--color-red-text)]">
+        <span className="text-sm font-semibold tabular-nums text-[var(--color-red-text)]">
           {formatEur(worst.pnl)} ({formatPct(worst.pnlPct)})
         </span>
       </div>
       <div className="w-px bg-[var(--color-border)]" />
       <div className="flex items-center gap-3">
-        <span className="text-sm text-[var(--color-green-text)] font-medium">{countGain} en gain</span>
-        <span className="text-sm text-[var(--color-red-text)] font-medium">{countLoss} en perte</span>
+        <span className="text-sm tabular-nums text-[var(--color-green-text)] font-medium">{countGain} en gain</span>
+        <span className="text-sm tabular-nums text-[var(--color-red-text)] font-medium">{countLoss} en perte</span>
       </div>
     </div>
   )

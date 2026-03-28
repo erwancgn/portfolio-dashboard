@@ -49,13 +49,13 @@ export default async function PortfolioSummary() {
     <div className="py-6">
       {/* Valeur hero */}
       <p className="text-sm text-[var(--color-text-sub)] mb-1">Valeur du portefeuille</p>
-      <p className="text-4xl font-bold tracking-tight text-[var(--color-text)] mb-2">
+      <p className="text-4xl font-bold tracking-tight tabular-nums text-[var(--color-text)] mb-2">
         {priced > 0 ? formatEur(totalValue) : '—'}
       </p>
 
       {/* P&L */}
       {priced > 0 && (
-        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-6 ${
+        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium tabular-nums mb-6 ${
           isGain
             ? 'bg-[var(--color-green-bg)] text-[var(--color-green-text)]'
             : 'bg-[var(--color-red-bg)] text-[var(--color-red-text)]'
@@ -70,11 +70,11 @@ export default async function PortfolioSummary() {
       <div className="flex gap-8">
         <div>
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">Investi</p>
-          <p className="text-sm font-semibold text-[var(--color-text)]">{formatEur(totalInvested)}</p>
+          <p className="text-sm font-semibold tabular-nums text-[var(--color-text)]">{formatEur(totalInvested)}</p>
         </div>
         <div>
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">Positions</p>
-          <p className="text-sm font-semibold text-[var(--color-text)]">{positions.length}</p>
+          <p className="text-sm font-semibold tabular-nums text-[var(--color-text)]">{positions.length}</p>
         </div>
       </div>
     </div>

@@ -65,8 +65,8 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
           <input id="isin" name="isin" type="text" value={form.isin} onChange={handleChange}
             placeholder="ex : US0378331005" className={INPUT_CLASS} maxLength={12} />
           {isinStatus === 'loading' && <p className="mt-1 text-xs text-[var(--color-text-sub)]">Recherche…</p>}
-          {isinStatus === 'found' && <p className="mt-1 text-xs text-green-500">Ticker et nom détectés</p>}
-          {isinStatus === 'not_found' && <p className="mt-1 text-xs text-red-500">ISIN introuvable — saisir le ticker manuellement</p>}
+          {isinStatus === 'found' && <p className="mt-1 text-xs text-[var(--color-green-text)]">Ticker et nom détectés</p>}
+          {isinStatus === 'not_found' && <p className="mt-1 text-xs text-[var(--color-red-text)]">ISIN introuvable — saisir le ticker manuellement</p>}
         </div>
 
         <div>
@@ -128,8 +128,8 @@ export default function AddPositionForm({ onPositionAdded }: AddPositionFormProp
         </div>
       </div>
 
-      {status === 'success' && <p className="text-sm font-medium text-green-500">{message}</p>}
-      {status === 'error' && <p className="text-sm font-medium text-red-500">{message}</p>}
+      {status === 'success' && <p className="text-sm font-medium text-[var(--color-green-text)]">{message}</p>}
+      {status === 'error' && <p className="text-sm font-medium text-[var(--color-red-text)]">{message}</p>}
 
       <button type="submit" disabled={status === 'loading'}
         className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 hover:opacity-90 transition-opacity">

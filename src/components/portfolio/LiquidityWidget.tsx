@@ -27,18 +27,18 @@ export default async function LiquidityWidget() {
       <div className="flex flex-wrap gap-6">
         <div>
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">Liquidités totales</p>
-          <p className={`text-xl font-bold ${total >= 0 ? 'text-[var(--color-text)]' : 'text-[var(--color-red-text)]'}`}>
+          <p className={`text-xl font-bold tabular-nums ${total >= 0 ? 'text-[var(--color-text)]' : 'text-[var(--color-red-text)]'}`}>
             {formatEur(total)}
           </p>
         </div>
         <div className="w-px bg-[var(--color-border)]" />
         <div>
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">PEA</p>
-          <p className="text-sm font-semibold text-[var(--color-text)]">{formatEur(pea)}</p>
+          <p className="text-sm font-semibold tabular-nums text-[var(--color-text)]">{formatEur(pea)}</p>
         </div>
         <div>
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">CTO / Autre</p>
-          <p className="text-sm font-semibold text-[var(--color-text)]">{formatEur(autres)}</p>
+          <p className="text-sm font-semibold tabular-nums text-[var(--color-text)]">{formatEur(autres)}</p>
         </div>
       </div>
       <DepositButton />

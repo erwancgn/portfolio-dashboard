@@ -83,7 +83,7 @@ export default function SellButton({ id, ticker, maxQuantity, pru, envelope }: S
       <button
         onClick={handleOpen}
         aria-label={`Vendre ${ticker}`}
-        className="text-xs text-red-500 hover:text-red-400 transition-colors"
+        className="text-xs font-medium px-2 py-1 rounded border border-[var(--color-red)] text-[var(--color-red-text)] hover:bg-[var(--color-red-bg)] transition-colors"
       >
         Vendre
       </button>
@@ -104,7 +104,7 @@ export default function SellButton({ id, ticker, maxQuantity, pru, envelope }: S
           disabled={loading}
           required
           aria-label="Quantité vendue"
-          className="w-24 text-xs px-1.5 py-0.5 rounded border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] placeholder-[var(--color-text-sub)] focus:outline-none focus:border-red-500"
+          className="w-24 text-xs px-1.5 py-0.5 rounded border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text)] placeholder-[var(--color-text-sub)] focus:outline-none focus:border-[var(--color-red)]"
         />
         <input
           type="number"
@@ -116,7 +116,7 @@ export default function SellButton({ id, ticker, maxQuantity, pru, envelope }: S
           disabled={loading}
           required
           aria-label="Prix de vente"
-          className="w-24 text-xs px-1.5 py-0.5 rounded border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] placeholder-[var(--color-text-sub)] focus:outline-none focus:border-red-500"
+          className="w-24 text-xs px-1.5 py-0.5 rounded border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text)] placeholder-[var(--color-text-sub)] focus:outline-none focus:border-[var(--color-red)]"
         />
         {(() => {
           const qty = parseFloat(quantity)
@@ -128,7 +128,7 @@ export default function SellButton({ id, ticker, maxQuantity, pru, envelope }: S
           const tax = gain !== null && !isPea ? Math.max(0, gain) * 0.30 : 0
           const net = hasPreview ? price * qty - tax : null
           return hasPreview && gain !== null ? (
-            <div className="text-xs space-y-0.5 text-right border-t border-[var(--color-border)] pt-1">
+            <div className="text-xs tabular-nums space-y-0.5 text-right border-t border-[var(--color-border)] pt-1">
               <p className={isGainVal ? 'text-[var(--color-green-text)]' : 'text-[var(--color-red-text)]'}>
                 P&L : {isGainVal ? '+' : ''}{gain.toFixed(2)} €
               </p>
@@ -146,7 +146,7 @@ export default function SellButton({ id, ticker, maxQuantity, pru, envelope }: S
           <button
             type="submit"
             disabled={loading}
-            className="text-xs text-red-500 hover:text-red-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="text-xs text-[var(--color-red-text)] hover:opacity-70 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Enregistrement…' : 'Valider'}
           </button>

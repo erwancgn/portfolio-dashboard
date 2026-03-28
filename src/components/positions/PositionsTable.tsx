@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { fetchQuote, fetchRate, toEur } from '@/lib/quote'
-import { formatEur, formatPct } from '@/lib/format'
 import type { Tables } from '@/types/database'
 import PositionsTableView from './PositionsTableView'
 
