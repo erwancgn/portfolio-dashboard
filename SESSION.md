@@ -20,6 +20,22 @@
 
 ---
 
+## 🐛 Bug prioritaire S13 — À traiter en PREMIER
+
+**Symptôme** : recherche par nom (ex: "Amazon") → seul le ticker est remonté dans le formulaire, pas le secteur.
+
+**Cause identifiée** : Yahoo Finance exige désormais un **crumb** (cookie `fc.yahoo.com` + token CSRF) pour l'endpoint `quoteSummary` — les appels sans crumb retournent `401 Unauthorized` ou `404 Not Found`.
+
+**Flux impacté** : `fetchYahooSector()` dans `src/lib/yahoo.ts` → appelle `/v10/finance/quoteSummary` sans crumb → retourne `undefined` → champ Secteur vide.
+
+**Fix à implémenter** :
+1. Fetch `https://fc.yahoo.com/` pour obtenir les cookies de session
+2. Fetch `https://query1.finance.yahoo.com/v1/test/getcrumb` avec ces cookies → crumb
+3. Ajouter `crumb=<value>` en query param + cookies dans les headers de `fetchYahooSector`
+4. Mettre en cache le crumb (durée de vie ~1h)
+
+---
+
 ## Objectif Session 13 — Refonte graphique totale
 
 ### Référence UX
