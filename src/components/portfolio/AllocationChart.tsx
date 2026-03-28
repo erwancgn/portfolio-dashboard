@@ -27,7 +27,7 @@ function ChartTooltip({ active, payload }: TooltipProps) {
   return (
     <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs shadow-md">
       <p className="font-medium text-[var(--color-text)]">{entry.name}</p>
-      <p className="text-[var(--color-text-sub)]">{formatEur(total)}</p>
+      <p className="tabular-nums text-[var(--color-text-sub)]">{formatEur(total)}</p>
     </div>
   )
 }
@@ -43,7 +43,7 @@ function ChartLegend({ data }: { data: AllocationEntry[] }) {
             <svg width="10" height="10" viewBox="0 0 10 10" className="flex-shrink-0">
               <circle cx="5" cy="5" r="5" fill={PALETTE[i % PALETTE.length]} />
             </svg>
-            <span className="text-[var(--color-text-sub)] truncate max-w-32">{entry.label}</span>
+            <span className="text-[var(--color-text-sub)] truncate min-w-0 max-w-[8rem] sm:max-w-[12rem]">{entry.label}</span>
           </span>
           <span className="text-[var(--color-text)] font-medium tabular-nums">
             {total > 0 ? `${((entry.value / total) * 100).toFixed(1)} %` : '—'}
@@ -70,18 +70,18 @@ export default function AllocationChart({ envelopeData, sectorData }: Props) {
     <section className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base font-semibold text-[var(--color-text)]">Allocation</h2>
-        <div className="flex gap-1 text-xs bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-lg p-0.5">
-          <button
-            onClick={() => setTab('envelope')}
-            className={`px-3 py-1 rounded-md transition-colors ${
-              tab === 'envelope'
-                ? 'bg-[var(--color-accent)] text-white font-medium'
-                : 'text-[var(--color-text-sub)] hover:text-[var(--color-text)]'
-            }`}
-          >
-            Enveloppe
-          </button>
-          {hasSector && (
+        {hasSector && (
+          <div className="flex gap-1 text-xs bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-lg p-0.5">
+            <button
+              onClick={() => setTab('envelope')}
+              className={`px-3 py-1 rounded-md transition-colors ${
+                tab === 'envelope'
+                  ? 'bg-[var(--color-accent)] text-white font-medium'
+                  : 'text-[var(--color-text-sub)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              Enveloppe
+            </button>
             <button
               onClick={() => setTab('sector')}
               className={`px-3 py-1 rounded-md transition-colors ${
@@ -92,8 +92,8 @@ export default function AllocationChart({ envelopeData, sectorData }: Props) {
             >
               Secteur
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -122,7 +122,7 @@ export default function AllocationChart({ envelopeData, sectorData }: Props) {
 
         <div className="flex-1 w-full">
           <ChartLegend data={activeData} />
-          <p className="text-[10px] text-[var(--color-text-sub)] mt-3">
+          <p className="text-xs text-[var(--color-text-dim)] mt-3">
             Basé sur la valeur investie (quantité × PRU)
           </p>
         </div>

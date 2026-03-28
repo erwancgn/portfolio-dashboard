@@ -27,6 +27,10 @@
 ## React / Performance
 - [S8] Deux Server Components appelant la même fonction dans le même rendu → utiliser `cache()` de React 19 pour dédupliquer — la fonction n'est exécutée qu'une fois, le résultat est partagé
 
+## Style / Conventions
+- [S12] `style={{}}` est toléré uniquement pour les valeurs CSS calculées à l'exécution (ex: `width: X%` barre de progression) — impossible à exprimer en classe Tailwind statique
+- [S12] Fichiers composants React → PascalCase (`AllocationChart.tsx`), pas kebab-case — CLAUDE.md mis à jour en conséquence
+
 ## APIs externes
 - [S7] Finnhub plan gratuit = US uniquement (403 sur .PA, .MI…) → Yahoo Finance sans clé couvre tout (US + EU + crypto)
 - [S7] Yahoo Finance chart API : `meta.isin` présent sur certains actifs EU, absent sur US — ne pas supposer sa présence

@@ -98,10 +98,11 @@ Nouveau PRU (DCA)  = (ancienne_quantité × ancien_pru + montant)
 
 ## Conventions de code
 
-- Nommage : camelCase variables, PascalCase composants, kebab-case fichiers
+- Nommage : camelCase variables, PascalCase composants, **PascalCase fichiers composants** (ex: `AllocationChart.tsx`), kebab-case fichiers non-composants (ex: `format.ts`, `quote.ts`)
 - Commentaires JSDoc sur toutes les fonctions dans `src/lib/`
 - Commits : format conventionnel (feat:, fix:, docs:, chore:, test:)
 - Longueur fichier : max 200 lignes — diviser si dépassé (exception : `src/types/database.ts` est généré automatiquement via `npx supabase gen types typescript --local`)
+- `style={{}}` toléré **uniquement** pour les valeurs CSS calculées dynamiquement inexprima bles en Tailwind pur (ex: `width: X%` pour une barre de progression, `fill=` pour SVG/Recharts)
 
 ---
 

@@ -7,6 +7,7 @@ import PortfolioSummary from '@/components/portfolio/PortfolioSummary'
 import PnlStats from '@/components/portfolio/PnlStats'
 import LiquidityWidget from '@/components/portfolio/LiquidityWidget'
 import AllocationSection from '@/components/portfolio/AllocationSection'
+import AnalyseSection from '@/components/portfolio/AnalyseSection'
 import PositionsTable from '@/components/positions/PositionsTable'
 
 /**
@@ -45,6 +46,9 @@ export default async function DashboardPage() {
 
         {/* Allocation par enveloppe / secteur */}
         <AllocationSection />
+
+        {/* Analyse : Poids / Secteur / Pays */}
+        <AnalyseSection />
 
         {/* Liquidités */}
         <LiquidityWidget />
