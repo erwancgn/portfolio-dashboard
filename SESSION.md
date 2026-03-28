@@ -1,39 +1,75 @@
-# SESSION.md — Session 12
+# SESSION.md — Session 13
 
 > Format ultra-compact pour économiser les tokens de contexte.
 > Historique complet → DEVLOG.md
 
 ---
 
-## Session 11 — Clôturée ✅ (28/03/2026)
+## Session 12 — Clôturée ✅ (28/03/2026)
 
 | Ticket | Titre | Statut |
 |--------|-------|--------|
-| #51 TASK | Setup shadcn/ui | ✅ Livré |
-| #47 TASK | Transactions atomiques (buy/sell RPCs) | ✅ Livré |
-| #50 EPIC 13 | Refonte UI/UX — light theme + drawer | ✅ Livré |
-| #55 TASK | Liquidités + fiscalité + apports | ✅ Livré |
+| TECH | ISIN/Secteur — enrichissement Yahoo + DB cache | ✅ Livré |
+| #52/#53 | Graphique allocation (donut Recharts) | ✅ Livré |
+| #18 | Vue Poids | ✅ Livré |
+| #20 | Vue Secteur | ✅ Livré |
+| NEW | Vue Pays (suffix ticker) | ✅ Livré |
+| UX | Polish complet app (tokens CSS, tabular-nums, hierarchy) | ✅ Livré |
+| TECH | Extraction src/lib/yahoo.ts | ✅ Livré |
+| AGENTS | ux-agent, design-review skill, finance-formulas skill | ✅ Livré |
 
 ---
 
-## Objectif Session 12
+## Objectif Session 13 — Refonte graphique totale
 
-| Ticket | Titre | Priorité |
-|--------|-------|----------|
-| TECH | ISIN/Secteur — fiabiliser Yahoo Finance | P1 |
-| NEW | Graphique allocation (camembert enveloppe/secteur) | P2 |
+### Référence UX
+**Moning** : https://moning.co/dashboard/portfolio/5d5b7bf2-c378-4f8f-b7db-c6403a16131c
+Mix Trade Republic (minimalisme) + Moning (features investisseur FR)
+
+### Tickets
+
+| # | Titre | Priorité |
+|---|-------|----------|
+| #56 | EPIC 14 — Refonte dashboard : bandeau récap + tableau | P1 |
+| #57 | EPIC 15 — Page Analyse : vues + chat IA portfolio | P1 |
+| #58 | EPIC 16 — Page Analyse Titre : quick/standard/full | P1 |
+| #59 | FEAT — DCA depuis tableau principal | P1 |
+
+---
+
+## Plan technique S13
+
+### Page Dashboard (refonte #56)
+**Bandeau récap (hero)** : Valeur totale / Plus-value (€+%) / Valeur investie / Nb positions
+**Tableau positions** : tri par colonne, bouton DCA par ligne, Achat/Vente inline
+
+### Page Analyse (#57) — `/dashboard/analyse`
+- Déplacer AllocationSection + AnalyseSection depuis dashboard
+- Chat IA : Claude API avec contexte portfolio (positions + P&L + allocation)
+- Agent : accès positions, historique, secteurs → répond en français
+
+### Page Analyse Titre (#58) — `/dashboard/analyse/[ticker]`
+- Quick (Haiku) : résumé 3 lignes + signal HOLD/BUY/SELL
+- Standard (Sonnet) : analyse technique + fondamentale + risques
+- Full (Opus) : analyse institutionnelle complète + scénarios
+
+### Feature DCA (#59)
+- Bouton DCA sur chaque ligne du tableau → Sheet/Dialog
+- Champs : montant €, rythme, date première exécution, enveloppe
+- Table DB `dca_rules`, lié à `transactions`
+- Ferme #4, #22, #23, #24
 
 ---
 
 ## Stack en place
 
 - Auth Supabase ✅ · Yahoo Finance `/api/quote` + `/api/search` ✅
-- `AddPositionForm` (ISIN + suggestions) ✅ · `PositionsTable` + `PositionsTableView` ✅
+- `AllocationChart` (donut Recharts) ✅ · `AnalyseChart` (Poids/Secteur/Pays) ✅
 - `PortfolioSummary` hero ✅ · `PnlStats` compact ✅ · `LiquidityWidget` ✅
-- Polling auto 60s ✅ · shadcn/ui Dialog/Sheet/Table ✅
 - Transactions atomiques (RPCs PostgreSQL) ✅ · Historique `/dashboard/historique` ✅
-- Fiscalité flat tax 30% CTO/Crypto, 0% PEA ✅
-- Thème light blanc/noir/bleu ✅
+- Fiscalité flat tax 30% CTO/Crypto, 0% PEA ✅ · Thème light blanc/noir/bleu ✅
+- `src/lib/yahoo.ts` (fetchYahooChart, fetchYahooSector) ✅
+- ux-agent + design-review skill + finance-formulas skill ✅
 - Production : https://portfolio-zeta-fawn-73.vercel.app ✅
 
 ## Fichiers clés
@@ -41,49 +77,22 @@
 ```
 src/app/dashboard/page.tsx
 src/app/dashboard/historique/page.tsx
-src/app/api/positions/[id]/route.ts          ← PATCH buy_position RPC
-src/app/api/positions/[id]/sell/route.ts     ← POST sell_position RPC
-src/app/api/liquidities/route.ts             ← POST deposit_liquidity RPC
-src/components/positions/PositionsTable.tsx  ← Server Component → PositionsTableView
-src/components/positions/PositionsTableView.tsx ← Client, tableau + Sheet drawer
-src/components/positions/AddBuyButton.tsx
-src/components/positions/SellButton.tsx      ← prévisualisation P&L + taxe
-src/components/portfolio/PortfolioSummary.tsx
-src/components/portfolio/PnlStats.tsx
-src/components/portfolio/LiquidityWidget.tsx
-src/components/portfolio/DepositButton.tsx
-src/components/transactions/TransactionsTable.tsx
-src/lib/quote.ts                             ← fetchQuote + fetchRate (React cache())
-src/lib/format.ts                            ← formatEur + formatPct
-supabase/migrations/                         ← 3 nouvelles migrations S11
-src/types/database.ts                        ← regénéré avec types RPC complets
+src/components/portfolio/PortfolioSummary.tsx    ← hero valeur
+src/components/portfolio/AllocationSection.tsx   ← donut enveloppe/secteur
+src/components/portfolio/AnalyseSection.tsx      ← Poids/Secteur/Pays live
+src/components/portfolio/AnalyseChart.tsx        ← Client tabs
+src/components/positions/PositionsTableView.tsx  ← tableau + Sheet drawer
+src/lib/yahoo.ts                                 ← fetchYahooChart, fetchYahooSector
+src/lib/quote.ts                                 ← fetchQuote + fetchRate (React cache)
+src/types/database.ts                            ← types générés Supabase
 ```
 
 ---
 
-## Plan technique S12
+## Protocole de validation
 
-**TECH — ISIN/Secteur**
-Yahoo Finance `quoteSummary` ne retourne pas toujours l'ISIN ni le secteur.
-Pistes : enrichir `/api/quote` avec fallback OpenFIGI pour l'ISIN, ou saisie manuelle obligatoire.
-
-**Graphique allocation**
-Camembert par enveloppe (PEA/CTO/Autre) + camembert par secteur.
-Librairie pressentie : Recharts (léger, React-natif) ou Chart.js.
+Après chaque US/TASK : appel obligatoire au `test-agent` avant de considérer le ticket terminé.
 
 ---
 
-## Référence UX/UI
-
-**Moning est la référence absolue** pour toutes les décisions de design et de features.
-Reproduire fidèlement les features et l'UX de Moning pour investisseur particulier français.
-
----
-
-## Protocole de validation (alignement Anthropic)
-
-Après chaque US/TASK : appel obligatoire au `test-agent` pour vérifier les critères d'acceptation avant de considérer le ticket terminé.
-
----
-
-*Mis à jour : clôture Session 11 — 28/03/2026*
+*Mis à jour : clôture Session 12 — 28/03/2026*
