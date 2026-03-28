@@ -434,4 +434,42 @@ US-003 (achat DCA) + US-010 (P&L stats) + TECH (ISIN/secteur) + bandeau environn
 
 ---
 
-*Dernière mise à jour : Session 10 — 25/03/2026*
+---
+
+## Session 11 — [28/03/2026]
+
+### Contexte
+#51 Setup shadcn/ui (implémenté depuis mobile via code.claude.com) + #47 Table transactions + début TECH ISIN/Secteur.
+
+### Ce qu'on a fait
+- [x] **#51 shadcn/ui** — `components.json` + composants `Dialog`, `Sheet`, `Table` dans `src/components/ui/` + `src/lib/utils.ts` (`cn()`). Implémenté depuis téléphone, mergé depuis `claude/start-session-38rkh`.
+- [x] **#47 Table transactions** — migration SQL `20260328000000_create_transactions.sql` (table + RLS + 2 policies). `PATCH /api/positions/[id]` insère une transaction `buy` après chaque achat DCA (non-bloquant). Type `transactions` ajouté dans `database.ts`. Migration appliquée en local.
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| `position_id` nullable dans transactions | Prépare les imports futurs (Trade Republic) sans position correspondante |
+| INSERT transaction non-bloquant | Un bug d'historique ne doit pas bloquer l'achat DCA — arbitrage MVP validé par PO |
+
+### Avertissement ouvert
+- INSERT transaction non-atomique avec UPDATE position — historique peut être silencieusement incomplet si l'INSERT échoue. À migrer vers une RPC Supabase (BEGIN/COMMIT) si problèmes constatés en prod.
+
+- [x] **#50 Refonte UI/UX** — thème light (blanc/noir/bleu), hero valeur totale, PnlStats compact, tableau 5 colonnes + drawer Sheet, AddPositionForm en Dialog modale, polling conservé
+- [x] **#55 Liquidités + Fiscalité** — table `liquidities` + RPCs atomiques `buy_position`/`sell_position`/`deposit_liquidity`, flat tax 30% CTO/Crypto (0% PEA), `SellButton` avec prévisualisation P&L+taxe+net, `LiquidityWidget`, `DepositButton`, colonne Taxe dans Historique, `database.ts` regénéré avec types RPC
+
+### Décisions prises (suite S11)
+| Décision | Raison |
+|---|---|
+| Thème light (fond blanc) | Demande explicite PO — mix Trade Republic + Moning |
+| Moning comme référence UX/UI | PO considère Moning parfait pour l'investisseur particulier français |
+| RPCs buy/sell/deposit atomiques avec liquidités | Cohérence comptable — chaque opération impacte les liquidités en même temps que la position |
+| Flat tax 30% appliquée immédiatement en CTO/Crypto | Comportement fiscal français — fait générateur à la vente |
+| PEA : 0% taxe, argent reste dans enveloppe | Régime fiscal PEA — exonération IR tant que dans l'enveloppe |
+| Exception 200 lignes pour `database.ts` | Fichier généré automatiquement par `supabase gen types` |
+
+### Prochaine session (S12)
+- [ ] TECH ISIN/Secteur — fiabiliser Yahoo Finance (secteur + ISIN souvent `—`)
+- [ ] Graphique allocation (camembert enveloppe/secteur) — feature Moning
+- [ ] Migrations à appliquer en prod après `git push`
+
+*Dernière mise à jour : Session 11 — 28/03/2026*

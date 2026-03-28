@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
 /* ================================================
-   THÈME PORTFOLIO DASHBOARD — Trade Republic Dark
+   THÈME PORTFOLIO DASHBOARD — Light (Trade Republic + Moning)
    ================================================ */
 @theme inline {
-  --color-bg-primary:    #05060f;
-  --color-bg-surface:    #0d1117;
-  --color-bg-elevated:   #131929;
-  --color-border:        #1c2a45;
+  --color-bg-primary:    #ffffff;
+  --color-bg-surface:    #f8fafc;
+  --color-bg-elevated:   #f1f5f9;
+  --color-border:        #e2e8f0;
   --color-accent:        #2563eb;
   --color-accent-hover:  #1d4ed8;
-  --color-accent-sub:    #1e3a70;
-  --color-text:          #f0f4ff;
-  --color-text-sub:      #8b9fc4;
-  --color-text-dim:      #3d4f72;
+  --color-accent-sub:    #dbeafe;
+  --color-text:          #0f172a;
+  --color-text-sub:      #64748b;
+  --color-text-dim:      #cbd5e1;
   --color-green:         #16a34a;
-  --color-green-bg:      #052e16;
-  --color-green-text:    #4ade80;
+  --color-green-bg:      #f0fdf4;
+  --color-green-text:    #15803d;
   --color-red:           #dc2626;
-  --color-red-bg:        #450a0a;
-  --color-red-text:      #f87171;
+  --color-red-bg:        #fef2f2;
+  --color-red-text:      #b91c1c;
 }
 
 body {

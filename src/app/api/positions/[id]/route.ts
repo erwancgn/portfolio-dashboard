@@ -64,36 +64,16 @@ export async function PATCH(
 
   const { id } = await params
 
-  const { data: existing, error: fetchError } = await supabase
-    .from('positions')
-    .select('quantity, pru')
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .single()
+  const { data: updated, error: rpcError } = await supabase.rpc('buy_position', {
+    p_position_id: id,
+    p_user_id: user.id,
+    p_quantity: quantity,
+    p_price: purchasePrice,
+  })
 
-  if (fetchError || !existing) {
+  if (rpcError) {
     return NextResponse.json(
-      { error: 'Position introuvable', code: 'NOT_FOUND' },
-      { status: 404 },
-    )
-  }
-
-  const oldQuantity = existing.quantity
-  const oldPru = existing.pru
-  const newQuantity = oldQuantity + quantity
-  const newPru = (oldQuantity * oldPru + quantity * purchasePrice) / newQuantity
-
-  const { data: updated, error: updateError } = await supabase
-    .from('positions')
-    .update({ quantity: newQuantity, pru: newPru })
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .select()
-    .single()
-
-  if (updateError || !updated) {
-    return NextResponse.json(
-      { error: `Erreur base de données : ${updateError?.message ?? 'inconnue'}`, code: 'DB_ERROR' },
+      { error: rpcError.message, code: 'DB_ERROR' },
       { status: 500 },
     )
   }

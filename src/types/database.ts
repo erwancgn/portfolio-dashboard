@@ -155,6 +155,30 @@ export type Database = {
           },
         ]
       }
+      liquidities: {
+        Row: {
+          amount: number
+          envelope: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          envelope: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          envelope?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_snapshots: {
         Row: {
           date: string
@@ -272,12 +296,85 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions: {
+        Row: {
+          executed_at: string
+          id: string
+          position_id: string | null
+          price: number
+          quantity: number
+          tax_amount: number
+          ticker: string
+          total: number
+          type: string
+          user_id: string
+        }
+        Insert: {
+          executed_at?: string
+          id?: string
+          position_id?: string | null
+          price: number
+          quantity: number
+          tax_amount?: number
+          ticker: string
+          total: number
+          type: string
+          user_id: string
+        }
+        Update: {
+          executed_at?: string
+          id?: string
+          position_id?: string | null
+          price?: number
+          quantity?: number
+          tax_amount?: number
+          ticker?: string
+          total?: number
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      buy_position: {
+        Args: {
+          p_position_id: string
+          p_price: number
+          p_quantity: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      deposit_liquidity: {
+        Args: {
+          p_amount: number
+          p_envelope: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      sell_position: {
+        Args: {
+          p_position_id: string
+          p_price: number
+          p_quantity: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       asset_type: "stock" | "etf" | "crypto"

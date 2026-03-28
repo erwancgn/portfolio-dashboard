@@ -19,6 +19,15 @@
 ## [Unreleased]
 > Fonctionnalités en cours de développement — pas encore livrées.
 
+### Added (Session 11)
+- **shadcn/ui** — composants `Dialog`, `Sheet`, `Table` disponibles dans `src/components/ui/`, lib `cn()` dans `src/lib/utils.ts` (#51)
+- **Transactions atomiques** — RPCs PostgreSQL `buy_position` et `sell_position` : PRU + historique en une seule transaction SQL (#47)
+- **Vente partielle ou totale** — `SellButton` avec formulaire qty + prix, prévisualisation P&L + taxe + net en temps réel (#47/#55)
+- **Fiscalité automatique** — flat tax 30% appliquée à la vente sur CTO/Crypto, 0% sur PEA (#55)
+- **Liquidités par enveloppe** — table `liquidities`, widget dashboard total + PEA + CTO/Autre, `DepositButton` pour apports/retraits manuels (#55)
+- **Page Historique** — `/dashboard/historique` avec filtres date, badges Achat/Vente/Apport/Retrait, colonne Taxe (#47/#55)
+- **Refonte UI/UX** — thème light blanc/noir/bleu, hero valeur portfolio, PnlStats compact, tableau 5 colonnes + Sheet drawer détails, formulaire en Dialog modale (#50)
+
 ### Added
 - **API Route `/api/quote`** — prix temps réel actions/ETF (Yahoo Finance, couverture mondiale) et crypto (CoinGecko). Paramètres : `ticker`, `type` (stock|crypto).
 - **API Route `/api/exchange-rate`** — taux de change via Frankfurter (gratuit, sans clé). Paramètres : `from`, `to`. Retourne `{ from, to, rate }`.

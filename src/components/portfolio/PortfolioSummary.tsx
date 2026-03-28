@@ -4,9 +4,7 @@ import { formatEur, formatPct } from '@/lib/format'
 
 /**
  * PortfolioSummary — Server Component.
- * Affiche les indicateurs globaux du portefeuille :
- * total investi, valeur actuelle, P&L global (€ et %).
- * Les prix non-EUR sont convertis via Frankfurter.
+ * Hero section : valeur totale en grand, P&L coloré, stats secondaires.
  */
 export default async function PortfolioSummary() {
   const supabase = await createClient()
@@ -15,87 +13,68 @@ export default async function PortfolioSummary() {
     .select('id, ticker, quantity, pru')
 
   if (!positions || positions.length === 0) {
-    return null
+    return (
+      <div className="py-10 text-center text-[var(--color-text-sub)] text-sm">
+        Aucune position. Ajoutez votre première position pour commencer.
+      </div>
+    )
   }
 
-  // Recuperation des prix et du taux USD→EUR en parallele
   const [quotes, usdEur] = await Promise.all([
     Promise.all(positions.map((pos) => fetchQuote(pos.ticker))),
     fetchRate('USD', 'EUR'),
   ])
 
-  // GBP→EUR uniquement si au moins une position en GBP
   const needsGbp = quotes.some((q) => q?.currency === 'GBP' || q?.currency === 'GBp')
   const gbpEur = needsGbp ? await fetchRate('GBP', 'EUR') : 1
 
-  // Calcul des totaux
   let totalInvested = 0
   let totalValue = 0
-  let positionsWithPrice = 0
+  let priced = 0
 
   positions.forEach((pos, i) => {
     totalInvested += pos.quantity * pos.pru
-
-    const quote = quotes[i]
-    if (quote) {
-      const priceEur = toEur(quote.price, quote.currency, usdEur, gbpEur)
-      if (priceEur !== null) {
-        totalValue += pos.quantity * priceEur
-        positionsWithPrice++
-      }
+    const q = quotes[i]
+    if (q) {
+      const p = toEur(q.price, q.currency, usdEur, gbpEur)
+      if (p !== null) { totalValue += pos.quantity * p; priced++ }
     }
   })
 
   const pnl = totalValue - totalInvested
   const pnlPct = totalInvested > 0 ? (pnl / totalInvested) * 100 : 0
-  const pnlColor = pnl >= 0 ? 'text-green-500' : 'text-red-500'
-  const positionCount = positions.length
+  const isGain = pnl >= 0
 
   return (
-    <div className="rounded-xl p-6 mb-6 bg-[var(--color-bg-surface)] border border-[var(--color-border)]">
-      <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">
-        Vue globale
-      </h2>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-[var(--color-text-sub)] uppercase tracking-wide">
-            Total investi
-          </span>
-          <span className="text-xl font-bold text-[var(--color-text)]">
-            {formatEur(totalInvested)}
-          </span>
-        </div>
+    <div className="py-6">
+      {/* Valeur hero */}
+      <p className="text-sm text-[var(--color-text-sub)] mb-1">Valeur du portefeuille</p>
+      <p className="text-4xl font-bold tracking-tight text-[var(--color-text)] mb-2">
+        {priced > 0 ? formatEur(totalValue) : '—'}
+      </p>
 
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-[var(--color-text-sub)] uppercase tracking-wide">
-            Valeur actuelle
-          </span>
-          <span className="text-xl font-bold text-[var(--color-text)]">
-            {positionsWithPrice > 0 ? formatEur(totalValue) : '—'}
-          </span>
+      {/* P&L */}
+      {priced > 0 && (
+        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-6 ${
+          isGain
+            ? 'bg-[var(--color-green-bg)] text-[var(--color-green-text)]'
+            : 'bg-[var(--color-red-bg)] text-[var(--color-red-text)]'
+        }`}>
+          <span>{isGain ? '▲' : '▼'}</span>
+          <span>{formatEur(pnl)}</span>
+          <span>({formatPct(pnlPct)})</span>
         </div>
+      )}
 
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-[var(--color-text-sub)] uppercase tracking-wide">
-            P&L global
-          </span>
-          <span className={`text-xl font-bold ${positionsWithPrice > 0 ? pnlColor : 'text-[var(--color-text)]'}`}>
-            {positionsWithPrice > 0 ? formatEur(pnl) : '—'}
-          </span>
-          {positionsWithPrice > 0 && (
-            <span className={`text-sm font-medium ${pnlColor}`}>
-              {formatPct(pnlPct)}
-            </span>
-          )}
+      {/* Stats secondaires */}
+      <div className="flex gap-8">
+        <div>
+          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">Investi</p>
+          <p className="text-sm font-semibold text-[var(--color-text)]">{formatEur(totalInvested)}</p>
         </div>
-
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-[var(--color-text-sub)] uppercase tracking-wide">
-            Positions
-          </span>
-          <span className="text-xl font-bold text-[var(--color-text)]">
-            {positionCount}
-          </span>
+        <div>
+          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">Positions</p>
+          <p className="text-sm font-semibold text-[var(--color-text)]">{positions.length}</p>
         </div>
       </div>
     </div>

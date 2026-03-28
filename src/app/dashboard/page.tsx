@@ -1,51 +1,59 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import LogoutButton from '@/components/layout/LogoutButton'
 import PositionsSectionClient from '@/components/positions/PositionsSectionClient'
-import PositionsTable from '@/components/positions/PositionsTable'
 import PortfolioSummary from '@/components/portfolio/PortfolioSummary'
 import PnlStats from '@/components/portfolio/PnlStats'
+import LiquidityWidget from '@/components/portfolio/LiquidityWidget'
+import PositionsTable from '@/components/positions/PositionsTable'
 
 /**
- * Page dashboard principale — Server Component
- * Protegee par proxy.ts — redirect vers /auth/login si non connecte
+ * Page dashboard principale — Server Component.
+ * Protégée par proxy.ts — redirect vers /auth/login si non connecté.
  */
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) redirect('/auth/login')
 
   return (
-    <div className="min-h-screen p-10 bg-[var(--color-bg-primary)]">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-extrabold mb-1 text-[var(--color-text)]">
-              Portfolio Dashboard
-            </h1>
-            <p className="text-sm text-[var(--color-text-sub)]">
-              {user?.email}
-            </p>
-          </div>
-          <LogoutButton />
+    <div className="min-h-screen bg-[var(--color-bg-primary)]">
+      {/* Header */}
+      <header className="border-b border-[var(--color-border)] bg-[var(--color-bg-primary)] sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <span className="font-bold text-[var(--color-text)] tracking-tight">Portfolio</span>
+          <nav className="flex items-center gap-6">
+            <Link
+              href="/dashboard/historique"
+              className="text-sm text-[var(--color-text-sub)] hover:text-[var(--color-text)] transition-colors"
+            >
+              Historique
+            </Link>
+            <LogoutButton />
+          </nav>
         </div>
+      </header>
 
+      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+        {/* Hero */}
         <PortfolioSummary />
 
+        {/* Stats P&L */}
         <PnlStats />
 
-        <div className="rounded-xl p-6 mb-6 bg-[var(--color-bg-surface)] border border-[var(--color-border)]">
-          <PositionsSectionClient />
-        </div>
+        {/* Liquidités */}
+        <LiquidityWidget />
 
-        <div className="rounded-xl p-6 bg-[var(--color-bg-surface)] border border-[var(--color-border)]">
-          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">
-            Mes positions
-          </h2>
+        {/* Tableau positions */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-[var(--color-text)]">Mes positions</h2>
+            <PositionsSectionClient />
+          </div>
           <PositionsTable />
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   )
 }

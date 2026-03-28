@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 interface AddBuyButtonProps {
   id: string
@@ -126,9 +127,22 @@ export default function AddBuyButton({ id, ticker }: AddBuyButtonProps) {
           </button>
         </div>
       </form>
-      {errorMsg && (
-        <span className="text-xs text-red-500 text-right max-w-28">{errorMsg}</span>
-      )}
+      <Dialog open={errorMsg !== null} onOpenChange={(open) => { if (!open) setErrorMsg(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Erreur lors de l&apos;achat</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-[var(--color-text-sub)]">{errorMsg}</p>
+          <div className="flex justify-end">
+            <button
+              onClick={() => setErrorMsg(null)}
+              className="text-sm px-4 py-1.5 rounded border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-bg-surface)] transition-colors"
+            >
+              Fermer
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

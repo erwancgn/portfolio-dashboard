@@ -101,7 +101,7 @@ Nouveau PRU (DCA)  = (ancienne_quantité × ancien_pru + montant)
 - Nommage : camelCase variables, PascalCase composants, kebab-case fichiers
 - Commentaires JSDoc sur toutes les fonctions dans `src/lib/`
 - Commits : format conventionnel (feat:, fix:, docs:, chore:, test:)
-- Longueur fichier : max 200 lignes — diviser si dépassé
+- Longueur fichier : max 200 lignes — diviser si dépassé (exception : `src/types/database.ts` est généré automatiquement via `npx supabase gen types typescript --local`)
 
 ---
 
