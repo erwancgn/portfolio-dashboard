@@ -20,19 +20,18 @@
 
 ---
 
-## 🐛 Bug prioritaire S13 — À traiter en PREMIER
+## 🐛 Bug ouvert S13 — ISIN + Secteur absents à l'ajout (Tesla testé)
 
-**Symptôme** : recherche par nom (ex: "Amazon") → seul le ticker est remonté dans le formulaire, pas le secteur.
+**Symptôme** : ajout d'une position (ex: Tesla/TSLA) → champs ISIN et Secteur restent vides dans le formulaire.
 
-**Cause identifiée** : Yahoo Finance exige désormais un **crumb** (cookie `fc.yahoo.com` + token CSRF) pour l'endpoint `quoteSummary` — les appels sans crumb retournent `401 Unauthorized` ou `404 Not Found`.
+**Fix livré en S13** : migration de `fetchYahooSector()` → `fetchFmpProfile()` (#60 ✅ commité). FMP retourne logo, secteur, ISIN, description, pays.
 
-**Flux impacté** : `fetchYahooSector()` dans `src/lib/yahoo.ts` → appelle `/v10/finance/quoteSummary` sans crumb → retourne `undefined` → champ Secteur vide.
+**Bug résiduel** : malgré le fix, ISIN et Secteur ne s'affichent pas en local lors du test. Cause non encore diagnostiquée — à investiguer en S14 :
+- FMP retourne-t-il bien `isin` pour TSLA ? (à vérifier via curl sur `/api/v3/profile/TSLA`)
+- Le champ `isin` de FMP est-il bien mappé dans `fetchFmpProfile()` → `QuoteResponse` → `useAddPositionForm` ?
+- Le formulaire affiche-t-il bien les champs ISIN/Secteur quand ils sont non-vides ?
 
-**Fix à implémenter** :
-1. Fetch `https://fc.yahoo.com/` pour obtenir les cookies de session
-2. Fetch `https://query1.finance.yahoo.com/v1/test/getcrumb` avec ces cookies → crumb
-3. Ajouter `crumb=<value>` en query param + cookies dans les headers de `fetchYahooSector`
-4. Mettre en cache le crumb (durée de vie ~1h)
+**Fichiers suspects** : `src/lib/fmp.ts`, `src/app/api/quote/route.ts`, `src/components/positions/useAddPositionForm.ts`
 
 ---
 

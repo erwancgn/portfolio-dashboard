@@ -294,4 +294,34 @@ Le secteur est absent pour les ETF via `summaryProfile`.
 
 ---
 
+## 20. Sources de données enrichies — Architecture hybride FMP + Yahoo [S13]
+
+**Problème :** Yahoo Finance `quoteSummary` exige désormais un crumb (cookie CSRF)
+pour retourner secteur, description et ISIN. API non officielle fragile.
+
+**Solution :** Séparation claire enrichissement / prix live.
+
+| Rôle | API | Fréquence | Limite |
+|---|---|---|---|
+| Logo, secteur, ISIN, description, pays | FMP `/api/v3/profile/{ticker}` | 1 fois à l'ajout, cache DB | 250 req/jour (free) |
+| Prix live (US + EU + crypto) | Yahoo Finance `/chart` | Polling 60s | Aucune |
+| Devises | Frankfurter | À chaque refresh | Aucune |
+
+**Pourquoi pas FMP pour les prix :**
+FMP gratuit = 250 req/jour. Polling 60s × 20 positions = ~28 800 req/jour.
+Yahoo `/chart` (sans crumb, sans clé) reste supérieur pour les prix live EU.
+
+**Alternatives considérées :**
+- Fix crumb Yahoo seul : scraping CSRF fragile, pas de logo, risque de re-casser. Écarté.
+- Polygon.io : US uniquement. Écarté.
+- Alpha Vantage : 25 req/jour, couverture EU faible. Écarté.
+- Twelve Data : pas de logo, 800 req/jour. Écarté.
+
+**Variable d'environnement :** `FMP_API_KEY` (serveur uniquement, jamais `NEXT_PUBLIC_`)
+
+**Architecture en cascade à l'ajout de position :**
+1. DB — si ticker connu avec données enrichies → réutilisation immédiate
+2. FMP `/profile/{ticker}` → logo, secteur, ISIN, description, pays
+3. Fallback saisie manuelle si FMP ne retourne rien
+
 *Dernière mise à jour : Session 13 — 29/03/2026*
