@@ -1,0 +1,113 @@
+/**
+ * Fonctions d'acces a l'API Financial Modeling Prep (FMP).
+ * Cle API lue via process.env.FMP_API_KEY — jamais exposee cote client.
+ */
+
+/** Profil retourne par FMP /profile */
+export interface FmpProfile {
+  sector: string | undefined
+  industry: string | undefined
+  description: string | undefined
+  country: string | undefined
+  logoUrl: string | undefined
+  isin: string | undefined
+}
+
+/** Resultat retourne par FMP /search */
+export interface FmpSearchResult {
+  ticker: string
+  name: string
+  type: string
+}
+
+/** Reponse brute d'un item /profile FMP */
+interface FmpProfileRaw {
+  symbol?: string
+  sector?: string
+  industry?: string
+  description?: string
+  country?: string
+  image?: string
+  isin?: string
+}
+
+/** Reponse brute d'un item /search FMP */
+interface FmpSearchRaw {
+  symbol?: string
+  name?: string
+  stockExchange?: string
+  exchangeShortName?: string
+}
+
+/**
+ * Recupere le profil enrichi d'un actif via FMP /profile.
+ * Retourne : sector, industry, description, country, logoUrl, isin.
+ * Retourne null en cas d'erreur ou si l'actif est inconnu.
+ *
+ * @param ticker - Symbole boursier (ex: AAPL, MC.PA)
+ */
+export async function fetchFmpProfile(ticker: string): Promise<FmpProfile | null> {
+  const apiKey = process.env.FMP_API_KEY
+  if (!apiKey) {
+    console.error('[fmp] FMP_API_KEY manquante')
+    return null
+  }
+
+  try {
+    const url = `https://financialmodelingprep.com/api/v3/profile/${encodeURIComponent(ticker)}?apikey=${apiKey}`
+    const res = await fetch(url, { cache: 'no-store' })
+    if (!res.ok) return null
+
+    const data = (await res.json()) as FmpProfileRaw[]
+    if (!Array.isArray(data) || data.length === 0) return null
+
+    const item = data[0]
+    return {
+      sector: item.sector || undefined,
+      industry: item.industry || undefined,
+      description: item.description || undefined,
+      country: item.country || undefined,
+      logoUrl: item.image || undefined,
+      isin: item.isin || undefined,
+    }
+  } catch (err) {
+    console.error('[fmp] fetchFmpProfile error:', err)
+    return null
+  }
+}
+
+/**
+ * Recherche des actifs via FMP /search.
+ * Retourne un tableau de { ticker, name, type } ou [] en cas d'erreur.
+ *
+ * @param query - Terme de recherche (ex: "Apple", "MSFT")
+ */
+export async function fetchFmpSearch(query: string): Promise<FmpSearchResult[]> {
+  const apiKey = process.env.FMP_API_KEY
+  if (!apiKey) {
+    console.error('[fmp] FMP_API_KEY manquante')
+    return []
+  }
+
+  try {
+    const url = `https://financialmodelingprep.com/api/v3/search?query=${encodeURIComponent(query)}&limit=8&apikey=${apiKey}`
+    const res = await fetch(url, { cache: 'no-store' })
+    if (!res.ok) return []
+
+    const data = (await res.json()) as FmpSearchRaw[]
+    if (!Array.isArray(data)) return []
+
+    return data
+      .filter((item): item is FmpSearchRaw & { symbol: string; name: string } =>
+        typeof item.symbol === 'string' && typeof item.name === 'string',
+      )
+      .map((item) => ({
+        ticker: item.symbol,
+        name: item.name,
+        type: item.exchangeShortName ?? item.stockExchange ?? '',
+      }))
+  } catch (err) {
+    console.error('[fmp] fetchFmpSearch error:', err)
+    return []
+  }
+}

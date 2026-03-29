@@ -6,6 +6,7 @@ import AddBuyButton from './AddBuyButton'
 import SellButton from './SellButton'
 import type { PositionRow } from './PositionsTable'
 import { formatEur, formatPct } from '@/lib/format'
+import TickerLogo from '@/components/ui/TickerLogo'
 
 interface Props {
   rows: PositionRow[]
@@ -45,10 +46,15 @@ export default function PositionsTableView({ rows }: Props) {
                   className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-bg-surface)] cursor-pointer transition-colors"
                 >
                   <td className="px-4 py-3">
-                    <p className="font-semibold text-[var(--color-text)]">{row.ticker}</p>
-                    {row.name && (
-                      <p className="text-xs text-[var(--color-text-sub)] truncate max-w-[140px]">{row.name}</p>
-                    )}
+                    <div className="flex items-center gap-3">
+                      <TickerLogo logoUrl={row.logo_url} ticker={row.ticker} size="sm" />
+                      <div>
+                        <p className="font-semibold text-[var(--color-text)]">{row.ticker}</p>
+                        {row.name && (
+                          <p className="text-xs text-[var(--color-text-sub)] truncate max-w-[120px]">{row.name}</p>
+                        )}
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-right font-medium tabular-nums text-[var(--color-text)]">
                     {row.valeur !== null ? formatEur(row.valeur) : '—'}
@@ -83,6 +89,9 @@ export default function PositionsTableView({ rows }: Props) {
           {selected && (
             <>
               <SheetHeader className="mb-6">
+                <div className="mb-3">
+                  <TickerLogo logoUrl={selected.logo_url} ticker={selected.ticker} size="md" />
+                </div>
                 <SheetTitle className="text-[var(--color-text)]">{selected.ticker}</SheetTitle>
                 {selected.name && (
                   <p className="text-sm text-[var(--color-text-sub)]">{selected.name}</p>

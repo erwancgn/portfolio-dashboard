@@ -117,6 +117,8 @@ export async function fetchYahooChart(ticker: string): Promise<YahooChartMeta> {
  * Recupere le secteur d'un actif via Yahoo Finance /quoteSummary.
  * Actions : summaryProfile.sector / ETF : top de topHoldings.sectorWeightings.
  * Retourne undefined en cas d'echec (echec silencieux — secteur optionnel).
+ *
+ * @deprecated Remplacee par fetchFmpProfile — Yahoo quoteSummary exige un crumb depuis S12.
  */
 export async function fetchYahooSector(ticker: string): Promise<string | undefined> {
   try {

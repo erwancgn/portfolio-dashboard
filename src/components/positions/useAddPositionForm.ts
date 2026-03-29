@@ -14,6 +14,10 @@ export interface FormState {
   pru: string
   envelope: string
   currency: string
+  logo_url: string
+  industry: string
+  description: string
+  country: string
 }
 
 export const INITIAL_STATE: FormState = {
@@ -26,6 +30,10 @@ export const INITIAL_STATE: FormState = {
   pru: '',
   envelope: '',
   currency: 'EUR',
+  logo_url: '',
+  industry: '',
+  description: '',
+  country: '',
 }
 
 /**
@@ -89,6 +97,10 @@ export function useAddPositionForm(onPositionAdded: () => void) {
           ...prev,
           ...(data.isin && !prev.isin ? { isin: data.isin } : {}),
           ...(data.sector && !prev.sector ? { sector: data.sector } : {}),
+          ...(data.logoUrl ? { logo_url: data.logoUrl } : {}),
+          ...(data.industry ? { industry: data.industry } : {}),
+          ...(data.description ? { description: data.description } : {}),
+          ...(data.country ? { country: data.country } : {}),
         }))
         if (data.isin) setIsinStatus('found')
       })
@@ -106,6 +118,10 @@ export function useAddPositionForm(onPositionAdded: () => void) {
           ...prev,
           ...(data.isin ? { isin: data.isin } : {}),
           ...(data.sector ? { sector: data.sector } : {}),
+          ...(data.logoUrl ? { logo_url: data.logoUrl } : {}),
+          ...(data.industry ? { industry: data.industry } : {}),
+          ...(data.description ? { description: data.description } : {}),
+          ...(data.country ? { country: data.country } : {}),
         }))
         if (data.isin) setIsinStatus('found')
       })
@@ -133,6 +149,10 @@ export function useAddPositionForm(onPositionAdded: () => void) {
       pru: parseFloat(form.pru),
       envelope: form.envelope || undefined,
       currency: form.currency,
+      logo_url: form.logo_url || undefined,
+      industry: form.industry || undefined,
+      description: form.description || undefined,
+      country: form.country || undefined,
     }
 
     try {

@@ -215,9 +215,12 @@ export type Database = {
           created_at: string | null
           currency: string | null
           current_price: number | null
+          description: string | null
           envelope: string | null
           id: string
+          industry: string | null
           isin: string | null
+          logo_url: string | null
           name: string | null
           pru: number
           quantity: number
@@ -232,9 +235,12 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           current_price?: number | null
+          description?: string | null
           envelope?: string | null
           id?: string
+          industry?: string | null
           isin?: string | null
+          logo_url?: string | null
           name?: string | null
           pru?: number
           quantity?: number
@@ -249,9 +255,12 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           current_price?: number | null
+          description?: string | null
           envelope?: string | null
           id?: string
+          industry?: string | null
           isin?: string | null
+          logo_url?: string | null
           name?: string | null
           pru?: number
           quantity?: number

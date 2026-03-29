@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { fetchYahooChart, fetchYahooSector, YahooApiError } from '@/lib/yahoo'
+import { fetchYahooChart, YahooApiError } from '@/lib/yahoo'
+import { fetchFmpProfile } from '@/lib/fmp'
 
 /** Reponse retournee par cette route */
 export interface QuoteResponse {
@@ -10,6 +11,10 @@ export interface QuoteResponse {
   currency: string
   isin?: string
   sector?: string
+  industry?: string
+  description?: string
+  country?: string
+  logoUrl?: string
   updatedAt: string
 }
 
@@ -21,7 +26,7 @@ interface ErrorResponse {
 
 /**
  * Recupere le prix et les metadonnees d'un actif.
- * Cascade : DB cache → Yahoo /chart → Yahoo /quoteSummary.
+ * Cascade : DB cache → Yahoo /chart → FMP /profile.
  */
 async function fetchPrice(ticker: string): Promise<QuoteResponse> {
   // 1. Lookup DB — isin + secteur deja connus pour ce ticker
@@ -50,8 +55,9 @@ async function fetchPrice(ticker: string): Promise<QuoteResponse> {
   const meta = await fetchYahooChart(ticker)
   const isin = cachedIsin ?? meta.isin
 
-  // 3. Yahoo /quoteSummary — secteur si absent du cache DB
-  const sector = cachedSector ?? await fetchYahooSector(ticker)
+  // 3. FMP /profile — secteur, industry, description, country, logoUrl
+  const fmp = await fetchFmpProfile(ticker)
+  const sector = cachedSector ?? fmp?.sector
 
   return {
     ticker: ticker.toUpperCase(),
@@ -60,6 +66,10 @@ async function fetchPrice(ticker: string): Promise<QuoteResponse> {
     currency: meta.currency,
     ...(isin ? { isin } : {}),
     ...(sector ? { sector } : {}),
+    ...(fmp?.industry ? { industry: fmp.industry } : {}),
+    ...(fmp?.description ? { description: fmp.description } : {}),
+    ...(fmp?.country ? { country: fmp.country } : {}),
+    ...(fmp?.logoUrl ? { logoUrl: fmp.logoUrl } : {}),
     updatedAt: new Date().toISOString(),
   }
 }
