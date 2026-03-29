@@ -124,15 +124,20 @@ Nouveau PRU        : (1000 + 200) / (10 + 2.1) = 99.17€
 
 ---
 
-## 8. Agents IA — modèles choisis et pourquoi
+## 8. Agents IA — modèles et architecture [S13]
 
-| Agent | Modèle | Raison |
-|---|---|---|
-| Surveillance | Claude Haiku | Tâche simple + répétitive → moins cher |
-| Newsletter | Claude Sonnet | Rédaction de qualité nécessaire |
-| Chat (V1.5) | Claude Sonnet | Raisonnement complexe sur le portfolio |
+**Architecture prévue :** API Claude intégrée dans Next.js API Routes, contexte portfolio injecté (positions, P&L, allocation, historique).
 
-**Budget estimé :** ~7€/mois
+| Fonctionnalité | Modèle | Raison | Ticket |
+|---|---|---|---|
+| Chat IA portfolio | Claude Sonnet | Raisonnement sur données financières complexes, bon ratio coût/qualité | #57 |
+| Analyse titre — Quick | Claude Haiku | Résumé 3 lignes + signal HOLD/BUY/SELL — rapide et peu coûteux | #58 |
+| Analyse titre — Standard | Claude Sonnet | Analyse technique + fondamentale + risques — qualité intermédiaire | #58 |
+| Analyse titre — Full | Claude Opus | Analyse institutionnelle complète + scénarios — qualité maximale | #58 |
+
+**Pourquoi 3 niveaux d'analyse :** Le coût par requête varie de x1 (Haiku) à x30 (Opus). L'utilisateur choisit la profondeur selon son besoin — quick pour un survol, full pour une décision d'investissement.
+
+**Budget estimé :** ~7€/mois (usage solo, majorité Haiku/Sonnet)
 **Garde-fou :** Spending limit 20€/mois sur dashboard Anthropic
 
 ---
@@ -289,4 +294,4 @@ Le secteur est absent pour les ETF via `summaryProfile`.
 
 ---
 
-*Dernière mise à jour : Session 12 — 28/03/2026*
+*Dernière mise à jour : Session 13 — 29/03/2026*

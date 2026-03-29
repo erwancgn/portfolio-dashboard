@@ -7,24 +7,23 @@
 
 ---
 
-## [0.1.0] — 2026-03-25 — MVP en ligne
-
-### Added
-- **Suppression de position** — bouton par ligne avec confirmation, feedback erreur visible (US-004)
-- **Supabase production** — base de données prod sur supabase.com, migrations appliquées, RLS actif
-- **Déploiement Vercel** — app en production sur https://portfolio-zeta-fawn-73.vercel.app
-
----
-
 ## [Unreleased]
 > Fonctionnalités en cours de développement — pas encore livrées en version taguée.
 
-### Added (Session 12)
+*(vide)*
+
+---
+
+## [0.2.0] — 2026-03-28 — Dashboard complet
+
+### Added
 - **Graphique allocation** — donut chart Recharts par enveloppe (PEA/CTO/Crypto) et par secteur, onglets, légende avec %, intégré dans le dashboard (#52/#53)
 - **ISIN/Secteur enrichi** — `/api/quote` : DB cache d'abord, puis Yahoo Finance chart + quoteSummary (summaryProfile pour actions, topHoldings.sectorWeightings pour ETF), fallback saisie manuelle
 - **Secteur ETF** — extraction du secteur dominant depuis sectorWeightings Yahoo, normalisé (ex: "technology" → "Technology")
-
-### Added (Session 11)
+- **Vues Poids/Secteur/Pays** — AnalyseSection + AnalyseChart avec prix live, tri décroissant, barres de progression, onglets (#18/#20)
+- **Vue Pays** — déduction du pays depuis le suffix ticker (.PA→France, .MI→Italie, etc.)
+- **Module `src/lib/yahoo.ts`** — fetchYahooChart, fetchYahooSector, types YahooChartMeta/YahooApiError, mapping SECTOR_LABELS
+- **Agents IA** — ux-agent (designer fintech), skill design-review, skill finance-formulas
 - **shadcn/ui** — composants `Dialog`, `Sheet`, `Table` disponibles dans `src/components/ui/`, lib `cn()` dans `src/lib/utils.ts` (#51)
 - **Transactions atomiques** — RPCs PostgreSQL `buy_position` et `sell_position` : PRU + historique en une seule transaction SQL (#47)
 - **Vente partielle ou totale** — `SellButton` avec formulaire qty + prix, prévisualisation P&L + taxe + net en temps réel (#47/#55)
@@ -32,8 +31,6 @@
 - **Liquidités par enveloppe** — table `liquidities`, widget dashboard total + PEA + CTO/Autre, `DepositButton` pour apports/retraits manuels (#55)
 - **Page Historique** — `/dashboard/historique` avec filtres date, badges Achat/Vente/Apport/Retrait, colonne Taxe (#47/#55)
 - **Refonte UI/UX** — thème light blanc/noir/bleu, hero valeur portfolio, PnlStats compact, tableau 5 colonnes + Sheet drawer détails, formulaire en Dialog modale (#50)
-
-### Added
 - **API Route `/api/quote`** — prix temps réel actions/ETF (Yahoo Finance, couverture mondiale) et crypto (CoinGecko). Paramètres : `ticker`, `type` (stock|crypto).
 - **API Route `/api/exchange-rate`** — taux de change via Frankfurter (gratuit, sans clé). Paramètres : `from`, `to`. Retourne `{ from, to, rate }`.
 - **API Route `/api/search`** — recherche par nom ou ticker (Yahoo Finance pour stocks/ETF, CoinGecko pour crypto). Retourne max 8 suggestions `{ ticker, name, type }`.
@@ -58,6 +55,19 @@
 - Conversion devise : prix USD/GBp/GBP convertis en EUR via Frankfurter avant affichage
 - Dropdown suggestions : ne rouvre plus après sélection d'une suggestion
 - ISIN : auto-rempli depuis la sélection d'une suggestion si Yahoo Finance le retourne
+- Polish UI : tokens CSS cohérents, `tabular-nums` sur chiffres, hiérarchie visuelle
+
+### Known Issues
+- `fetchYahooSector()` échoue silencieusement — Yahoo exige un crumb (cookie + CSRF) pour `/quoteSummary` → secteur vide à l'ajout de position
+
+---
+
+## [0.1.0] — 2026-03-25 — MVP en ligne
+
+### Added
+- **Suppression de position** — bouton par ligne avec confirmation, feedback erreur visible (US-004)
+- **Supabase production** — base de données prod sur supabase.com, migrations appliquées, RLS actif
+- **Déploiement Vercel** — app en production sur https://portfolio-zeta-fawn-73.vercel.app
 
 ---
 
@@ -65,6 +75,7 @@
 
 | Version | Date | Statut |
 |---------|------|--------|
+| [0.2.0] | 2026-03-28 | ✅ Dashboard complet — allocation, vues, transactions, fiscalité, UI refonte |
 | [0.1.0] | 2026-03-25 | ✅ Déployé sur Vercel — MVP (auth, positions, prix temps réel) |
 
 ---
