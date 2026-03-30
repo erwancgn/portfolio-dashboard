@@ -1,7 +1,19 @@
-# SESSION.md — Session 13
+# SESSION.md — Session 14
 
 > Format ultra-compact pour économiser les tokens de contexte.
 > Historique complet → DEVLOG.md
+
+---
+
+## Session 13 — Clôturée ✅ (30/03/2026)
+
+| Ticket | Titre | Statut |
+|--------|-------|--------|
+| #60 | Fix ISIN/Secteur via FMP | ✅ Livré |
+| #56 | Refonte dashboard — bandeau récap + tableau | ✅ Livré |
+| #59 | DCA depuis tableau principal | ✅ Livré |
+| #58 | Quick Analyse Titre — Gemini + Search Grounding | ✅ Livré (beta) |
+| TECH | Status line Cursor (tokens + progression) | ✅ Livré |
 
 ---
 
@@ -20,7 +32,14 @@
 
 ---
 
-## 🐛 Bug ouvert S13 — ISIN + Secteur absents à l'ajout (Tesla testé)
+## 🐛 Bug résiduel S14 — ISIN à l'ajout d'une nouvelle position
+
+**Symptôme** : enrichissement fonctionne au chargement des positions existantes, mais ISIN peut rester vide à l'ajout d'une toute nouvelle position.
+**À vérifier** : `src/lib/fmp.ts` mapping isin + `src/app/api/quote/route.ts` + `useAddPositionForm.ts`
+
+---
+
+## ~~🐛 Bug ouvert S13~~ — Résolu ✅ — ISIN + Secteur absents à l'ajout (Tesla testé)
 
 **Symptôme** : ajout d'une position (ex: Tesla/TSLA) → champs ISIN et Secteur restent vides dans le formulaire.
 
@@ -35,55 +54,29 @@
 
 ---
 
-## Objectif Session 13 — Refonte graphique totale
-
-### Référence UX
-**Moning** : https://moning.co/dashboard/portfolio/5d5b7bf2-c378-4f8f-b7db-c6403a16131c
-Mix Trade Republic (minimalisme) + Moning (features investisseur FR)
+## Objectif Session 14 — Polish + finitions
 
 ### Tickets
 
 | # | Titre | Priorité |
 |---|-------|----------|
-| #56 | EPIC 14 — Refonte dashboard : bandeau récap + tableau | P1 |
-| #57 | EPIC 15 — Page Analyse : vues + chat IA portfolio | P1 |
-| #58 | EPIC 16 — Page Analyse Titre : quick/standard/full | P1 |
-| #59 | FEAT — DCA depuis tableau principal | P1 |
-
----
-
-## Plan technique S13
-
-### Page Dashboard (refonte #56)
-**Bandeau récap (hero)** : Valeur totale / Plus-value (€+%) / Valeur investie / Nb positions
-**Tableau positions** : tri par colonne, bouton DCA par ligne, Achat/Vente inline
-
-### Page Analyse (#57) — `/dashboard/analyse`
-- Déplacer AllocationSection + AnalyseSection depuis dashboard
-- Chat IA : Claude API avec contexte portfolio (positions + P&L + allocation)
-- Agent : accès positions, historique, secteurs → répond en français
-
-### Page Analyse Titre (#58) — `/dashboard/analyse/[ticker]`
-- Quick (Haiku) : résumé 3 lignes + signal HOLD/BUY/SELL
-- Standard (Sonnet) : analyse technique + fondamentale + risques
-- Full (Opus) : analyse institutionnelle complète + scénarios
-
-### Feature DCA (#59)
-- Bouton DCA sur chaque ligne du tableau → Sheet/Dialog
-- Champs : montant €, rythme, date première exécution, enveloppe
-- Table DB `dca_rules`, lié à `transactions`
-- Ferme #4, #22, #23, #24
+| #58 UX | Améliorer rendu markdown QuickAnalysis (tables, typo) | P1 |
+| #57 | EPIC 15 — Page Analyse : chat IA portfolio | P1 |
+| #61 | Afficher logo + pays dans le tableau positions | P2 |
+| BUG | ISIN à l'ajout d'une nouvelle position | P1 |
 
 ---
 
 ## Stack en place
 
-- Auth Supabase ✅ · Yahoo Finance `/api/quote` + `/api/search` ✅
+- Auth Supabase ✅ · FMP `/stable/profile` (logo, ISIN, secteur, pays) ✅
 - `AllocationChart` (donut Recharts) ✅ · `AnalyseChart` (Poids/Secteur/Pays) ✅
-- `PortfolioSummary` hero ✅ · `PnlStats` compact ✅ · `LiquidityWidget` ✅
+- `PortfolioSummary` hero ✅ · `LiquidityWidget` ✅
 - Transactions atomiques (RPCs PostgreSQL) ✅ · Historique `/dashboard/historique` ✅
 - Fiscalité flat tax 30% CTO/Crypto, 0% PEA ✅ · Thème light blanc/noir/bleu ✅
-- `src/lib/yahoo.ts` (fetchYahooChart, fetchYahooSector) ✅
+- `src/lib/fmp.ts` (fetchFmpProfile : logo, secteur, ISIN, pays) ✅
+- Page Analyse `/dashboard/analyse` + QuickAnalysis (Gemini 2.5 Flash-Lite + Search Grounding) ✅
+- DCA : table `dca_rules` + route `/api/dca` + `DcaButton` + `PositionDrawer` ✅
 - ux-agent + design-review skill + finance-formulas skill ✅
 - Production : https://portfolio-zeta-fawn-73.vercel.app ✅
 
@@ -91,15 +84,17 @@ Mix Trade Republic (minimalisme) + Moning (features investisseur FR)
 
 ```
 src/app/dashboard/page.tsx
+src/app/dashboard/analyse/page.tsx              ← page analyse + QuickAnalysis
 src/app/dashboard/historique/page.tsx
-src/components/portfolio/PortfolioSummary.tsx    ← hero valeur
-src/components/portfolio/AllocationSection.tsx   ← donut enveloppe/secteur
-src/components/portfolio/AnalyseSection.tsx      ← Poids/Secteur/Pays live
-src/components/portfolio/AnalyseChart.tsx        ← Client tabs
-src/components/positions/PositionsTableView.tsx  ← tableau + Sheet drawer
-src/lib/yahoo.ts                                 ← fetchYahooChart, fetchYahooSector
-src/lib/quote.ts                                 ← fetchQuote + fetchRate (React cache)
-src/types/database.ts                            ← types générés Supabase
+src/components/portfolio/PortfolioSummary.tsx   ← hero valeur
+src/components/portfolio/AllocationSection.tsx  ← donut enveloppe/secteur
+src/components/analyse/QuickAnalysis.tsx        ← analyse IA titre (Gemini)
+src/components/positions/PositionsTableView.tsx ← tableau + DCA drawer
+src/app/api/analyse/ticker/route.ts             ← Gemini Search Grounding
+src/app/api/dca/route.ts                        ← règles DCA
+src/agents/quick-analyse.md                     ← system prompt Gemini (5 sections)
+src/lib/fmp.ts                                  ← fetchFmpProfile
+src/types/database.ts                           ← types générés Supabase
 ```
 
 ---
@@ -110,4 +105,4 @@ Après chaque US/TASK : appel obligatoire au `test-agent` avant de considérer l
 
 ---
 
-*Mis à jour : clôture Session 12 — 28/03/2026*
+*Mis à jour : clôture Session 13 — 30/03/2026*

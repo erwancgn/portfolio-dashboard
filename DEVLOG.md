@@ -100,4 +100,45 @@ Enrichissement ISIN/secteur Yahoo Finance + graphiques d'allocation (donut Recha
 
 ---
 
-*Dernière mise à jour : Session 12 — 28/03/2026*
+## Session 13 — [30/03/2026]
+
+### Contexte
+Refonte dashboard, page Analyse, DCA, Quick Analyse IA via Gemini. Clôture tickets #56, #57(partiel), #58, #59, #60.
+
+### Ce qu'on a fait
+- [x] **#60 Fix ISIN/Secteur** — Migration `fetchYahooSector()` → `fetchFmpProfile()`. FMP `/stable/profile` retourne logo, secteur, ISIN, industrie, pays. Enrichissement automatique en parallèle des positions sans ISIN/secteur au chargement (`enrichMissingMetadata` dans `positions/route.ts`).
+- [x] **#56 Refonte dashboard** — `PortfolioSummary` refondu (hero : valeur totale, P&L €/%, valeur investie, nb positions). `PositionsTableView` refonte complète avec tri par colonne et bouton DCA par ligne.
+- [x] **#59 DCA** — Route `POST/GET /api/dca`, migration Supabase `dca_rules` (montant, rythme, enveloppe PEA/CTO/PER, date début). `DcaButton` + `PositionDrawer` (Sheet formulaire depuis le tableau).
+- [x] **#58 Quick Analyse (beta)** — Page `/dashboard/analyse` avec `QuickAnalysis` component. Route `POST /api/analyse/ticker` : appel Gemini 2.5 Flash-Lite + Google Search Grounding (données réelles). System prompt 5 sections (Snapshot, Métriques, Forces/Faiblesses, Consensus, Verdict + score /100). Rendu markdown via `react-markdown`. Gestion quota 429 (bandeau ambre).
+- [x] **Status line Cursor** — Script `statusline-command.sh` : barre de progression contexte + tokens session + modèle actif.
+
+### Erreurs rencontrées
+| Erreur | Cause | Solution |
+|---|---|---|
+| Gemini model `gemini-2.5-flash-lite-preview-06-17` → 404 | ID déprécié | Listé les modèles via API → `gemini-2.5-flash-lite` |
+| `googleSearchRetrieval` → 400 | SDK Gemini v0.24 utilise `googleSearch` | Remplacé le nom du tool |
+| TS2353 `googleSearch` not in `Tool` type | Typage SDK en retard sur l'API | Cast `as any` avec `eslint-disable` |
+| Markdown non rendu | `react-markdown` non installé malgré l'import | `npm install react-markdown` |
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| Gemini 2.5 Flash-Lite + Search Grounding au lieu de Claude Haiku | Haiku sans web search hallucine les métriques financières — Gemini grounding = données réelles |
+| `GOOGLE_AI_API_KEY` côté serveur uniquement | Sécurité — jamais de clé exposée côté client |
+| Réponse Gemini = markdown complet + JSON `{signal, score}` en fin | Signal structuré pour le badge + analyse riche pour l'affichage |
+| `matchAll` + dernier match pour extraire le JSON | Le prompt markdown contient des blocs JSON intermédiaires — seul le dernier est le vrai signal |
+
+### Avertissements ouverts
+- **#58 rendu UX** : markdown rendu fonctionnel mais style à améliorer (tables, typographie) — à traiter en S14
+- **GOOGLE_AI_API_KEY** : à ajouter dans Vercel env vars pour que la prod fonctionne
+- **Bug ISIN résiduel** : enrichissement fonctionne au chargement des positions existantes, mais ISIN à l'ajout d'une nouvelle position à re-vérifier
+
+### Prochaine session (S14)
+- [ ] UX : améliorer le rendu markdown de QuickAnalysis (tables, typographie, espacement)
+- [ ] Vérifier ISIN à l'ajout d'une nouvelle position (bug résiduel S13)
+- [ ] #57 : finaliser Page Analyse (chat IA portfolio avec contexte positions)
+- [ ] #61 : logo + pays dans le tableau positions
+
+---
+
+*Dernière mise à jour : Session 13 — 30/03/2026*
