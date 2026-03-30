@@ -5,6 +5,7 @@
 
 /** Profil retourne par FMP /profile */
 export interface FmpProfile {
+  name: string | undefined
   sector: string | undefined
   industry: string | undefined
   description: string | undefined
@@ -66,6 +67,7 @@ export async function fetchFmpProfile(ticker: string): Promise<FmpProfile | null
 
     const item = data[0]
     return {
+      name: item.companyName || undefined,
       sector: item.sector || undefined,
       industry: item.industry || undefined,
       description: item.description || undefined,

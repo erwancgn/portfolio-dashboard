@@ -6,7 +6,7 @@ import SellButton from './SellButton'
 import DcaButton from './DcaButton'
 import PositionDrawer from './PositionDrawer'
 import type { PositionRow, DcaRuleMap } from './PositionsTable'
-import { formatEur, formatPct } from '@/lib/format'
+import { formatEur, formatPct, countryToFlag } from '@/lib/format'
 import TickerLogo from '@/components/ui/TickerLogo'
 
 interface Props {
@@ -17,6 +17,15 @@ interface Props {
 type SortKey = 'ticker' | 'type' | 'priceEur' | 'valeur' | 'pnl' | 'pnlPct' | 'poids'
 type SortDir = 'asc' | 'desc'
 
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: 'pnl',      label: 'P&L €' },
+  { key: 'pnlPct',   label: 'P&L %' },
+  { key: 'valeur',   label: 'Valeur' },
+  { key: 'poids',    label: 'Poids' },
+  { key: 'priceEur', label: 'Prix' },
+  { key: 'ticker',   label: 'Ticker' },
+]
+
 /** Compare deux valeurs nullables — les nulls vont toujours en dernier */
 function compareNullable(a: number | null, b: number | null, dir: SortDir): number {
   if (a === null && b === null) return 0
@@ -25,44 +34,23 @@ function compareNullable(a: number | null, b: number | null, dir: SortDir): numb
   return dir === 'asc' ? a - b : b - a
 }
 
-interface SortIconProps {
-  col: SortKey
-  activeKey: SortKey
-  activeDir: SortDir
-}
-
-/** Icone de tri — affiche la direction si la colonne est active */
-function SortIcon({ col, activeKey, activeDir }: SortIconProps) {
-  if (activeKey !== col) return <span className="ml-1 opacity-30">↕</span>
-  return <span className="ml-1">{activeDir === 'asc' ? '↑' : '↓'}</span>
-}
-
-interface ThProps {
-  col: SortKey
-  label: string
-  right?: boolean
-  activeKey: SortKey
-  activeDir: SortDir
-  onSort: (key: SortKey) => void
-}
-
-/** En-tête de colonne triable */
-function Th({ col, label, right = false, activeKey, activeDir, onSort }: ThProps) {
+/** Badge métrique — label au-dessus, valeur en dessous */
+function MetricCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <th
-      onClick={() => onSort(col)}
-      className={`px-3 py-3 text-xs font-semibold text-[var(--color-text-sub)] uppercase tracking-wide cursor-pointer select-none hover:text-[var(--color-text)] transition-colors ${right ? 'text-right' : 'text-left'}`}
-    >
-      {label}
-      <SortIcon col={col} activeKey={activeKey} activeDir={activeDir} />
-    </th>
+    <div className="flex flex-col gap-0.5 min-w-0">
+      <span className="text-[10px] font-medium text-[var(--color-text-sub)] uppercase tracking-wide whitespace-nowrap">
+        {label}
+      </span>
+      <div className="text-sm tabular-nums text-[var(--color-text)]">{children}</div>
+    </div>
   )
 }
 
 /**
  * PositionsTableView — Client Component.
- * Tableau 8 colonnes avec tri par colonne.
- * Clic sur une ligne → drawer de détails.
+ * Layout card double-ligne inspiré Moning :
+ * - Ligne 1 : identité (logo · pays · nom) + investissement (qty × PRU · montant)
+ * - Ligne 2 : métriques marché (ticker · type · enveloppe · prix · valeur · P&L · poids) + actions
  */
 export default function PositionsTableView({ rows, dcaRules }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('pnl')
@@ -99,84 +87,129 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
     }
   })
 
-  const thProps = { activeKey: sortKey, activeDir: sortDir, onSort: handleSort }
-
   return (
     <>
-      <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
-        <table className="w-full text-sm min-w-[700px]">
-          <thead>
-            <tr className="bg-[var(--color-bg-surface)] border-b border-[var(--color-border)]">
-              <Th col="ticker"   label="Actif"     {...thProps} />
-              <Th col="type"     label="Type"      {...thProps} />
-              <Th col="priceEur" label="Prix"      right {...thProps} />
-              <Th col="valeur"   label="Valeur €"  right {...thProps} />
-              <Th col="pnl"      label="P&L €"     right {...thProps} />
-              <Th col="pnlPct"   label="P&L %"     right {...thProps} />
-              <Th col="poids"    label="Poids %"   right {...thProps} />
-              <th className="px-3 py-3 text-right text-xs font-semibold text-[var(--color-text-sub)] uppercase tracking-wide">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((row) => {
-              const isGain = row.pnl !== null && row.pnl >= 0
-              const pnlColor = row.pnl === null
-                ? 'text-[var(--color-text-sub)]'
-                : isGain ? 'text-[var(--color-green-text)]' : 'text-[var(--color-red-text)]'
+      {/* Barre de tri */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-xs text-[var(--color-text-sub)]">Trier par</span>
+        <div className="flex flex-wrap gap-1.5">
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.key}
+              onClick={() => handleSort(opt.key)}
+              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                sortKey === opt.key
+                  ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white font-medium'
+                  : 'border-[var(--color-border)] text-[var(--color-text-sub)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'
+              }`}
+            >
+              {opt.label}
+              {sortKey === opt.key && (
+                <span className="ml-1 opacity-80">{sortDir === 'asc' ? '↑' : '↓'}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
 
-              return (
-                <tr
-                  key={row.id}
+      {/* Cards */}
+      <div className="space-y-2">
+        {sorted.map((row) => {
+          const isGain = row.pnl !== null && row.pnl >= 0
+          const pnlColor = row.pnl === null
+            ? 'text-[var(--color-text-sub)]'
+            : isGain ? 'text-[var(--color-green-text)]' : 'text-[var(--color-red-text)]'
+          const montantInvesti = row.quantity != null && row.pru != null
+            ? row.quantity * row.pru
+            : null
+
+          return (
+            <div
+              key={row.id}
+              onClick={() => setSelected(row)}
+              className="grid grid-cols-[auto_1fr] rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-accent)] cursor-pointer transition-colors overflow-hidden"
+            >
+              {/* ── Colonne logo : s'étend sur les 2 lignes ── */}
+              <div className="row-span-2 flex items-center justify-center px-4 border-r border-[var(--color-border)]">
+                <TickerLogo logoUrl={row.logo_url} ticker={row.ticker} size="md" />
+              </div>
+
+              {/* ── Ligne 1 : identité + investissement ── */}
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                {/* Gauche : nom + pays */}
+                <div className="min-w-0 flex items-center gap-2">
+                  <p className="font-semibold text-sm text-[var(--color-text)] leading-tight truncate">
+                    {row.name ?? row.ticker}
+                  </p>
+                  {row.country && (
+                    <span className="text-xs text-[var(--color-text-sub)] whitespace-nowrap shrink-0">
+                      {countryToFlag(row.country)} {row.country}
+                    </span>
+                  )}
+                </div>
+
+                {/* Droite : quantité × PRU + montant investi */}
+                <div className="flex items-center gap-2 shrink-0">
+                  {montantInvesti !== null && row.pru !== null && row.quantity != null && (
+                    <span className="text-xs text-[var(--color-text-sub)] bg-[var(--color-bg-surface)] border border-[var(--color-border)] px-2 py-1 rounded-lg tabular-nums whitespace-nowrap">
+                      {row.quantity % 1 === 0 ? row.quantity : row.quantity.toFixed(4)} × {formatEur(row.pru)}
+                    </span>
+                  )}
+                  {montantInvesti !== null && (
+                    <span className="text-sm font-semibold text-white bg-[var(--color-accent)] px-3 py-1 rounded-lg tabular-nums whitespace-nowrap">
+                      {formatEur(montantInvesti)}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Ligne 2 : métriques marché + actions ── */}
+              <div
+                className="flex items-center gap-4 px-4 py-2.5 bg-[var(--color-bg-surface)] border-t border-[var(--color-border)]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div
+                  className="flex items-center gap-5 flex-1 flex-wrap cursor-pointer"
                   onClick={() => setSelected(row)}
-                  className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-bg-surface)] cursor-pointer transition-colors"
                 >
-                  {/* Logo + Nom + Ticker */}
-                  <td className="px-3 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <TickerLogo logoUrl={row.logo_url} ticker={row.ticker} size="sm" />
-                      <div>
-                        <p className="font-semibold text-[var(--color-text)] leading-tight">{row.ticker}</p>
-                        {row.name && (
-                          <p className="text-xs text-[var(--color-text-sub)] truncate max-w-[110px] leading-tight">
-                            {row.name}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </td>
+                  {/* Ticker */}
+                  <MetricCell label="Ticker">
+                    <span className="font-semibold">{row.ticker}</span>
+                  </MetricCell>
 
                   {/* Type */}
-                  <td className="px-3 py-3">
-                    {row.type ? (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--color-bg-elevated)] text-[var(--color-text-sub)]">
-                        {row.type}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-[var(--color-text-sub)]">—</span>
-                    )}
-                  </td>
+                  <MetricCell label="Type">
+                    {row.type ?? <span className="text-[var(--color-text-sub)]">—</span>}
+                  </MetricCell>
 
-                  {/* Prix */}
-                  <td className="px-3 py-3 text-right tabular-nums text-[var(--color-text-sub)] text-xs">
-                    {row.priceEur !== null ? formatEur(row.priceEur) : '—'}
-                  </td>
+                  {/* Enveloppe */}
+                  <MetricCell label="Enveloppe">
+                    {row.envelope ?? <span className="text-[var(--color-text-sub)]">—</span>}
+                  </MetricCell>
 
-                  {/* Valeur */}
-                  <td className="px-3 py-3 text-right font-medium tabular-nums text-[var(--color-text)]">
-                    {row.valeur !== null ? formatEur(row.valeur) : '—'}
-                  </td>
+                  {/* Prix live */}
+                  <MetricCell label="Prix live">
+                    {row.priceEur !== null ? formatEur(row.priceEur) : <span className="text-[var(--color-text-sub)]">—</span>}
+                  </MetricCell>
+
+                  {/* Valeur totale */}
+                  <MetricCell label="Valeur">
+                    <span className="font-medium">
+                      {row.valeur !== null ? formatEur(row.valeur) : <span className="text-[var(--color-text-sub)]">—</span>}
+                    </span>
+                  </MetricCell>
 
                   {/* P&L € */}
-                  <td className={`px-3 py-3 text-right font-semibold tabular-nums ${pnlColor}`}>
-                    {row.pnl !== null ? `${isGain ? '+' : ''}${formatEur(row.pnl)}` : '—'}
-                  </td>
+                  <MetricCell label="P&L €">
+                    <span className={`font-semibold ${pnlColor}`}>
+                      {row.pnl !== null ? `${isGain ? '+' : ''}${formatEur(row.pnl)}` : '—'}
+                    </span>
+                  </MetricCell>
 
                   {/* P&L % */}
-                  <td className="px-3 py-3 text-right">
+                  <MetricCell label="P&L %">
                     {row.pnlPct !== null ? (
-                      <span className={`text-xs font-medium tabular-nums px-1.5 py-0.5 rounded ${
+                      <span className={`text-sm font-medium px-1.5 py-0.5 rounded tabular-nums ${
                         row.pnlPct >= 0
                           ? 'bg-[var(--color-green-bg)] text-[var(--color-green-text)]'
                           : 'bg-[var(--color-red-bg)] text-[var(--color-red-text)]'
@@ -184,39 +217,40 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                         {formatPct(row.pnlPct)}
                       </span>
                     ) : (
-                      <span className="text-xs text-[var(--color-text-sub)]">—</span>
+                      <span className="text-[var(--color-text-sub)]">—</span>
                     )}
-                  </td>
+                  </MetricCell>
 
                   {/* Poids % */}
-                  <td className="px-3 py-3 text-right text-[var(--color-text-sub)] tabular-nums text-xs">
-                    {row.poids !== null ? `${row.poids.toFixed(1)} %` : '—'}
-                  </td>
+                  <MetricCell label="Poids">
+                    {row.poids !== null
+                      ? `${row.poids.toFixed(1)} %`
+                      : <span className="text-[var(--color-text-sub)]">—</span>
+                    }
+                  </MetricCell>
+                </div>
 
-                  {/* Actions — stopPropagation pour ne pas ouvrir le drawer */}
-                  <td className="px-3 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex flex-col items-end gap-1">
-                      <AddBuyButton id={row.id} ticker={row.ticker} />
-                      <SellButton
-                        id={row.id}
-                        ticker={row.ticker}
-                        maxQuantity={row.quantity}
-                        pru={row.pru}
-                        envelope={row.envelope}
-                      />
-                      <DcaButton
-                        positionId={row.id}
-                        ticker={row.ticker}
-                        hasActiveDca={dcaRules[row.id]?.is_active === true}
-                        activeDcaId={dcaRules[row.id]?.id}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+                {/* Actions */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <AddBuyButton id={row.id} ticker={row.ticker} />
+                  <SellButton
+                    id={row.id}
+                    ticker={row.ticker}
+                    maxQuantity={row.quantity}
+                    pru={row.pru}
+                    envelope={row.envelope}
+                  />
+                  <DcaButton
+                    positionId={row.id}
+                    ticker={row.ticker}
+                    hasActiveDca={dcaRules[row.id]?.is_active === true}
+                    activeDcaId={dcaRules[row.id]?.id}
+                  />
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       <PositionDrawer selected={selected} onClose={() => setSelected(null)} dcaRules={dcaRules} />

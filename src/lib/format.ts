@@ -17,3 +17,16 @@ export function formatEur(value: number): string {
 export function formatPct(value: number): string {
   return `${value >= 0 ? '+' : ''}${value.toFixed(2)} %`
 }
+
+/**
+ * Convertit un code pays ISO 3166-1 alpha-2 en emoji drapeau.
+ * Exemple : "US" → "🇺🇸", "FR" → "🇫🇷"
+ * Retourne une chaîne vide si le code est invalide ou absent.
+ */
+export function countryToFlag(country: string | null | undefined): string {
+  if (!country || country.length !== 2) return ''
+  const codePoints = [...country.toUpperCase()].map(
+    (char) => 0x1f1e6 + char.charCodeAt(0) - 65,
+  )
+  return String.fromCodePoint(...codePoints)
+}

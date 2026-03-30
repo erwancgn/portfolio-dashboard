@@ -5,7 +5,7 @@ import AddBuyButton from './AddBuyButton'
 import SellButton from './SellButton'
 import DcaButton from './DcaButton'
 import type { PositionRow, DcaRuleMap } from './PositionsTable'
-import { formatEur, formatPct } from '@/lib/format'
+import { formatEur, formatPct, countryToFlag } from '@/lib/format'
 import TickerLogo from '@/components/ui/TickerLogo'
 
 interface Props {
@@ -48,6 +48,12 @@ export default function PositionDrawer({ selected, onClose, dcaRules }: Props) {
                 { label: 'Enveloppe', value: selected.envelope ?? '—' },
                 { label: 'Secteur', value: selected.sector ?? '—' },
                 { label: 'ISIN', value: selected.isin ?? '—' },
+                {
+                  label: 'Pays',
+                  value: selected.country
+                    ? `${countryToFlag(selected.country)} ${selected.country}`
+                    : '—',
+                },
               ] as Array<{ label: string; value: string; colored?: boolean; isGain?: boolean }>).map(
                 ({ label, value, colored, isGain: itemIsGain }) => (
                   <div

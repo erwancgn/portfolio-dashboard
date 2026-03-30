@@ -14,7 +14,7 @@ async function enrichPositions(
   positions: Position[],
   supabase: Awaited<ReturnType<typeof createClient>>,
 ): Promise<Position[]> {
-  const toEnrich = positions.filter((p) => !p.isin || !p.sector)
+  const toEnrich = positions.filter((p) => !p.isin || !p.sector || !p.name)
   if (toEnrich.length === 0) return positions
 
   const profiles = await Promise.allSettled(
@@ -34,6 +34,7 @@ async function enrichPositions(
     if (!pos.logo_url && fmp.logoUrl) patch.logo_url = fmp.logoUrl
     if (!pos.industry && fmp.industry) patch.industry = fmp.industry
     if (!pos.country && fmp.country) patch.country = fmp.country
+    if (!pos.name && fmp.name) patch.name = fmp.name
     if (Object.keys(patch).length === 0) return
     enriched.set(pos.id, patch)
     updates.push(Promise.resolve(supabase.from('positions').update(patch).eq('id', pos.id)))
