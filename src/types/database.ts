@@ -109,6 +109,7 @@ export type Database = {
         Row: {
           amount: number
           created_at: string | null
+          envelope: string | null
           frequency: string
           id: string
           is_active: boolean | null
@@ -122,6 +123,7 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string | null
+          envelope?: string | null
           frequency: string
           id?: string
           is_active?: boolean | null
@@ -135,6 +137,7 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string | null
+          envelope?: string | null
           frequency?: string
           id?: string
           is_active?: boolean | null

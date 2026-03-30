@@ -53,10 +53,10 @@ async function fetchPrice(ticker: string): Promise<QuoteResponse> {
 
   // 2. Yahoo /chart — prix + nom + isin (si dispo)
   const meta = await fetchYahooChart(ticker)
-  const isin = cachedIsin ?? meta.isin
 
-  // 3. FMP /profile — secteur, industry, description, country, logoUrl
+  // 3. FMP /profile — secteur, industry, description, country, logoUrl, isin
   const fmp = await fetchFmpProfile(ticker)
+  const isin = cachedIsin ?? fmp?.isin ?? meta.isin
   const sector = cachedSector ?? fmp?.sector
 
   return {

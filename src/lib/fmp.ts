@@ -20,23 +20,26 @@ export interface FmpSearchResult {
   type: string
 }
 
-/** Reponse brute d'un item /profile FMP */
+/** Reponse brute d'un item /stable/profile FMP */
 interface FmpProfileRaw {
   symbol?: string
+  companyName?: string
   sector?: string
   industry?: string
   description?: string
   country?: string
   image?: string
   isin?: string
+  isEtf?: boolean
+  isFund?: boolean
 }
 
-/** Reponse brute d'un item /search FMP */
+/** Reponse brute d'un item /stable/search-name FMP */
 interface FmpSearchRaw {
   symbol?: string
   name?: string
-  stockExchange?: string
-  exchangeShortName?: string
+  exchangeFullName?: string
+  exchange?: string
 }
 
 /**
@@ -54,7 +57,7 @@ export async function fetchFmpProfile(ticker: string): Promise<FmpProfile | null
   }
 
   try {
-    const url = `https://financialmodelingprep.com/api/v3/profile/${encodeURIComponent(ticker)}?apikey=${apiKey}`
+    const url = `https://financialmodelingprep.com/stable/profile?symbol=${encodeURIComponent(ticker)}&apikey=${apiKey}`
     const res = await fetch(url, { cache: 'no-store' })
     if (!res.ok) return null
 
@@ -90,7 +93,7 @@ export async function fetchFmpSearch(query: string): Promise<FmpSearchResult[]> 
   }
 
   try {
-    const url = `https://financialmodelingprep.com/api/v3/search?query=${encodeURIComponent(query)}&limit=8&apikey=${apiKey}`
+    const url = `https://financialmodelingprep.com/stable/search-name?query=${encodeURIComponent(query)}&limit=8&apikey=${apiKey}`
     const res = await fetch(url, { cache: 'no-store' })
     if (!res.ok) return []
 
@@ -104,7 +107,7 @@ export async function fetchFmpSearch(query: string): Promise<FmpSearchResult[]> 
       .map((item) => ({
         ticker: item.symbol,
         name: item.name,
-        type: item.exchangeShortName ?? item.stockExchange ?? '',
+        type: item.exchange ?? item.exchangeFullName ?? '',
       }))
   } catch (err) {
     console.error('[fmp] fetchFmpSearch error:', err)

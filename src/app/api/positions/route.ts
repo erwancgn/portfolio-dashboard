@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { fetchFmpProfile } from '@/lib/fmp'
 import type { Tables, TablesInsert } from '@/types/database'
 
 type Position = Tables<'positions'>
@@ -118,9 +119,50 @@ export async function POST(
 }
 
 /**
+ * Enrichit en parallèle les positions sans ISIN ou secteur via FMP,
+ * puis met à jour la DB. Appelé côté serveur uniquement.
+ */
+async function enrichMissingMetadata(
+  positions: Position[],
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<Position[]> {
+  const toEnrich = positions.filter((p) => !p.isin || !p.sector)
+  if (toEnrich.length === 0) return positions
+
+  const results = await Promise.allSettled(
+    toEnrich.map(async (pos) => {
+      const fmp = await fetchFmpProfile(pos.ticker)
+      if (!fmp) return pos
+      const update: Partial<Position> = {}
+      if (!pos.isin && fmp.isin) update.isin = fmp.isin
+      if (!pos.sector && fmp.sector) update.sector = fmp.sector
+      if (!pos.logo_url && fmp.logoUrl) update.logo_url = fmp.logoUrl
+      if (!pos.industry && fmp.industry) update.industry = fmp.industry
+      if (!pos.country && fmp.country) update.country = fmp.country
+      if (Object.keys(update).length === 0) return pos
+      const { data } = await supabase
+        .from('positions')
+        .update(update)
+        .eq('id', pos.id)
+        .select()
+        .single()
+      return data ?? { ...pos, ...update }
+    }),
+  )
+
+  const enriched = new Map(toEnrich.map((p, i) => {
+    const result = results[i]
+    return [p.id, result.status === 'fulfilled' ? result.value : p]
+  }))
+
+  return positions.map((p) => enriched.get(p.id) ?? p)
+}
+
+/**
  * GET /api/positions
  * Retourne toutes les positions de l'utilisateur connecté,
  * triées par date de création décroissante.
+ * Enrichit automatiquement les positions sans ISIN/secteur via FMP.
  */
 export async function GET(): Promise<NextResponse<Position[] | ErrorResponse>> {
   const supabase = await createClient()
@@ -150,5 +192,6 @@ export async function GET(): Promise<NextResponse<Position[] | ErrorResponse>> {
     )
   }
 
-  return NextResponse.json(data ?? [], { status: 200 })
+  const positions = await enrichMissingMetadata(data ?? [], supabase)
+  return NextResponse.json(positions, { status: 200 })
 }
