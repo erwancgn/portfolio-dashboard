@@ -2,6 +2,7 @@
 name: test-agent
 description: "Agent de vérification et QA pour le Portfolio Dashboard. Vérifie les critères d'acceptation et détecte les régressions sans jamais modifier le code source."
 model: sonnet
+memory: project
 tools:
   - Read
   - Glob
