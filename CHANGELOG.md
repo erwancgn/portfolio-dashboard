@@ -14,6 +14,25 @@
 
 ---
 
+## [0.3.0] — 2026-03-30 — Analyse IA & tableau enrichi
+
+### Added
+- **Analyse rapide titre** — rendu markdown complet avec tables (remark-gfm), autocomplétion recherche (dropdown nom + ticker + type)
+- **Tableau positions double-ligne** — layout card inspiré Moning : logo, nom complet, drapeau pays, métriques en ligne secondaire
+- **Nom complet des actifs** — récupération automatique via FMP `companyName`, enrichissement des positions existantes au chargement
+- **Pays dans le drawer** — champ pays affiché dans le panneau de détail d'une position
+- **VersionBadge** — badge `v0.3.0` dans le header, modale historique des versions en langage fonctionnel
+- **Responsive mobile** — cards positions en grille 2×2, header compact, PortfolioSummary adaptatif, LiquidityWidget en grille 3 colonnes
+- **AnalyseSection (Poids/Secteur/Pays)** déplacée sur la page Analyse uniquement
+
+### Fixed
+- Tables markdown dans l'analyse IA affichées en texte brut → `remark-gfm` installé
+- Bloc JSON `{signal, score}` visible dans l'analyse → retiré avant envoi au frontend
+- Fond dropdown suggestions transparent → remplacé par `--color-bg-primary`
+- Noms actifs affichant le ticker → enrichissement `name` ajouté dans `enrichPositions`
+
+---
+
 ## [0.2.0] — 2026-03-28 — Dashboard complet
 
 ### Added

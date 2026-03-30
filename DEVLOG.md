@@ -142,3 +142,42 @@ Refonte dashboard, page Analyse, DCA, Quick Analyse IA via Gemini. Clôture tick
 ---
 
 *Dernière mise à jour : Session 13 — 30/03/2026*
+
+---
+
+## Session 14 — [30/03/2026]
+
+### Contexte
+Polish UI/UX, responsive mobile, version info, setup environnement Claude Code.
+
+### Ce qu'on a fait
+- [x] **#62 Setup Claude Code** — `.claude/launch.json` (dev server), hook ESLint `PostToolUse`, `memory: project` + `isolation: worktree` sur dev-agent et test-agent
+- [x] **#61 Tableau positions enrichi** — Layout card double-ligne inspiré Moning : logo col gauche (row-span), ligne 1 nom + drapeau pays, ligne 2 métriques (Ticker/Type/Env/Prix/Valeur/P&L/Poids + actions). Nom complet via FMP `companyName`. Pays dans le PositionDrawer.
+- [x] **#58 Quick Analyse finalisé** — `remark-gfm` pour le rendu des tables markdown. Bloc JSON `{signal, score}` retiré de l'analyse affichée. Autocomplétion recherche avec dropdown (nom + ticker + type).
+- [x] **Responsive mobile** — Cards positions : grille 2×2 métriques essentielles sur mobile, Qty×PRU sur ligne séparée. Header responsive. PortfolioSummary : `text-3xl→5xl`, stats en `grid-cols-2` mobile. LiquidityWidget : grille 3 colonnes équilibrée.
+- [x] **VersionBadge** — Badge `v0.3.0` dans le header, modale historique des versions en langage fonctionnel (`src/lib/version.ts`).
+- [x] **AnalyseSection déplacée** — Poids/Secteur/Pays retiré du dashboard → page Analyse uniquement.
+
+### Erreurs rencontrées
+| Erreur | Cause | Solution |
+|---|---|---|
+| `--color-bg-card` transparent | Variable CSS inexistante dans globals.css | Remplacé par `--color-bg-primary` (#ffffff) |
+| Noms actifs affichent le ticker | `name` null en DB pour positions créées avant tracking | Ajout `!p.name` dans le filtre `enrichPositions` + mapping `companyName` dans `fetchFmpProfile` |
+| Tables markdown affichées en texte brut | `remark-gfm` absent | `npm install remark-gfm` + plugin ajouté à ReactMarkdown |
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| Gemini 2.5 Flash pour chat portfolio (S15) | Free tier 1500 req/jour, déjà intégré, meilleur que Flash-Lite |
+| Groq Llama 3.3 70B en fallback (futur) | Free tier très généreux si quota Gemini dépassé |
+| Perplexity écarté | API payante, pas de free tier |
+| Logos absents dans suggestions recherche | 8 appels FMP par frappe = trop gourmand. Affichage nom+ticker+type suffit |
+
+### Prochaine session (S15)
+- [ ] **#57 EPIC 15** — Chat IA portfolio : conversation avec Gemini 2.5 Flash sur l'ensemble du portefeuille (positions, P&L, allocation, recommandations)
+- [ ] **Couleurs allocation** — Palette donut chart plus visuelle
+- [ ] **Push prod** — `git push` → déploiement Vercel
+
+---
+
+*Dernière mise à jour : Session 14 — 30/03/2026*
