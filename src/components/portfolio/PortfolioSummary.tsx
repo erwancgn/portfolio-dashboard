@@ -4,7 +4,8 @@ import { formatEur, formatPct } from '@/lib/format'
 
 /**
  * PortfolioSummary — Server Component.
- * Hero section : valeur totale en grand, P&L coloré, stats secondaires.
+ * Bandeau héro : valeur totale, P&L coloré, valeur investie, nombre de positions.
+ * Style épuré inspiré Trade Republic / Moning.
  */
 export default async function PortfolioSummary() {
   const supabase = await createClient()
@@ -46,35 +47,67 @@ export default async function PortfolioSummary() {
   const isGain = pnl >= 0
 
   return (
-    <div className="py-6">
-      {/* Valeur hero */}
-      <p className="text-sm text-[var(--color-text-sub)] mb-1">Valeur du portefeuille</p>
-      <p className="text-4xl font-bold tracking-tight tabular-nums text-[var(--color-text)] mb-2">
-        {priced > 0 ? formatEur(totalValue) : '—'}
+    <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-8 py-7">
+      {/* Étiquette */}
+      <p className="text-xs font-medium text-[var(--color-text-sub)] uppercase tracking-widest mb-3">
+        Portefeuille
       </p>
 
-      {/* P&L */}
-      {priced > 0 && (
-        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium tabular-nums mb-6 ${
-          isGain
-            ? 'bg-[var(--color-green-bg)] text-[var(--color-green-text)]'
-            : 'bg-[var(--color-red-bg)] text-[var(--color-red-text)]'
-        }`}>
-          <span>{isGain ? '▲' : '▼'}</span>
-          <span>{formatEur(pnl)}</span>
-          <span>({formatPct(pnlPct)})</span>
-        </div>
-      )}
+      {/* Valeur totale + badge P&L sur la même ligne */}
+      <div className="flex flex-wrap items-end gap-4 mb-6">
+        <p className="text-5xl font-bold tracking-tight tabular-nums text-[var(--color-text)] leading-none">
+          {priced > 0 ? formatEur(totalValue) : '—'}
+        </p>
 
-      {/* Stats secondaires */}
-      <div className="flex gap-8">
-        <div>
-          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">Investi</p>
-          <p className="text-sm font-semibold tabular-nums text-[var(--color-text)]">{formatEur(totalInvested)}</p>
+        {priced > 0 && (
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold tabular-nums ${
+            isGain
+              ? 'bg-[var(--color-green-bg)] text-[var(--color-green-text)]'
+              : 'bg-[var(--color-red-bg)] text-[var(--color-red-text)]'
+          }`}>
+            <span className="text-xs">{isGain ? '▲' : '▼'}</span>
+            <span>{isGain ? '+' : ''}{formatEur(pnl)}</span>
+            <span className="opacity-80">({formatPct(pnlPct)})</span>
+          </div>
+        )}
+      </div>
+
+      {/* Stats secondaires : séparateur vertical */}
+      <div className="flex flex-wrap gap-0 divide-x divide-[var(--color-border)]">
+        <div className="pr-6">
+          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Investi</p>
+          <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">
+            {formatEur(totalInvested)}
+          </p>
         </div>
-        <div>
-          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">Positions</p>
-          <p className="text-sm font-semibold tabular-nums text-[var(--color-text)]">{positions.length}</p>
+
+        <div className="px-6">
+          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Plus-value</p>
+          <p className={`text-base font-semibold tabular-nums ${
+            priced > 0
+              ? isGain ? 'text-[var(--color-green-text)]' : 'text-[var(--color-red-text)]'
+              : 'text-[var(--color-text)]'
+          }`}>
+            {priced > 0 ? `${isGain ? '+' : ''}${formatEur(pnl)}` : '—'}
+          </p>
+        </div>
+
+        <div className="px-6">
+          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Perf.</p>
+          <p className={`text-base font-semibold tabular-nums ${
+            priced > 0
+              ? isGain ? 'text-[var(--color-green-text)]' : 'text-[var(--color-red-text)]'
+              : 'text-[var(--color-text)]'
+          }`}>
+            {priced > 0 ? formatPct(pnlPct) : '—'}
+          </p>
+        </div>
+
+        <div className="pl-6">
+          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Positions</p>
+          <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">
+            {positions.length}
+          </p>
         </div>
       </div>
     </div>

@@ -98,7 +98,7 @@ export default function AllocationChart({ envelopeData, sectorData }: Props) {
 
       <div className="flex flex-col sm:flex-row items-center gap-6">
         <div className="w-full sm:w-48 h-48 flex-shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={192}>
             <PieChart>
               <Pie
                 data={activeData}

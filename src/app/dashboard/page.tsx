@@ -27,6 +27,12 @@ export default async function DashboardPage() {
           <span className="font-bold text-[var(--color-text)] tracking-tight">Portfolio</span>
           <nav className="flex items-center gap-6">
             <Link
+              href="/dashboard/analyse"
+              className="text-sm text-[var(--color-text-sub)] hover:text-[var(--color-text)] transition-colors"
+            >
+              Analyse
+            </Link>
+            <Link
               href="/dashboard/historique"
               className="text-sm text-[var(--color-text-sub)] hover:text-[var(--color-text)] transition-colors"
             >
