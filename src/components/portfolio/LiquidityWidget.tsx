@@ -23,25 +23,27 @@ export default async function LiquidityWidget() {
   const autres = total - pea
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-[var(--color-bg-surface)] border border-[var(--color-border)]">
-      <div className="flex flex-wrap gap-6">
-        <div>
-          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">Liquidités totales</p>
-          <p className={`text-xl font-bold tabular-nums ${total >= 0 ? 'text-[var(--color-text)]' : 'text-[var(--color-red-text)]'}`}>
+    <div className="rounded-xl bg-[var(--color-bg-surface)] border border-[var(--color-border)] px-4 py-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold text-[var(--color-text-sub)] uppercase tracking-wide">Liquidités</p>
+        <DepositButton />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-lg bg-[var(--color-bg-primary)] border border-[var(--color-border)] px-3 py-2.5">
+          <p className="text-[10px] font-medium text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Total</p>
+          <p className={`text-base font-bold tabular-nums ${total >= 0 ? 'text-[var(--color-text)]' : 'text-[var(--color-red-text)]'}`}>
             {formatEur(total)}
           </p>
         </div>
-        <div className="w-px bg-[var(--color-border)]" />
-        <div>
-          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">PEA</p>
-          <p className="text-sm font-semibold tabular-nums text-[var(--color-text)]">{formatEur(pea)}</p>
+        <div className="rounded-lg bg-[var(--color-bg-primary)] border border-[var(--color-border)] px-3 py-2.5">
+          <p className="text-[10px] font-medium text-[var(--color-text-sub)] uppercase tracking-wide mb-1">PEA</p>
+          <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">{formatEur(pea)}</p>
         </div>
-        <div>
-          <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-0.5">CTO / Autre</p>
-          <p className="text-sm font-semibold tabular-nums text-[var(--color-text)]">{formatEur(autres)}</p>
+        <div className="rounded-lg bg-[var(--color-bg-primary)] border border-[var(--color-border)] px-3 py-2.5">
+          <p className="text-[10px] font-medium text-[var(--color-text-sub)] uppercase tracking-wide mb-1">CTO</p>
+          <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">{formatEur(autres)}</p>
         </div>
       </div>
-      <DepositButton />
     </div>
   )
 }

@@ -129,14 +129,13 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
               onClick={() => setSelected(row)}
               className="grid grid-cols-[auto_1fr] rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-accent)] cursor-pointer transition-colors overflow-hidden"
             >
-              {/* ── Colonne logo : s'étend sur les 2 lignes ── */}
-              <div className="row-span-2 flex items-center justify-center px-4 border-r border-[var(--color-border)]">
+              {/* ── Colonne logo : s'étend sur toutes les lignes ── */}
+              <div className="row-span-3 sm:row-span-2 flex items-center justify-center px-4 border-r border-[var(--color-border)]">
                 <TickerLogo logoUrl={row.logo_url} ticker={row.ticker} size="md" />
               </div>
 
-              {/* ── Ligne 1 : identité + investissement ── */}
-              <div className="flex items-center justify-between gap-4 px-4 py-3">
-                {/* Gauche : nom + pays */}
+              {/* ── Ligne 1 : identité ── */}
+              <div className="flex items-center justify-between gap-4 px-4 pt-3 pb-1">
                 <div className="min-w-0 flex items-center gap-2">
                   <p className="font-semibold text-sm text-[var(--color-text)] leading-tight truncate">
                     {row.name ?? row.ticker}
@@ -148,8 +147,8 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                   )}
                 </div>
 
-                {/* Droite : quantité × PRU + montant investi */}
-                <div className="flex items-center gap-2 shrink-0">
+                {/* Badges investissement — visibles uniquement sur desktop */}
+                <div className="hidden sm:flex items-center gap-2 shrink-0">
                   {montantInvesti !== null && row.pru !== null && row.quantity != null && (
                     <span className="text-xs text-[var(--color-text-sub)] bg-[var(--color-bg-surface)] border border-[var(--color-border)] px-2 py-1 rounded-lg tabular-nums whitespace-nowrap">
                       {row.quantity % 1 === 0 ? row.quantity : row.quantity.toFixed(4)} × {formatEur(row.pru)}
@@ -163,50 +162,40 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                 </div>
               </div>
 
+              {/* ── Ligne 1b mobile : Qty×PRU + montant (entre nom et métriques) ── */}
+              <div className="sm:hidden flex items-center gap-2 px-4 pb-2">
+                {montantInvesti !== null && row.pru !== null && row.quantity != null && (
+                  <span className="text-xs text-[var(--color-text-sub)] bg-[var(--color-bg-surface)] border border-[var(--color-border)] px-2 py-1 rounded-lg tabular-nums">
+                    {row.quantity % 1 === 0 ? row.quantity : row.quantity.toFixed(4)} × {formatEur(row.pru)}
+                  </span>
+                )}
+                {montantInvesti !== null && (
+                  <span className="text-sm font-semibold text-white bg-[var(--color-accent)] px-3 py-1 rounded-lg tabular-nums">
+                    {formatEur(montantInvesti)}
+                  </span>
+                )}
+              </div>
+
               {/* ── Ligne 2 : métriques marché + actions ── */}
               <div
-                className="flex items-center gap-4 px-4 py-2.5 bg-[var(--color-bg-surface)] border-t border-[var(--color-border)]"
+                className="bg-[var(--color-bg-surface)] border-t border-[var(--color-border)]"
                 onClick={(e) => e.stopPropagation()}
               >
+                {/* Mobile : grille 2×2 métriques essentielles */}
                 <div
-                  className="flex items-center gap-5 flex-1 flex-wrap cursor-pointer"
+                  className="sm:hidden grid grid-cols-2 gap-x-4 gap-y-3 px-4 py-3 cursor-pointer"
                   onClick={() => setSelected(row)}
                 >
-                  {/* Ticker */}
-                  <MetricCell label="Ticker">
-                    <span className="font-semibold">{row.ticker}</span>
-                  </MetricCell>
-
-                  {/* Type */}
-                  <MetricCell label="Type">
-                    {row.type ?? <span className="text-[var(--color-text-sub)]">—</span>}
-                  </MetricCell>
-
-                  {/* Enveloppe */}
-                  <MetricCell label="Enveloppe">
-                    {row.envelope ?? <span className="text-[var(--color-text-sub)]">—</span>}
-                  </MetricCell>
-
-                  {/* Prix live */}
-                  <MetricCell label="Prix live">
-                    {row.priceEur !== null ? formatEur(row.priceEur) : <span className="text-[var(--color-text-sub)]">—</span>}
-                  </MetricCell>
-
-                  {/* Valeur totale */}
                   <MetricCell label="Valeur">
                     <span className="font-medium">
-                      {row.valeur !== null ? formatEur(row.valeur) : <span className="text-[var(--color-text-sub)]">—</span>}
+                      {row.valeur !== null ? formatEur(row.valeur) : '—'}
                     </span>
                   </MetricCell>
-
-                  {/* P&L € */}
                   <MetricCell label="P&L €">
                     <span className={`font-semibold ${pnlColor}`}>
                       {row.pnl !== null ? `${isGain ? '+' : ''}${formatEur(row.pnl)}` : '—'}
                     </span>
                   </MetricCell>
-
-                  {/* P&L % */}
                   <MetricCell label="P&L %">
                     {row.pnlPct !== null ? (
                       <span className={`text-sm font-medium px-1.5 py-0.5 rounded tabular-nums ${
@@ -216,22 +205,45 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                       }`}>
                         {formatPct(row.pnlPct)}
                       </span>
-                    ) : (
-                      <span className="text-[var(--color-text-sub)]">—</span>
-                    )}
+                    ) : '—'}
                   </MetricCell>
-
-                  {/* Poids % */}
                   <MetricCell label="Poids">
-                    {row.poids !== null
-                      ? `${row.poids.toFixed(1)} %`
-                      : <span className="text-[var(--color-text-sub)]">—</span>
-                    }
+                    {row.poids !== null ? `${row.poids.toFixed(1)} %` : '—'}
                   </MetricCell>
                 </div>
 
+                {/* Mobile : actions en bas */}
+                <div className="sm:hidden flex items-center gap-1.5 px-4 pb-3" onClick={(e) => e.stopPropagation()}>
+                  <AddBuyButton id={row.id} ticker={row.ticker} />
+                  <SellButton id={row.id} ticker={row.ticker} maxQuantity={row.quantity} pru={row.pru} envelope={row.envelope} />
+                  <DcaButton positionId={row.id} ticker={row.ticker} hasActiveDca={dcaRules[row.id]?.is_active === true} activeDcaId={dcaRules[row.id]?.id} />
+                </div>
+
+                {/* Desktop : toutes les métriques en scroll horizontal */}
+                <div className="hidden sm:block overflow-x-auto">
+                <div className="flex items-center gap-4 px-4 py-2.5 min-w-max">
+                <div
+                  className="flex items-center gap-5 cursor-pointer"
+                  onClick={() => setSelected(row)}
+                >
+                  <MetricCell label="Ticker"><span className="font-semibold">{row.ticker}</span></MetricCell>
+                  <MetricCell label="Type">{row.type ?? <span className="text-[var(--color-text-sub)]">—</span>}</MetricCell>
+                  <MetricCell label="Enveloppe">{row.envelope ?? <span className="text-[var(--color-text-sub)]">—</span>}</MetricCell>
+                  <MetricCell label="Prix live">{row.priceEur !== null ? formatEur(row.priceEur) : <span className="text-[var(--color-text-sub)]">—</span>}</MetricCell>
+                  <MetricCell label="Valeur"><span className="font-medium">{row.valeur !== null ? formatEur(row.valeur) : <span className="text-[var(--color-text-sub)]">—</span>}</span></MetricCell>
+                  <MetricCell label="P&L €"><span className={`font-semibold ${pnlColor}`}>{row.pnl !== null ? `${isGain ? '+' : ''}${formatEur(row.pnl)}` : '—'}</span></MetricCell>
+                  <MetricCell label="P&L %">
+                    {row.pnlPct !== null ? (
+                      <span className={`text-sm font-medium px-1.5 py-0.5 rounded tabular-nums ${row.pnlPct >= 0 ? 'bg-[var(--color-green-bg)] text-[var(--color-green-text)]' : 'bg-[var(--color-red-bg)] text-[var(--color-red-text)]'}`}>
+                        {formatPct(row.pnlPct)}
+                      </span>
+                    ) : <span className="text-[var(--color-text-sub)]">—</span>}
+                  </MetricCell>
+                  <MetricCell label="Poids">{row.poids !== null ? `${row.poids.toFixed(1)} %` : <span className="text-[var(--color-text-sub)]">—</span>}</MetricCell>
+                </div>
+
                 {/* Actions */}
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 ml-4 pl-4 border-l border-[var(--color-border)] shrink-0">
                   <AddBuyButton id={row.id} ticker={row.ticker} />
                   <SellButton
                     id={row.id}
@@ -246,6 +258,8 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                     hasActiveDca={dcaRules[row.id]?.is_active === true}
                     activeDcaId={dcaRules[row.id]?.id}
                   />
+                </div>
+                </div>
                 </div>
               </div>
             </div>

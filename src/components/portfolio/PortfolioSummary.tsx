@@ -47,7 +47,7 @@ export default async function PortfolioSummary() {
   const isGain = pnl >= 0
 
   return (
-    <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-8 py-7">
+    <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 sm:px-8 py-5 sm:py-7">
       {/* Étiquette */}
       <p className="text-xs font-medium text-[var(--color-text-sub)] uppercase tracking-widest mb-3">
         Portefeuille
@@ -55,7 +55,7 @@ export default async function PortfolioSummary() {
 
       {/* Valeur totale + badge P&L sur la même ligne */}
       <div className="flex flex-wrap items-end gap-4 mb-6">
-        <p className="text-5xl font-bold tracking-tight tabular-nums text-[var(--color-text)] leading-none">
+        <p className="text-3xl sm:text-5xl font-bold tracking-tight tabular-nums text-[var(--color-text)] leading-none">
           {priced > 0 ? formatEur(totalValue) : '—'}
         </p>
 
@@ -73,15 +73,15 @@ export default async function PortfolioSummary() {
       </div>
 
       {/* Stats secondaires : séparateur vertical */}
-      <div className="flex flex-wrap gap-0 divide-x divide-[var(--color-border)]">
-        <div className="pr-6">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-0 sm:divide-x sm:divide-[var(--color-border)]">
+        <div className="sm:pr-6">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Investi</p>
           <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">
             {formatEur(totalInvested)}
           </p>
         </div>
 
-        <div className="px-6">
+        <div className="sm:px-6">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Plus-value</p>
           <p className={`text-base font-semibold tabular-nums ${
             priced > 0
@@ -92,7 +92,7 @@ export default async function PortfolioSummary() {
           </p>
         </div>
 
-        <div className="px-6">
+        <div className="sm:px-6">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Perf.</p>
           <p className={`text-base font-semibold tabular-nums ${
             priced > 0
@@ -103,7 +103,7 @@ export default async function PortfolioSummary() {
           </p>
         </div>
 
-        <div className="pl-6">
+        <div className="sm:pl-6">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Positions</p>
           <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">
             {positions.length}

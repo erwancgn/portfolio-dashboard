@@ -2,12 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import LogoutButton from '@/components/layout/LogoutButton'
+import VersionBadge from '@/components/layout/VersionBadge'
 import PositionsSectionClient from '@/components/positions/PositionsSectionClient'
 import PortfolioSummary from '@/components/portfolio/PortfolioSummary'
 import PnlStats from '@/components/portfolio/PnlStats'
 import LiquidityWidget from '@/components/portfolio/LiquidityWidget'
 import AllocationSection from '@/components/portfolio/AllocationSection'
-import AnalyseSection from '@/components/portfolio/AnalyseSection'
 import PositionsTable from '@/components/positions/PositionsTable'
 
 /**
@@ -23,18 +23,21 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-[var(--color-bg-primary)]">
       {/* Header */}
       <header className="border-b border-[var(--color-border)] bg-[var(--color-bg-primary)] sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-bold text-[var(--color-text)] tracking-tight">Portfolio</span>
-          <nav className="flex items-center gap-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className="font-bold text-[var(--color-text)] tracking-tight">Portfolio</span>
+            <VersionBadge />
+          </div>
+          <nav className="flex items-center gap-3 sm:gap-6">
             <Link
               href="/dashboard/analyse"
-              className="text-sm text-[var(--color-text-sub)] hover:text-[var(--color-text)] transition-colors"
+              className="text-sm text-[var(--color-text-sub)] hover:text-[var(--color-text)] transition-colors whitespace-nowrap"
             >
               Analyse
             </Link>
             <Link
               href="/dashboard/historique"
-              className="text-sm text-[var(--color-text-sub)] hover:text-[var(--color-text)] transition-colors"
+              className="text-sm text-[var(--color-text-sub)] hover:text-[var(--color-text)] transition-colors whitespace-nowrap"
             >
               Historique
             </Link>
@@ -43,7 +46,7 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* Hero */}
         <PortfolioSummary />
 
@@ -52,9 +55,6 @@ export default async function DashboardPage() {
 
         {/* Allocation par enveloppe / secteur */}
         <AllocationSection />
-
-        {/* Analyse : Poids / Secteur / Pays */}
-        <AnalyseSection />
 
         {/* Liquidités */}
         <LiquidityWidget />

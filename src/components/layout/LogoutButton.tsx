@@ -20,8 +20,9 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer border border-[var(--color-border)] text-[var(--color-text-sub)] hover:text-[var(--color-text)] hover:border-[var(--color-text-sub)] transition-colors">
-      Se déconnecter
+      className="px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer border border-[var(--color-border)] text-[var(--color-text-sub)] hover:text-[var(--color-text)] hover:border-[var(--color-text-sub)] transition-colors whitespace-nowrap">
+      <span className="hidden sm:inline">Se déconnecter</span>
+      <span className="sm:hidden">←</span>
     </button>
   )
 }
