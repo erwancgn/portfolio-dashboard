@@ -178,8 +178,11 @@ export async function POST(
       )
     }
 
+    // Retire le bloc JSON final de l'analyse markdown (signal + score déjà parsés)
+    const analysis = raw.slice(0, jsonMatch.index).trimEnd()
+
     return NextResponse.json(
-      { signal: parsed.signal, score: parsed.score, analysis: raw, ticker },
+      { signal: parsed.signal, score: parsed.score, analysis, ticker },
       { status: 200 },
     )
   } catch (err) {
