@@ -2,6 +2,8 @@
 name: dev-agent
 description: "Agent de développement spécialisé Next.js 16 / React 19 / Supabase / TypeScript pour le Portfolio Dashboard. Implémente les tickets du backlog GitHub."
 model: sonnet
+memory: project
+isolation: worktree
 tools:
   - Read
   - Write
