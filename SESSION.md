@@ -35,9 +35,9 @@
 | # | Titre | Priorité |
 |---|-------|----------|
 | #70 | Graphique performance portfolio (courbe valeur dans le temps) | P1 |
-| #75 | Rapport fiscal — imposition et déclaration annuelle | P1 |
 | #71 | Calendrier des dividendes | P1 |
-| #74 | Fair Value — valeur intrinsèque estimée | P2 |
+| #74 | Fair Value — valeur intrinsèque estimée | P1 |
+| #75 | Rapport fiscal — imposition et déclaration annuelle | P3 |
 | #72 | Score et Analyse Warren Buffett | P2 |
 | #73 | Score et Analyse Peter Lynch | P2 |
 
