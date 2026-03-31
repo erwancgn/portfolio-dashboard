@@ -1,7 +1,15 @@
-# SESSION.md — Session 15
+# SESSION.md — Session 16
 
 > Format ultra-compact pour économiser les tokens de contexte.
 > Historique complet → DEVLOG.md
+
+---
+
+## Session 15 — Clôturée ✅ (31/03/2026)
+
+| Ticket | Titre | Statut |
+|--------|-------|--------|
+| #57 | Fix Chat IA portfolio — HTTP 500 CONFIG_ERROR (`GEMINI_API_KEY` → `GOOGLE_AI_API_KEY`) | ✅ Livré |
 
 ---
 
@@ -19,14 +27,14 @@
 
 ---
 
-## Objectif Session 15 — Chat IA portfolio + polish
+## Objectif Session 16 — Polish & prod
 
 ### Tickets
 
 | # | Titre | Priorité |
 |---|-------|----------|
-| #57 | EPIC 15 — Chat IA portfolio (Gemini 2.5 Flash) | P1 |
-| UX | Couleurs palette donut chart allocation | P2 |
+| UX | Couleurs palette donut chart allocation | P1 |
+| PROD | Push prod → Vercel | P1 |
 
 ---
 
@@ -39,35 +47,28 @@
 - Fiscalité flat tax 30% CTO/Crypto, 0% PEA ✅ · Thème light blanc/noir/bleu ✅
 - `src/lib/fmp.ts` (fetchFmpProfile : logo, secteur, ISIN, pays, nom) ✅
 - Page Analyse `/dashboard/analyse` + QuickAnalysis (Gemini 2.5 Flash-Lite + Search Grounding) ✅
+- Chat IA portfolio (Gemini 2.5 Flash, historique multi-tours) ✅
 - DCA : table `dca_rules` + route `/api/dca` + `DcaButton` + `PositionDrawer` ✅
 - Responsive mobile : cards double-ligne, grille métriques, header compact ✅
-- VersionBadge v0.3.0 ✅
+- VersionBadge v0.3.1 ✅
 - Production : https://portfolio-zeta-fawn-73.vercel.app ✅
 
 ## Fichiers clés
 
 ```
 src/app/dashboard/page.tsx
-src/app/dashboard/analyse/page.tsx              ← QuickAnalysis + AllocationSection + AnalyseSection
+src/app/dashboard/analyse/page.tsx              ← QuickAnalysis + ChatIA + AllocationSection + AnalyseSection
 src/app/dashboard/historique/page.tsx
 src/components/analyse/QuickAnalysis.tsx        ← analyse IA titre (Gemini 2.5 Flash-Lite)
-src/components/analyse/ChatIA.tsx               ← chat IA portfolio (à implémenter #57)
+src/components/analyse/ChatIA.tsx               ← chat IA portfolio (Gemini 2.5 Flash)
 src/components/positions/PositionsTableView.tsx ← cards double-ligne + responsive
 src/components/portfolio/AllocationSection.tsx  ← donut enveloppe/secteur
 src/app/api/analyse/ticker/route.ts             ← Gemini Search Grounding
+src/app/api/analyse/chat/route.ts               ← Chat IA portfolio
 src/lib/fmp.ts                                  ← fetchFmpProfile
 src/lib/version.ts                              ← historique versions
 src/types/database.ts                           ← types générés Supabase
 ```
-
----
-
-## Plan technique #57 — Chat IA portfolio
-
-**Modèle** : Gemini 2.5 Flash (plus capable que Flash-Lite pour analyse globale)
-**Route** : `POST /api/analyse/portfolio`
-**Contexte envoyé** : liste positions (ticker, nom, quantité, PRU, P&L, poids, secteur, enveloppe) + allocation + liquidités
-**UI** : composant `ChatIA.tsx` déjà présent dans la page Analyse — à implémenter
 
 ---
 
@@ -77,4 +78,4 @@ Après chaque US/TASK : appel obligatoire au `test-agent` avant de considérer l
 
 ---
 
-*Mis à jour : clôture Session 14 — 30/03/2026*
+*Mis à jour : clôture Session 15 — 31/03/2026*

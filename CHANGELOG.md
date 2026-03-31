@@ -14,6 +14,13 @@
 
 ---
 
+## [0.3.1] — 2026-03-31 — Fix Chat IA
+
+### Fixed
+- **Chat IA portfolio** — HTTP 500 `CONFIG_ERROR` corrigé : variable d'env `GEMINI_API_KEY` → `GOOGLE_AI_API_KEY` dans `/api/analyse/chat`
+
+---
+
 ## [0.3.0] — 2026-03-30 — Analyse IA & tableau enrichi
 
 ### Added

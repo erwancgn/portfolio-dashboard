@@ -181,3 +181,32 @@ Polish UI/UX, responsive mobile, version info, setup environnement Claude Code.
 ---
 
 *Dernière mise à jour : Session 14 — 30/03/2026*
+
+---
+
+## Session 15 — [31/03/2026]
+
+### Contexte
+Fix HTTP 500 sur le Chat IA portfolio (#57) + validation prod.
+
+### Ce qu'on a fait
+- [x] **#57 Fix CONFIG_ERROR** — Route `/api/analyse/chat` utilisait `process.env.GEMINI_API_KEY` (inexistante). Corrigé en `GOOGLE_AI_API_KEY` (cohérent avec `/api/analyse/ticker`). 1 ligne de fix, 0 régression.
+- [x] **Chat IA portfolio validé** — Gemini 2.5 Flash répond avec contexte portfolio complet, historique de conversation fonctionnel (mémoire multi-tours).
+
+### Erreurs rencontrées
+| Erreur | Cause | Solution |
+|---|---|---|
+| HTTP 500 `CONFIG_ERROR` sur `/api/analyse/chat` | Variable d'env `GEMINI_API_KEY` inexistante — la clé réelle est `GOOGLE_AI_API_KEY` | Renommage ligne 165 de la route |
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| Pas de renommage de variable globale | Une seule route concernée — fix minimal, pas de refacto |
+
+### Prochaine session (S16)
+- [ ] **Couleurs allocation** — Palette donut chart plus visuelle
+- [ ] **Push prod** — `git push` → déploiement Vercel
+
+---
+
+*Dernière mise à jour : Session 15 — 31/03/2026*

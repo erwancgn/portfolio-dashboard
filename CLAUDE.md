@@ -70,6 +70,31 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 
 ---
 
+## Économie de tokens — règles strictes
+
+### Lire les fichiers de façon chirurgicale
+- `DEVLOG.md` → lire uniquement les 50 dernières lignes (`offset` ciblé) — jamais le fichier entier
+- `CHANGELOG.md` → ne pas relire si le format est connu — écrire directement
+- Fichier de bug → lire uniquement le fichier concerné, pas les composants adjacents
+- Utiliser `Grep` pour localiser une section avant de lire avec `offset/limit`
+
+### Plan mode — seuil strict
+- **Oui** : tâche 3+ étapes, décision d'architecture, migration DB, refacto multi-fichiers
+- **Non** : bug évident 1–2 lignes, renommage, correction typo, ajout d'entrée dans un fichier de config
+- Un bug avec cause claire → fix direct, expliquer après. Pas de plan mode.
+
+### Subagents — garder le contexte principal propre
+- Exploration codebase multi-fichiers → agent `Explore` (isole les résultats dans un sous-contexte)
+- Implémentation feature complète → agent `dev-agent`
+- Ne pas lire 3+ fichiers de doc en parallèle dans le contexte principal si un agent peut le faire
+
+### Self-improvement loop
+- Après toute correction du PO (technique ou process) → ajouter une règle dans `LESSONS.md` immédiatement
+- Format : `[SX] contexte → règle concrète`
+- Ne pas attendre la fin de session pour capitaliser
+
+---
+
 ## Architecture — rappels clés
 
 - App Router Next.js 16 — pas de Pages Router
@@ -109,6 +134,12 @@ Nouveau PRU (DCA)  = (ancienne_quantité × ancien_pru + montant)
 ## Documentation obligatoire
 
 Après chaque tâche complétée, mettre à jour :
+- `DEVLOG.md` → ce qui a été fait, erreurs rencontrées, solutions
+- `CHANGELOG.md` → si une fonctionnalité est livrée
+- `ARCHITECTURE.md` → si une décision technique a été prise
+
+Avant chaque fin de session, commit, push, mettre à jour : 
+- `SESSION.md` → indiqué ce qui a été fait, et préparer la prochaine session
 - `DEVLOG.md` → ce qui a été fait, erreurs rencontrées, solutions
 - `CHANGELOG.md` → si une fonctionnalité est livrée
 - `ARCHITECTURE.md` → si une décision technique a été prise

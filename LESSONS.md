@@ -31,6 +31,9 @@
 - [S12] `style={{}}` est toléré uniquement pour les valeurs CSS calculées à l'exécution (ex: `width: X%` barre de progression) — impossible à exprimer en classe Tailwind statique
 - [S12] Fichiers composants React → PascalCase (`AllocationChart.tsx`), pas kebab-case — CLAUDE.md mis à jour en conséquence
 
+## Variables d'environnement
+- [S15] Vérifier la cohérence des noms d'env vars entre toutes les routes — une route qui utilise `GEMINI_API_KEY` alors que la clé réelle est `GOOGLE_AI_API_KEY` provoque un 500 silencieux. Grep le nom de variable avant d'ajouter une nouvelle route IA.
+
 ## APIs externes
 - [S7] Finnhub plan gratuit = US uniquement (403 sur .PA, .MI…) → Yahoo Finance sans clé couvre tout (US + EU + crypto)
 - [S7] Yahoo Finance chart API : `meta.isin` présent sur certains actifs EU, absent sur US — ne pas supposer sa présence

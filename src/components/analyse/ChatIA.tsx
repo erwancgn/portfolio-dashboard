@@ -9,8 +9,8 @@ interface Message {
 
 /**
  * ChatIA — Client Component.
- * Interface de chat avec Claude pour analyser le portfolio.
- * Appelle POST /api/analyse/chat avec le message de l'utilisateur.
+ * Interface de chat avec Gemini pour analyser le portfolio.
+ * Appelle POST /api/analyse/chat avec le message et l'historique de la conversation.
  */
 export default function ChatIA() {
   const [messages, setMessages] = useState<Message[]>([])
@@ -35,7 +35,7 @@ export default function ChatIA() {
       const res = await fetch('/api/analyse/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({ message: trimmed, history: messages }),
       })
 
       if (!res.ok) {
@@ -106,7 +106,7 @@ export default function ChatIA() {
           <div className="flex justify-start">
             <div className="bg-[var(--color-bg-secondary)] rounded-xl px-3 py-2">
               <span className="text-sm text-[var(--color-text-sub)]">
-                Claude réfléchit…
+                Gemini réfléchit…
               </span>
             </div>
           </div>
