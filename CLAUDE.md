@@ -36,16 +36,9 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 - Ne jamais commiter sans validation explicite du PO
 - Chaque commit doit être validé et compris par le PO avant d'être exécuté
 
-### Environnements (2 uniquement)
-| Env | URL | Supabase | Bandeau |
-|---|---|---|---|
-| **Dev** | `http://localhost:3000` | Docker local | Orange "DEV — local" |
-| **Prod** | `https://portfolio-zeta-fawn-73.vercel.app` | Supabase prod | Aucun |
-
-**Workflow :**
-1. Développer + tester en local (`npm run dev`) — bandeau orange visible
-2. Valider avec le PO
-3. `git push` sur `main` → Vercel déploie automatiquement en prod
+### Environnements
+- Dev : `localhost:3000` — Supabase Docker local — bandeau orange
+- Prod : Vercel — `git push main` suffit
 
 ### Base de données
 - Ne jamais modifier la base de données de production
@@ -92,32 +85,6 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 - Après toute correction du PO (technique ou process) → ajouter une règle dans `LESSONS.md` immédiatement
 - Format : `[SX] contexte → règle concrète`
 - Ne pas attendre la fin de session pour capitaliser
-
----
-
-## Architecture — rappels clés
-
-- App Router Next.js 16 — pas de Pages Router
-- `proxy.ts` au lieu de `middleware.ts` (convention Next.js 16)
-- TypeScript strict — pas de `any`
-- Appels API externes (Finnhub, CoinGecko) → uniquement dans `src/app/api/*`
-- Jamais de `NEXT_PUBLIC_` sur une clé secrète
-- RLS Supabase activé sur toutes les tables
-- Server Components pour les pages — Client Components uniquement si interaction utilisateur requise
-
----
-
-## Calculs financiers — formules de référence
-```
-Valeur position    = quantité × prix_actuel
-Valeur investie    = quantité × pru
-P&L                = valeur_position - valeur_investie
-P&L %              = (P&L / valeur_investie) × 100
-Poids %            = (valeur_position / valeur_totale) × 100
-
-Nouveau PRU (DCA)  = (ancienne_quantité × ancien_pru + montant)
-                     / (ancienne_quantité + quantité_achetée)
-```
 
 ---
 
