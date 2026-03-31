@@ -210,3 +210,32 @@ Fix HTTP 500 sur le Chat IA portfolio (#57) + validation prod.
 ---
 
 *Dernière mise à jour : Session 15 — 31/03/2026*
+
+---
+
+## Session 16 — [31/03/2026]
+
+### Contexte
+Session courte de planification : analyse comparative Moning + Trade Republic, création du backlog S17, merge Dependabot PRs.
+
+### Ce qu'on a fait
+- [x] **Analyse Moning + Trade Republic** — Identification des features must-have : graphique performance, calendrier dividendes, rapport fiscal, fair value, scores Buffett/Lynch
+- [x] **Backlog S17** — 6 tickets créés sur GitHub (#70 → #75) avec critères d'acceptation et stack technique
+- [x] **Dependabot** — Merge PRs #64 (react-dom), #65 (TypeScript 6.0), #67 (tailwind/postcss), #68 (@types/node 20→25). PR #66 (eslint-config-next) fermée par conflit → sera recréée automatiquement
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| Graphique performance en P1 | Feature centrale attendue par tout investisseur — impact visuel maximal |
+| Rapport fiscal en P1 | Valeur réelle pour déclaration 2026 — données déjà disponibles dans `transactions` |
+| Scores Buffett/Lynch en P2 | Différenciants mais pas bloquants — dépendent de Gemini Search Grounding |
+| TypeScript 6.0 mergé | `npm run build` local → 0 erreurs, safe to merge |
+
+### Prochaine session (S17)
+- [ ] **#70** — Graphique performance portfolio (courbe valeur dans le temps)
+- [ ] **#75** — Rapport fiscal annuel
+- [ ] **#71** — Calendrier des dividendes
+
+---
+
+*Dernière mise à jour : Session 16 — 31/03/2026*

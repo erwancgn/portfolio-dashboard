@@ -1,7 +1,22 @@
-# SESSION.md — Session 16
+# SESSION.md — Session 17
 
 > Format ultra-compact pour économiser les tokens de contexte.
 > Historique complet → DEVLOG.md
+
+---
+
+## Session 16 — Clôturée ✅ (31/03/2026)
+
+| Ticket | Titre | Statut |
+|--------|-------|--------|
+| RESEARCH | Analyse comparative Moning + Trade Republic → backlog S17 | ✅ Livré |
+| #70 | Graphique performance portfolio (courbe valeur dans le temps) | ✅ Créé |
+| #71 | Calendrier des dividendes | ✅ Créé |
+| #72 | Score et Analyse Warren Buffett | ✅ Créé |
+| #73 | Score et Analyse Peter Lynch | ✅ Créé |
+| #74 | Fair Value — valeur intrinsèque estimée | ✅ Créé |
+| #75 | Rapport fiscal — imposition et déclaration annuelle | ✅ Créé |
+| DEPS | Merge Dependabot PRs #64, #65, #67, #68 (TypeScript 6.0, @types/node, tailwind, react-dom) | ✅ Livré |
 
 ---
 
@@ -13,28 +28,18 @@
 
 ---
 
-## Session 14 — Clôturée ✅ (30/03/2026)
+## Objectif Session 17 — Features investisseur
 
-| Ticket | Titre | Statut |
-|--------|-------|--------|
-| #62 | Setup Claude Code — Chrome, hooks ESLint, agent memory | ✅ Livré |
-| #61 | Tableau positions double-ligne + noms + drapeaux + pays drawer | ✅ Livré |
-| #58 | Quick Analyse finalisé — tables markdown + autocomplétion | ✅ Livré |
-| UX | Responsive mobile complet | ✅ Livré |
-| UX | VersionBadge v0.3.0 + modale historique | ✅ Livré |
-| UX | AnalyseSection déplacée sur page Analyse | ✅ Livré |
-| UX | LiquidityWidget redesign grille 3 colonnes | ✅ Livré |
-
----
-
-## Objectif Session 16 — Polish & prod
-
-### Tickets
+### Tickets prioritaires
 
 | # | Titre | Priorité |
 |---|-------|----------|
-| UX | Couleurs palette donut chart allocation | P1 |
-| PROD | Push prod → Vercel | P1 |
+| #70 | Graphique performance portfolio (courbe valeur dans le temps) | P1 |
+| #75 | Rapport fiscal — imposition et déclaration annuelle | P1 |
+| #71 | Calendrier des dividendes | P1 |
+| #74 | Fair Value — valeur intrinsèque estimée | P2 |
+| #72 | Score et Analyse Warren Buffett | P2 |
+| #73 | Score et Analyse Peter Lynch | P2 |
 
 ---
 
@@ -78,4 +83,4 @@ Après chaque US/TASK : appel obligatoire au `test-agent` avant de considérer l
 
 ---
 
-*Mis à jour : clôture Session 15 — 31/03/2026*
+*Mis à jour : clôture Session 16 — 31/03/2026*
