@@ -8,11 +8,20 @@ import { formatEur } from '@/lib/format'
 interface Props {
   envelopeData: AllocationEntry[]
   sectorData: AllocationEntry[]
+  weightData: AllocationEntry[]
+  countryData: AllocationEntry[]
 }
 
-const PALETTE = ['#2563eb', '#3b82f6', '#60a5fa', '#1d4ed8', '#93c5fd', '#1e40af', '#bfdbfe']
+const PALETTE = ['#2563eb', '#0d9488', '#16a34a', '#7c3aed', '#d97706', '#db2777', '#64748b']
 
-type Tab = 'envelope' | 'sector'
+type Tab = 'envelope' | 'sector' | 'weight' | 'country'
+
+const ALL_TABS: { key: Tab; label: string }[] = [
+  { key: 'envelope', label: 'Enveloppe' },
+  { key: 'sector',   label: 'Secteur' },
+  { key: 'weight',   label: 'Poids' },
+  { key: 'country',  label: 'Pays' },
+]
 
 interface TooltipProps {
   active?: boolean
@@ -23,11 +32,10 @@ interface TooltipProps {
 function ChartTooltip({ active, payload }: TooltipProps) {
   if (!active || !payload || payload.length === 0) return null
   const entry = payload[0]
-  const total = entry.value
   return (
     <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs shadow-md">
       <p className="font-medium text-[var(--color-text)]">{entry.name}</p>
-      <p className="tabular-nums text-[var(--color-text-sub)]">{formatEur(total)}</p>
+      <p className="tabular-nums text-[var(--color-text-sub)]">{formatEur(entry.value)}</p>
     </div>
   )
 }
@@ -56,42 +64,42 @@ function ChartLegend({ data }: { data: AllocationEntry[] }) {
 
 /**
  * AllocationChart — Client Component.
- * Affiche deux vues (onglets) : répartition par enveloppe et par secteur.
+ * Affiche quatre vues (onglets) : Enveloppe, Secteur, Poids (par titre), Pays.
  * Utilise Recharts PieChart avec tooltip et légende personnalisés.
- * Valeur investie = quantité × PRU (approximation sans conversion de devise).
  */
-export default function AllocationChart({ envelopeData, sectorData }: Props) {
+export default function AllocationChart({ envelopeData, sectorData, weightData, countryData }: Props) {
   const [tab, setTab] = useState<Tab>('envelope')
 
-  const activeData = tab === 'envelope' ? envelopeData : sectorData
-  const hasSector = sectorData.length > 0
+  const dataMap: Record<Tab, AllocationEntry[]> = {
+    envelope: envelopeData,
+    sector:   sectorData,
+    weight:   weightData,
+    country:  countryData,
+  }
+
+  // N'afficher que les onglets qui ont des données
+  const visibleTabs = ALL_TABS.filter(({ key }) => dataMap[key].length > 0)
+  const activeData = dataMap[tab].length > 0 ? dataMap[tab] : envelopeData
 
   return (
     <section className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base font-semibold text-[var(--color-text)]">Allocation</h2>
-        {hasSector && (
+        {visibleTabs.length > 1 && (
           <div className="flex gap-1 text-xs bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-lg p-0.5">
-            <button
-              onClick={() => setTab('envelope')}
-              className={`px-3 py-1 rounded-md transition-colors ${
-                tab === 'envelope'
-                  ? 'bg-[var(--color-accent)] text-white font-medium'
-                  : 'text-[var(--color-text-sub)] hover:text-[var(--color-text)]'
-              }`}
-            >
-              Enveloppe
-            </button>
-            <button
-              onClick={() => setTab('sector')}
-              className={`px-3 py-1 rounded-md transition-colors ${
-                tab === 'sector'
-                  ? 'bg-[var(--color-accent)] text-white font-medium'
-                  : 'text-[var(--color-text-sub)] hover:text-[var(--color-text)]'
-              }`}
-            >
-              Secteur
-            </button>
+            {visibleTabs.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`px-3 py-1 rounded-md transition-colors ${
+                  tab === key
+                    ? 'bg-[var(--color-accent)] text-white font-medium'
+                    : 'text-[var(--color-text-sub)] hover:text-[var(--color-text)]'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -123,7 +131,7 @@ export default function AllocationChart({ envelopeData, sectorData }: Props) {
         <div className="flex-1 w-full">
           <ChartLegend data={activeData} />
           <p className="text-xs text-[var(--color-text-dim)] mt-3">
-            Basé sur la valeur investie (quantité × PRU)
+            Basé sur la valeur actuelle (prix live ou quantité × PRU)
           </p>
         </div>
       </div>

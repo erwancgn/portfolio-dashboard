@@ -7,10 +7,30 @@ export interface AllocationEntry {
   value: number
 }
 
+/** Dérive le pays à partir du suffix du ticker. */
+function getCountry(ticker: string): string {
+  if (ticker.includes('-')) return 'Crypto'
+  if (ticker.endsWith('.PA')) return 'France'
+  if (ticker.endsWith('.MI')) return 'Italie'
+  if (ticker.endsWith('.L')) return 'Royaume-Uni'
+  if (ticker.endsWith('.AS')) return 'Pays-Bas'
+  if (ticker.endsWith('.BR')) return 'Belgique'
+  if (ticker.endsWith('.DE') || ticker.endsWith('.F')) return 'Allemagne'
+  if (ticker.endsWith('.MC')) return 'Espagne'
+  return 'États-Unis'
+}
+
+/** Trie une Map<string, number> en AllocationEntry[] décroissant par valeur. */
+function toSorted(map: Map<string, number>): AllocationEntry[] {
+  return Array.from(map.entries())
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value)
+}
+
 /**
  * AllocationSection — Server Component.
- * Agrège les positions par enveloppe et par secteur avec les prix live.
- * Fallback sur quantité × PRU si le prix est indisponible.
+ * Agrège les positions par enveloppe, secteur, poids (ticker) et pays.
+ * Prix live via fetchQuote — fallback sur quantité × PRU si indisponible.
  * React cache() déduplique les appels fetchQuote identiques sur la page.
  */
 export default async function AllocationSection() {
@@ -20,7 +40,7 @@ export default async function AllocationSection() {
 
   const { data: positions } = await supabase
     .from('positions')
-    .select('ticker, envelope, sector, quantity, pru')
+    .select('ticker, name, envelope, sector, quantity, pru')
     .eq('user_id', user.id)
 
   if (!positions || positions.length === 0) return null
@@ -35,6 +55,8 @@ export default async function AllocationSection() {
 
   const byEnvelope = new Map<string, number>()
   const bySector = new Map<string, number>()
+  const byWeight = new Map<string, number>()
+  const byCountry = new Map<string, number>()
 
   for (const [i, pos] of positions.entries()) {
     const q = quotes[i]
@@ -43,21 +65,25 @@ export default async function AllocationSection() {
       ? pos.quantity * livePrice
       : pos.quantity * pos.pru
 
-    const envelope = pos.envelope ?? 'Autre'
-    byEnvelope.set(envelope, (byEnvelope.get(envelope) ?? 0) + value)
+    byEnvelope.set(pos.envelope ?? 'Autre', (byEnvelope.get(pos.envelope ?? 'Autre') ?? 0) + value)
 
     if (pos.sector) {
       bySector.set(pos.sector, (bySector.get(pos.sector) ?? 0) + value)
     }
+
+    const tickerLabel = pos.name ? `${pos.ticker} — ${pos.name}` : pos.ticker
+    byWeight.set(tickerLabel, (byWeight.get(tickerLabel) ?? 0) + value)
+
+    const country = getCountry(pos.ticker)
+    byCountry.set(country, (byCountry.get(country) ?? 0) + value)
   }
 
-  const envelopeData: AllocationEntry[] = Array.from(byEnvelope.entries())
-    .map(([label, value]) => ({ label, value }))
-    .sort((a, b) => b.value - a.value)
-
-  const sectorData: AllocationEntry[] = Array.from(bySector.entries())
-    .map(([label, value]) => ({ label, value }))
-    .sort((a, b) => b.value - a.value)
-
-  return <AllocationChart envelopeData={envelopeData} sectorData={sectorData} />
+  return (
+    <AllocationChart
+      envelopeData={toSorted(byEnvelope)}
+      sectorData={toSorted(bySector)}
+      weightData={toSorted(byWeight)}
+      countryData={toSorted(byCountry)}
+    />
+  )
 }

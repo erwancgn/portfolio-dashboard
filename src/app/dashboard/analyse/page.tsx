@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import LogoutButton from '@/components/layout/LogoutButton'
 import AllocationSection from '@/components/portfolio/AllocationSection'
-import AnalyseSection from '@/components/portfolio/AnalyseSection'
 import ChatIA from '@/components/analyse/ChatIA'
 import QuickAnalysis from '@/components/analyse/QuickAnalysis'
 
@@ -51,9 +50,6 @@ export default async function AnalysePage() {
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
         {/* Allocation par enveloppe / secteur */}
         <AllocationSection />
-
-        {/* Analyse : Poids / Secteur / Pays */}
-        <AnalyseSection />
 
         {/* Analyse rapide d'un titre */}
         <QuickAnalysis />
