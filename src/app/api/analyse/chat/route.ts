@@ -170,7 +170,7 @@ export async function POST(
     )
   }
 
-  const history = body.history ?? []
+  const history = (body.history ?? []).slice(-20)
 
   try {
     const systemPrompt = await buildSystemPrompt(user.id)

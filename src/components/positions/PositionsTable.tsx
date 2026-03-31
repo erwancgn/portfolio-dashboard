@@ -6,6 +6,10 @@ import PositionsTableView from './PositionsTableView'
 
 type Position = Tables<'positions'>
 
+interface Props {
+  positions: Position[]
+}
+
 /**
  * Enrichit en arrière-plan les positions sans ISIN ou secteur via FMP.
  * Met à jour la DB et retourne les positions fusionnées pour le rendu courant.
@@ -62,22 +66,18 @@ export type DcaRuleMap = Record<string, { id: string; is_active: boolean | null 
 
 /**
  * PositionsTable — Server Component.
- * Récupère positions + prix, calcule P&L, délègue l'affichage à PositionsTableView (Client).
+ * Reçoit les positions depuis la page parente, calcule P&L, délègue l'affichage à PositionsTableView (Client).
  */
-export default async function PositionsTable() {
-  const supabase = await createClient()
-  const { data: raw } = await supabase
-    .from('positions')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (!raw || raw.length === 0) {
+export default async function PositionsTable({ positions: raw }: Props) {
+  if (raw.length === 0) {
     return (
       <p className="text-sm text-[var(--color-text-sub)] py-8 text-center">
         Aucune position. Cliquez sur &quot;+ Nouvelle position&quot; pour commencer.
       </p>
     )
   }
+
+  const supabase = await createClient()
 
   const [positions, quotes, usdEur, dcaData] = await Promise.all([
     enrichPositions(raw, supabase),

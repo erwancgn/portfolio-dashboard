@@ -39,7 +39,7 @@ export const fetchQuote = cache(async function fetchQuote(ticker: string): Promi
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1d`
     const res = await fetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' },
-      cache: 'no-store',
+      next: { revalidate: 60 },
     })
     if (!res.ok) return null
 
@@ -65,7 +65,7 @@ export const fetchRate = cache(async function fetchRate(from: string, to: string
   try {
     const res = await fetch(
       `https://api.frankfurter.app/latest?from=${from}&to=${to}`,
-      { cache: 'no-store' },
+      { next: { revalidate: 3600 } },
     )
     if (!res.ok) return 1
     const data = (await res.json()) as FrankfurterResponse

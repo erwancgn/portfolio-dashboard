@@ -1,10 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+import type { Tables } from '@/types/database'
 import { fetchQuote, fetchRate, toEur } from '@/lib/quote'
 import AllocationChart from './AllocationChart'
 
 export interface AllocationEntry {
   label: string
   value: number
+}
+
+interface Props {
+  positions: Tables<'positions'>[]
 }
 
 /** Dérive le pays à partir du suffix du ticker. */
@@ -33,17 +37,8 @@ function toSorted(map: Map<string, number>): AllocationEntry[] {
  * Prix live via fetchQuote — fallback sur quantité × PRU si indisponible.
  * React cache() déduplique les appels fetchQuote identiques sur la page.
  */
-export default async function AllocationSection() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: positions } = await supabase
-    .from('positions')
-    .select('ticker, name, envelope, sector, quantity, pru')
-    .eq('user_id', user.id)
-
-  if (!positions || positions.length === 0) return null
+export default async function AllocationSection({ positions }: Props) {
+  if (positions.length === 0) return null
 
   const [quotes, usdEur] = await Promise.all([
     Promise.all(positions.map((pos) => fetchQuote(pos.ticker))),

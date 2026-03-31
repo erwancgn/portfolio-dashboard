@@ -35,6 +35,12 @@ interface AgentJsonResponse {
 /** Valeurs de signal autorisées */
 const VALID_SIGNALS: Signal[] = ['BUY', 'HOLD', 'SELL']
 
+/** System prompt chargé une seule fois au démarrage du module */
+const PROMPT_TEMPLATE = fs.readFileSync(
+  path.join(process.cwd(), 'src/agents/quick-analyse.md'),
+  'utf-8',
+)
+
 /**
  * Vérifie qu'une valeur est un signal valide.
  *
@@ -121,25 +127,11 @@ export async function POST(
     )
   }
 
-  // Lecture du system prompt depuis le fichier agent
-  let promptTemplate: string
-  try {
-    promptTemplate = fs.readFileSync(
-      path.join(process.cwd(), 'src/agents/quick-analyse.md'),
-      'utf-8',
-    )
-  } catch {
-    return NextResponse.json(
-      { error: 'System prompt introuvable', code: 'CONFIG_ERROR' },
-      { status: 500 },
-    )
-  }
-
   // Enrichissement du contexte via FMP
   const fmpContext = await buildFmpContext(ticker)
 
   // Injection des variables dans le prompt
-  const systemPrompt = promptTemplate
+  const systemPrompt = PROMPT_TEMPLATE
     .replace('{ticker}', ticker)
     .replace('{context}', fmpContext)
 

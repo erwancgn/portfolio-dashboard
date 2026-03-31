@@ -1,18 +1,17 @@
-import { createClient } from '@/lib/supabase/server'
+import type { Tables } from '@/types/database'
 import { fetchQuote, fetchRate, toEur } from '@/lib/quote'
 import { formatEur, formatPct } from '@/lib/format'
+
+interface Props {
+  positions: Tables<'positions'>[]
+}
 
 /**
  * PnlStats — Server Component.
  * Ligne compacte : meilleure/pire position + compteurs gain/perte.
  */
-export default async function PnlStats() {
-  const supabase = await createClient()
-  const { data: positions } = await supabase
-    .from('positions')
-    .select('id, ticker, quantity, pru, name')
-
-  if (!positions || positions.length === 0) return null
+export default async function PnlStats({ positions }: Props) {
+  if (positions.length === 0) return null
 
   const [quotes, usdEur] = await Promise.all([
     Promise.all(positions.map((pos) => fetchQuote(pos.ticker))),

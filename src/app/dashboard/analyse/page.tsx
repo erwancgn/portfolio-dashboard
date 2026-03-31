@@ -19,6 +19,11 @@ export default async function AnalysePage() {
 
   if (!user) redirect('/auth/login')
 
+  const { data: positions } = await supabase
+    .from('positions')
+    .select('*')
+    .order('created_at', { ascending: false })
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)]">
       {/* Header */}
@@ -49,7 +54,7 @@ export default async function AnalysePage() {
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
         {/* Allocation par enveloppe / secteur */}
-        <AllocationSection />
+        <AllocationSection positions={positions ?? []} />
 
         {/* Analyse rapide d'un titre */}
         <QuickAnalysis />

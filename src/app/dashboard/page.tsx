@@ -19,6 +19,11 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
+  const { data: positions } = await supabase
+    .from('positions')
+    .select('*')
+    .order('created_at', { ascending: false })
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)]">
       {/* Header */}
@@ -48,13 +53,13 @@ export default async function DashboardPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* Hero */}
-        <PortfolioSummary />
+        <PortfolioSummary positions={positions ?? []} />
 
         {/* Stats P&L */}
-        <PnlStats />
+        <PnlStats positions={positions ?? []} />
 
         {/* Allocation par enveloppe / secteur */}
-        <AllocationSection />
+        <AllocationSection positions={positions ?? []} />
 
         {/* Liquidités */}
         <LiquidityWidget />
@@ -65,7 +70,7 @@ export default async function DashboardPage() {
             <h2 className="text-base font-semibold text-[var(--color-text)]">Mes positions</h2>
             <PositionsSectionClient />
           </div>
-          <PositionsTable />
+          <PositionsTable positions={positions ?? []} />
         </section>
       </main>
     </div>

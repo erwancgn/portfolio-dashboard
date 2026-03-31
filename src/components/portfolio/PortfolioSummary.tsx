@@ -1,19 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
+import type { Tables } from '@/types/database'
 import { fetchQuote, fetchRate, toEur } from '@/lib/quote'
 import { formatEur, formatPct } from '@/lib/format'
+
+interface Props {
+  positions: Tables<'positions'>[]
+}
 
 /**
  * PortfolioSummary — Server Component.
  * Bandeau héro : valeur totale, P&L coloré, valeur investie, nombre de positions.
  * Style épuré inspiré Trade Republic / Moning.
  */
-export default async function PortfolioSummary() {
-  const supabase = await createClient()
-  const { data: positions } = await supabase
-    .from('positions')
-    .select('id, ticker, quantity, pru')
-
-  if (!positions || positions.length === 0) {
+export default async function PortfolioSummary({ positions }: Props) {
+  if (positions.length === 0) {
     return (
       <div className="py-10 text-center text-[var(--color-text-sub)] text-sm">
         Aucune position. Ajoutez votre première position pour commencer.
