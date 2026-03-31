@@ -1,0 +1,29 @@
+name: Trivy — Scan sécurité dépendances
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Scan hebdomadaire le lundi à 8h
+    - cron: '0 8 * * 1'
+
+jobs:
+  trivy:
+    name: Scan CVE
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trivy — scan dépendances npm
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln,secret'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'        # Bloque le push si CRITICAL ou HIGH détecté
+          format: 'table'
+          ignore-unfixed: true  # Ignore les CVE sans fix disponible
