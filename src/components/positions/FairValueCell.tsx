@@ -39,6 +39,7 @@ export default function FairValueCell({ ticker }: Props) {
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState<FairValueResponse | null>(null)
   const [error, setError] = useState(false)
+  const [showPopup, setShowPopup] = useState(false)
 
   async function handleClick(e: React.MouseEvent) {
     e.stopPropagation()
@@ -73,7 +74,7 @@ export default function FairValueCell({ ticker }: Props) {
     )
   }
 
-  /* Résultat : badge + prix avec tooltip analyse */
+  /* Résultat : badge + prix + bouton "?" */
   return (
     <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
       <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${SIGNAL_CLASSES[data.signal]}`}>
@@ -81,17 +82,46 @@ export default function FairValueCell({ ticker }: Props) {
       </span>
 
       {data.fair_value !== null && (
-        <div className="relative group">
-          <span className="text-xs tabular-nums text-[var(--color-text)] cursor-default underline decoration-dashed decoration-[var(--color-border)] underline-offset-2">
+        <span className="flex items-center gap-1">
+          <span className="text-xs tabular-nums text-[var(--color-text)]">
             {fmtPrice(data.fair_value)}
           </span>
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowPopup(true) }}
+            title="Voir l'explication"
+            className="w-4 h-4 rounded-full border border-[var(--color-border)] text-[var(--color-text-sub)] hover:text-[var(--color-text)] hover:border-[var(--color-text-sub)] transition-colors text-[10px] font-bold leading-none flex items-center justify-center"
+          >
+            ?
+          </button>
+        </span>
+      )}
 
-          {/* Tooltip hover — analyse narrative */}
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 rounded-lg bg-[var(--color-bg-elevated)] border border-[var(--color-border)] p-3 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-normal">
-            <p className="text-xs text-[var(--color-text)] leading-relaxed">{data.analysis}</p>
-            <p className="mt-2 text-[10px] text-[var(--color-text-sub)]">
-              {data.methodology} · Confiance {data.confidence === 'high' ? 'élevée' : data.confidence === 'medium' ? 'moyenne' : 'faible'}
-            </p>
+      {/* Popup explication */}
+      {showPopup && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={(e) => { e.stopPropagation(); setShowPopup(false) }}
+        >
+          <div
+            className="relative w-full max-w-md rounded-xl border border-gray-300 bg-white p-5 shadow-2xl space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowPopup(false)}
+              className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+              aria-label="Fermer"
+            >
+              ✕
+            </button>
+            <h3 className="text-sm font-semibold text-gray-900 pr-6">
+              Fair value — {ticker}
+            </h3>
+            <p className="text-sm text-gray-700 leading-relaxed">{data.analysis}</p>
+            <div className="flex items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-200">
+              <span>{data.methodology}</span>
+              <span>·</span>
+              <span>Confiance {data.confidence === 'high' ? 'élevée' : data.confidence === 'medium' ? 'moyenne' : 'faible'}</span>
+            </div>
           </div>
         </div>
       )}

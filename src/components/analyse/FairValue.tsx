@@ -55,6 +55,7 @@ export default function FairValue({ ticker: initialTicker }: Props) {
   const [ticker, setTicker] = useState(initialTicker ?? '')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<FairValueResult | null>(null)
+  const [showExplanation, setShowExplanation] = useState(false)
 
   async function handleEstimate() {
     const t = ticker.trim().toUpperCase()
@@ -124,14 +125,23 @@ export default function FairValue({ ticker: initialTicker }: Props) {
         <div className="space-y-3">
           {result.ok ? (
             <>
-              {/* Header : badge signal + fair value + cache */}
+              {/* Header : badge signal + fair value + "?" + cache */}
               <div className="flex items-center gap-2 flex-wrap">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide ${SIGNAL_CLASSES[result.data.signal]}`}>
                   {SIGNAL_LABELS[result.data.signal]}
                 </span>
                 {result.data.fair_value !== null && (
-                  <span className="text-sm font-semibold tabular-nums text-[var(--color-text)]">
-                    {fmtPrice(result.data.fair_value)}
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-sm font-semibold tabular-nums text-[var(--color-text)]">
+                      {fmtPrice(result.data.fair_value)}
+                    </span>
+                    <button
+                      onClick={() => setShowExplanation(true)}
+                      title="Voir l'explication"
+                      className="w-4 h-4 rounded-full border border-[var(--color-border)] text-[var(--color-text-sub)] hover:text-[var(--color-text)] hover:border-[var(--color-text-sub)] transition-colors text-[10px] font-bold leading-none flex items-center justify-center"
+                    >
+                      ?
+                    </button>
                   </span>
                 )}
                 {result.data.from_cache && (
@@ -159,18 +169,6 @@ export default function FairValue({ ticker: initialTicker }: Props) {
                 </div>
               </div>
 
-              {/* Analyse narrative */}
-              <p className="text-sm text-[var(--color-text)] leading-relaxed">
-                {result.data.analysis}
-              </p>
-
-              {/* Méthodologie + confiance */}
-              <div className="flex items-center gap-2 text-xs text-[var(--color-text-sub)]">
-                <span>Méthode : {result.data.methodology}</span>
-                <span>·</span>
-                <span>Confiance : {CONFIDENCE_LABELS[result.data.confidence]}</span>
-              </div>
-
               {/* Bouton recalculer si ticker pré-rempli */}
               {initialTicker && (
                 <button
@@ -180,6 +178,41 @@ export default function FairValue({ ticker: initialTicker }: Props) {
                 >
                   Recalculer
                 </button>
+              )}
+
+              {/* Popup explication — fond semi-transparent + carte centrée */}
+              {showExplanation && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+                  onClick={() => setShowExplanation(false)}
+                >
+                  <div
+                    className="relative w-full max-w-md rounded-xl border border-gray-300 bg-white p-5 shadow-2xl space-y-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      onClick={() => setShowExplanation(false)}
+                      className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+                      aria-label="Fermer"
+                    >
+                      ✕
+                    </button>
+
+                    <h3 className="text-sm font-semibold text-gray-900 pr-6">
+                      Analyse — {result.data.ticker}
+                    </h3>
+
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {result.data.analysis}
+                    </p>
+
+                    <div className="flex items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-200">
+                      <span>Méthode : {result.data.methodology}</span>
+                      <span>·</span>
+                      <span>Confiance : {CONFIDENCE_LABELS[result.data.confidence]}</span>
+                    </div>
+                  </div>
+                </div>
               )}
             </>
           ) : result.quota ? (
