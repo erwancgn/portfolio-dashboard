@@ -282,4 +282,13 @@ Session courte de planification : analyse comparative Moning + Trade Republic, c
 - **Hover reveal** : boutons + Achat / Vendre / DCA / Fair value révélés au survol desktop (`group-hover:flex`), permanents mobile. Testé navigateur ✓
 - **FairValueCell tooltip** : `--color-bg-card` n'existait pas → background transparent/invisible. Fix : remplacement par `--color-bg-elevated` (`#f1f5f9`). Largeur `w-72`, hauteur adaptative au volume de texte.
 
+### Fix déploiements Vercel — hotfix (01/04/2026)
+- **Symptôme** : tous les déploiements Vercel en erreur depuis ~16h, échec en 4–6s sans logs de build.
+- **Cause 1** : Dependabot avait bumped `react-dom@19.2.4` sans bumper `react` (resté à `19.2.3`). `react-dom@19.2.4` exige `react@^19.2.4` → conflit peer deps → `npm install` échoue sur Vercel (fresh install strict). Localement invisible car `node_modules` était en cache à l'ancienne version.
+- **Cause 2** : Dependabot avait bumped TypeScript `5.9.3 → 6.0.2`. TypeScript 6 exige des déclarations de type pour les side-effect imports CSS (`import './globals.css'`). Build local passait (cache), Vercel échouait avec `Cannot find module or type declarations for side-effect import of './globals.css'`.
+- **Fix 1** : `package.json` — `react` aligné sur `"19.2.4"` (cohérent avec react-dom)
+- **Fix 2** : `tsconfig.json` — ajout `"allowArbitraryExtensions": true`
+- **Fix 3** : `src/app/globals.css.d.ts` — déclaration TypeScript pour le CSS side-effect import
+- **Résultat** : `npm run build` ✓ + `vercel build --prod` ✓
+
 *Dernière mise à jour : Session 17 — 01/04/2026*

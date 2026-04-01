@@ -39,6 +39,19 @@
 | #72 | Score et Analyse Warren Buffett | ⬜ À faire |
 | #73 | Score et Analyse Peter Lynch | ⬜ À faire |
 | #75 | Rapport fiscal — imposition et déclaration annuelle | ⬜ À faire |
+| HOTFIX | Fix déploiements Vercel — peer deps React + TypeScript 6 CSS import | ✅ Livré |
+
+---
+
+## Session 18 — À planifier
+
+| Ticket | Titre | Priorité |
+|--------|-------|----------|
+| #71 | Calendrier des dividendes | P1 |
+| #74 | Fair Value — valeur intrinsèque estimée | P1 |
+| #72 | Score et Analyse Warren Buffett | P2 |
+| #73 | Score et Analyse Peter Lynch | P2 |
+| #75 | Rapport fiscal — imposition et déclaration annuelle | P3 |
 
 ---
 

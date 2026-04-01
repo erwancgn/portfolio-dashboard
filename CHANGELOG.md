@@ -18,6 +18,9 @@
 - **Positions hover reveal** — Boutons d'action (+ Achat, Vendre, DCA, Fair value) révélés au survol desktop, permanents sur mobile.
 - **FairValueCell tooltip opaque** — Fix fond transparent (variable CSS inexistante) → fond solide `--color-bg-elevated`, texte complet adaptatif.
 
+### Fixed
+- **Déploiements Vercel** — Corrigé conflit peer deps React (`react@19.2.3` vs `react-dom@19.2.4`) + erreur TypeScript 6 sur import CSS (`globals.css.d.ts` + `allowArbitraryExtensions`).
+
 ---
 
 ## [0.3.1] — 2026-03-31 — Fix Chat IA
