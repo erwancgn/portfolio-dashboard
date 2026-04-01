@@ -15,16 +15,18 @@ interface Props {
 }
 
 type Tab = 'performance' | 'carte'
-type Period = '1M' | '3M' | '6M' | '1A' | 'Max'
+type Period = 'YTD' | '1M' | '3M' | '6M' | '1A' | 'Max'
 
-const PERIODS: Period[] = ['1M', '3M', '6M', '1A', 'Max']
+const PERIODS: Period[] = ['YTD', '1M', '3M', '6M', '1A', 'Max']
 
-const PERIOD_DAYS: Record<Period, number> = {
-  '1M': 30,
-  '3M': 90,
-  '6M': 180,
-  '1A': 365,
-  'Max': Infinity,
+/** Retourne la date ISO de coupure pour une période donnée */
+function periodCutoff(period: Period): string | null {
+  if (period === 'Max') return null
+  if (period === 'YTD') return `${new Date().getFullYear()}-01-01`
+  const days: Record<Exclude<Period, 'YTD' | 'Max'>, number> = { '1M': 30, '3M': 90, '6M': 180, '1A': 365 }
+  const d = new Date()
+  d.setDate(d.getDate() - days[period as keyof typeof days])
+  return d.toISOString().slice(0, 10)
 }
 
 /** Formate une date ISO (YYYY-MM-DD) en DD/MM */
@@ -58,24 +60,18 @@ export default function PerformanceChart({ snapshots, heatmapData }: Props) {
   const [tab, setTab] = useState<Tab>('performance')
   const [period, setPeriod] = useState<Period>('1M')
 
-  // Filtrage des snapshots selon la période sélectionnée
-  const filteredSnapshots = (() => {
-    const days = PERIOD_DAYS[period]
-    if (!isFinite(days)) return snapshots
-    const cutoff = new Date()
-    cutoff.setDate(cutoff.getDate() - days)
-    const cutoffStr = cutoff.toISOString().slice(0, 10)
-    return snapshots.filter((s) => s.date >= cutoffStr)
-  })()
+  const cutoff = periodCutoff(period)
+  const filteredSnapshots = cutoff ? snapshots.filter((s) => s.date >= cutoff) : snapshots
 
   const chartData = filteredSnapshots.map((s) => ({
     date: fmtDate(s.date),
     value: s.total_value,
   }))
 
+  // Racine carrée pour compresser les gros actifs (ex: BTC) et rendre toutes les tuiles lisibles
   const treemapData = heatmapData.map((e) => ({
     name: e.ticker,
-    size: e.value,
+    size: Math.sqrt(Math.max(e.value, 1)),
     ticker: e.ticker,
     changePercent: e.changePercent,
   }))
@@ -128,9 +124,16 @@ export default function PerformanceChart({ snapshots, heatmapData }: Props) {
           </div>
 
           {chartData.length < 2 ? (
-            <p className="text-sm text-[var(--color-text-sub)] py-8 text-center">
-              Historique en cours de constitution...
-            </p>
+            <div className="py-8 text-center">
+              {snapshots.length === 1 && (
+                <p className="text-2xl font-semibold tabular-nums text-[var(--color-text)] mb-1">
+                  {formatEur(snapshots[0].total_value)}
+                </p>
+              )}
+              <p className="text-sm text-[var(--color-text-sub)]">
+                Historique en cours de constitution — revenez demain pour voir la courbe
+              </p>
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>

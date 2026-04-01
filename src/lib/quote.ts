@@ -6,7 +6,7 @@ interface YahooChartResponse {
     result: Array<{
       meta: {
         regularMarketPrice: number
-        regularMarketChangePercent?: number
+        chartPreviousClose?: number
         currency: string
         longName?: string
         shortName?: string
@@ -51,10 +51,13 @@ export const fetchQuote = cache(async function fetchQuote(ticker: string): Promi
     }
 
     const meta = data.chart.result[0].meta
+    const changePercent = meta.chartPreviousClose && meta.chartPreviousClose !== 0
+      ? ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose) * 100
+      : undefined
     return {
       price: meta.regularMarketPrice,
       currency: meta.currency,
-      changePercent: meta.regularMarketChangePercent,
+      changePercent,
     }
   } catch {
     return null

@@ -10,7 +10,10 @@
 ## [Unreleased]
 > Fonctionnalités en cours de développement — pas encore livrées en version taguée.
 
-*(vide)*
+### Added
+- **Graphique performance portfolio** (#70) — Courbe de la valeur totale dans le temps (snapshots quotidiens auto-enregistrés) avec sélecteur de période YTD / 1M / 3M / 6M / 1A / Max
+- **Heatmap Wall Street** (#70) — Vue carte des actions du portfolio : tuiles colorées rouge→vert selon variation 24h, tailles proportionnelles au poids (racine carrée pour lisibilité)
+- **Snapshots automatiques** (#70) — Upsert quotidien dans `portfolio_snapshots` à chaque chargement du dashboard (idempotent)
 
 ---
 

@@ -25,32 +25,32 @@ interface TileProps {
  * Colore la tuile selon heatColor(changePercent) et affiche ticker + variation %.
  */
 export function PerformanceTile({ x = 0, y = 0, width = 0, height = 0, ticker, changePercent = 0 }: TileProps) {
-  if (width < 20 || height < 20) return null
+  if (width < 10 || height < 10) return null
   const bg = heatColor(changePercent)
   const sign = changePercent >= 0 ? '+' : ''
   return (
     <g>
       <rect x={x} y={y} width={width} height={height} style={{ fill: bg }} rx={4} />
-      {height > 30 && (
+      {height > 20 && width > 24 && (
         <text
           x={x + width / 2}
-          y={y + height / 2 - (height > 45 ? 8 : 0)}
+          y={y + height / 2 - (height > 34 ? 7 : 0)}
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize={Math.min(12, width / 4)}
+          fontSize={Math.min(11, width / 4)}
           fill="white"
           fontWeight={600}
         >
           {ticker}
         </text>
       )}
-      {height > 45 && (
+      {height > 34 && width > 30 && (
         <text
           x={x + width / 2}
-          y={y + height / 2 + 10}
+          y={y + height / 2 + 8}
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize={Math.min(10, width / 5)}
+          fontSize={Math.min(9, width / 5)}
           fill="rgba(255,255,255,0.85)"
         >
           {sign}{changePercent.toFixed(2)}%

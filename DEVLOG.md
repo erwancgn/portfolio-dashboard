@@ -209,6 +209,37 @@ Fix HTTP 500 sur le Chat IA portfolio (#57) + validation prod.
 
 ---
 
+## Session 17 — [01/04/2026]
+
+### Contexte
+Implémentation du ticket #70 : graphique de performance portfolio avec heatmap Wall Street.
+
+### Ce qu'on a fait
+- [x] **#70 PerformanceSection** — Server Component : fetch quotes live, calcul valeur totale, upsert snapshot quotidien (`portfolio_snapshots`), données heatmap
+- [x] **#70 PerformanceChart** — Client Component : tab "Performance" (LineChart + sélecteur périodes YTD/1M/3M/6M/1A/Max) + tab "Carte" (Treemap heatmap Wall Street)
+- [x] **#70 PerformanceTile** — Renderer SVG custom Treemap : couleurs rouge→vert selon variation 24h, labels ticker + %
+- [x] **#70 fetchQuote enrichi** — `changePercent` calculé via `(price - chartPreviousClose) / chartPreviousClose × 100` (Yahoo ne retourne pas `regularMarketChangePercent` sur `/v8/chart`)
+- [x] **#70 AllocationSection remplacée** sur `/dashboard` par `PerformanceSection` (reste intact sur `/dashboard/analyse`)
+- [x] **#70 Heatmap lisible** — `Math.sqrt(value)` comme taille Treemap pour éviter que Bitcoin écrase toutes les autres tuiles
+
+### Erreurs rencontrées
+| Erreur | Cause | Solution |
+|---|---|---|
+| Heatmap toutes grises (changePercent = 0) | Yahoo `/v8/finance/chart` ne retourne pas `regularMarketChangePercent` ni `regularMarketPreviousClose` — uniquement `chartPreviousClose` | Calcul manuel `(price - chartPreviousClose) / chartPreviousClose × 100` |
+| Positions manquantes dans heatmap | Bitcoin dominant → autres tuiles < 20px → `PerformanceTile` retournait `null` | `Math.sqrt(value)` comme taille + seuil rendu abaissé à 10px |
+
+### Décisions prises
+| Décision | Raison |
+|---|---|
+| `Math.sqrt(value)` pour tailles Treemap | Compresse les gros actifs (BTC) sans masquer les petites positions — ratio lisible |
+| Snapshot upsert à chaque chargement | Idempotent via `onConflict: 'user_id,date'` — accumulation automatique sans cron |
+
+### Prochaine session (S17 suite)
+- [ ] **#71** — Calendrier des dividendes
+- [ ] **#74** — Fair Value — valeur intrinsèque estimée
+
+---
+
 *Dernière mise à jour : Session 15 — 31/03/2026*
 
 ---

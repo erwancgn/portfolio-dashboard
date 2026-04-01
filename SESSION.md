@@ -28,18 +28,16 @@
 
 ---
 
-## Objectif Session 17 — Features investisseur
+## Session 17 — En cours (01/04/2026)
 
-### Tickets prioritaires
-
-| # | Titre | Priorité |
-|---|-------|----------|
-| #70 | Graphique performance portfolio (courbe valeur dans le temps) | P1 |
-| #71 | Calendrier des dividendes | P1 |
-| #74 | Fair Value — valeur intrinsèque estimée | P1 |
-| #75 | Rapport fiscal — imposition et déclaration annuelle | P3 |
-| #72 | Score et Analyse Warren Buffett | P2 |
-| #73 | Score et Analyse Peter Lynch | P2 |
+| Ticket | Titre | Statut |
+|--------|-------|--------|
+| #70 | Graphique performance portfolio + heatmap Wall Street | ✅ Livré |
+| #71 | Calendrier des dividendes | ⬜ À faire |
+| #74 | Fair Value — valeur intrinsèque estimée | ⬜ À faire |
+| #72 | Score et Analyse Warren Buffett | ⬜ À faire |
+| #73 | Score et Analyse Peter Lynch | ⬜ À faire |
+| #75 | Rapport fiscal — imposition et déclaration annuelle | ⬜ À faire |
 
 ---
 
