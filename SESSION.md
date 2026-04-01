@@ -33,6 +33,7 @@
 | Ticket | Titre | Statut |
 |--------|-------|--------|
 | #70 | Graphique performance portfolio + heatmap Wall Street | ✅ Livré |
+| UI | PortfolioSummary unifié — PnlStats fusionné, layout grid responsive, 0 doublon API | ✅ Livré |
 | #71 | Calendrier des dividendes | ⬜ À faire |
 | #74 | Fair Value — valeur intrinsèque estimée | ⬜ À faire |
 | #72 | Score et Analyse Warren Buffett | ⬜ À faire |
@@ -81,4 +82,4 @@ Après chaque US/TASK : appel obligatoire au `test-agent` avant de considérer l
 
 ---
 
-*Mis à jour : clôture Session 16 — 31/03/2026*
+*Mis à jour : Session 17 — 01/04/2026*
