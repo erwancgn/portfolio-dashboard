@@ -47,19 +47,20 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 
 ### Périmètre
 - Travailler tâche par tâche selon le backlog GitHub
-- Ne jamais dépasser le périmètre de la tâche demandée
 - Si une décision d'architecture est nécessaire, stopper et demander au PO
 
 ---
 
 ## Workflow obligatoire
 1. Lire SESSION.md — contexte et tickets de la session en cours
-2. Lire LESSONS.md — erreurs passées à ne pas refaire
-3. Lire les fichiers concernés par la tâche
-4. Identifier la tâche précise
-5. Générer uniquement les modifications nécessaires
-6. Expliquer ce qui a été fait et pourquoi
-7. Attendre la validation PO avant tout commit
+2. Plan mode pour toute tâche non trivial et vérifie plan avant de commencer
+3. Identifier la tâche précise et les fichiers associés
+4. Générer uniquement les modifications nécessaires
+5. Corrige si ca ne passe pas, aide toi des logs, erreurs, presente seulement du travail fonctionnel
+6. Marque les items complets au fur et a mesure (plan, lesson.md, github)
+7. Expliquer ce qui a été fait et pourquoi
+8. Attendre la validation PO avant tout commit
+9. Si valide : commit et compact ou clear le context 
 
 ---
 
