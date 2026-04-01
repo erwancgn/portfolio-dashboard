@@ -4,7 +4,7 @@ import Link from 'next/link'
 import LogoutButton from '@/components/layout/LogoutButton'
 import AllocationSection from '@/components/portfolio/AllocationSection'
 import ChatIA from '@/components/analyse/ChatIA'
-import QuickAnalysis from '@/components/analyse/QuickAnalysis'
+import AssetAnalysisTabs from '@/components/analyse/AssetAnalysisTabs'
 
 /**
  * AnalysePage — Server Component.
@@ -56,8 +56,8 @@ export default async function AnalysePage() {
         {/* Allocation par enveloppe / secteur */}
         <AllocationSection positions={positions ?? []} />
 
-        {/* Analyse rapide d'un titre */}
-        <QuickAnalysis />
+        {/* Analyse rapide + Fair value (onglets) */}
+        <AssetAnalysisTabs />
 
         {/* Chat IA Claude */}
         <ChatIA />

@@ -15,6 +15,8 @@
 - **Heatmap Wall Street** (#70) — Vue carte des actions du portfolio : tuiles colorées rouge→vert selon variation 24h, tailles proportionnelles au poids (racine carrée pour lisibilité)
 - **Snapshots automatiques** (#70) — Upsert quotidien dans `portfolio_snapshots` à chaque chargement du dashboard (idempotent)
 - **PortfolioSummary unifié** — Meilleure/pire position et compteurs gain/perte intégrés dans la card principale ; suppression de `PnlStats` en composant séparé ; 0 doublon d'appels API (quotes fetchées une seule fois). Layout grid responsive 2→4 colonnes sur toute la largeur.
+- **Positions hover reveal** — Boutons d'action (+ Achat, Vendre, DCA, Fair value) révélés au survol desktop, permanents sur mobile.
+- **FairValueCell tooltip opaque** — Fix fond transparent (variable CSS inexistante) → fond solide `--color-bg-elevated`, texte complet adaptatif.
 
 ---
 

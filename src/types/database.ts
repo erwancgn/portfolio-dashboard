@@ -158,6 +158,39 @@ export type Database = {
           },
         ]
       }
+      fair_value_cache: {
+        Row: {
+          analysis: string | null
+          computed_at: string
+          fair_value: number | null
+          id: string
+          signal: string | null
+          sources: Json | null
+          ticker: string
+          user_id: string
+        }
+        Insert: {
+          analysis?: string | null
+          computed_at?: string
+          fair_value?: number | null
+          id?: string
+          signal?: string | null
+          sources?: Json | null
+          ticker: string
+          user_id: string
+        }
+        Update: {
+          analysis?: string | null
+          computed_at?: string
+          fair_value?: number | null
+          id?: string
+          signal?: string | null
+          sources?: Json | null
+          ticker?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       liquidities: {
         Row: {
           amount: number

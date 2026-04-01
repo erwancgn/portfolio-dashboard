@@ -278,4 +278,8 @@ Session courte de planification : analyse comparative Moning + Trade Republic, c
 - **Solution** : fusion de la logique `PnlStats` dans `PortfolioSummary` (réutilisation des quotes déjà fetchées), suppression du fichier `PnlStats.tsx`, layout `grid grid-cols-2 sm:grid-cols-4` pour remplir toute la largeur.
 - **Résultat** : 1 seule card, 0 doublon API, responsive 2→4 colonnes.
 
+### Positions — hover reveal + FairValueCell tooltip (S17 suite)
+- **Hover reveal** : boutons + Achat / Vendre / DCA / Fair value révélés au survol desktop (`group-hover:flex`), permanents mobile. Testé navigateur ✓
+- **FairValueCell tooltip** : `--color-bg-card` n'existait pas → background transparent/invisible. Fix : remplacement par `--color-bg-elevated` (`#f1f5f9`). Largeur `w-72`, hauteur adaptative au volume de texte.
+
 *Dernière mise à jour : Session 17 — 01/04/2026*
