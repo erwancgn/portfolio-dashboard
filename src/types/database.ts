@@ -61,6 +61,42 @@ export type Database = {
         }
         Relationships: []
       }
+      classic_analysis_cache: {
+        Row: {
+          analysis: string | null
+          computed_at: string
+          id: string
+          metadata: Json | null
+          method: string
+          score: number | null
+          signal: string | null
+          ticker: string
+          user_id: string
+        }
+        Insert: {
+          analysis?: string | null
+          computed_at?: string
+          id?: string
+          metadata?: Json | null
+          method: string
+          score?: number | null
+          signal?: string | null
+          ticker: string
+          user_id: string
+        }
+        Update: {
+          analysis?: string | null
+          computed_at?: string
+          id?: string
+          metadata?: Json | null
+          method?: string
+          score?: number | null
+          signal?: string | null
+          ticker?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dca_executions: {
         Row: {
           amount: number

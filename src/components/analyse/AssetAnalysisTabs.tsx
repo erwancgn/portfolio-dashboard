@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import QuickAnalysis from './QuickAnalysis'
 import FairValue from './FairValue'
+import ClassicAnalysis from './ClassicAnalysis'
 
-type Tab = 'quick' | 'fairvalue'
+type Tab = 'quick' | 'fairvalue' | 'classic'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'quick', label: 'Analyse rapide' },
   { id: 'fairvalue', label: 'Fair value' },
+  { id: 'classic', label: 'Buffett / Lynch' },
 ]
 
 /**
@@ -42,9 +44,11 @@ export default function AssetAnalysisTabs() {
         ))}
       </div>
 
-      {/* Contenu : QuickAnalysis a son propre wrapper section */}
+      {/* Contenu : QuickAnalysis et ClassicAnalysis ont leur propre wrapper section */}
       {active === 'quick' ? (
         <QuickAnalysis />
+      ) : active === 'classic' ? (
+        <ClassicAnalysis />
       ) : (
         <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)]">
           <div className="px-4 py-3 border-b border-[var(--color-border)]">
