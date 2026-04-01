@@ -5,7 +5,6 @@ import LogoutButton from '@/components/layout/LogoutButton'
 import VersionBadge from '@/components/layout/VersionBadge'
 import PositionsSectionClient from '@/components/positions/PositionsSectionClient'
 import PortfolioSummary from '@/components/portfolio/PortfolioSummary'
-import PnlStats from '@/components/portfolio/PnlStats'
 import LiquidityWidget from '@/components/portfolio/LiquidityWidget'
 import PerformanceSection from '@/components/portfolio/PerformanceSection'
 import PositionsTable from '@/components/positions/PositionsTable'
@@ -54,9 +53,6 @@ export default async function DashboardPage() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* Hero */}
         <PortfolioSummary positions={positions ?? []} />
-
-        {/* Stats P&L */}
-        <PnlStats positions={positions ?? []} />
 
         {/* Performance et heatmap */}
         <PerformanceSection positions={positions ?? []} userId={user.id} />

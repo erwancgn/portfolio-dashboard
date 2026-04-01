@@ -269,4 +269,13 @@ Session courte de planification : analyse comparative Moning + Trade Republic, c
 
 ---
 
-*Dernière mise à jour : Session 16 — 31/03/2026*
+---
+
+## Session 17 — 01/04/2026
+
+### PortfolioSummary unifié (amélioration UI)
+- **Problème** : deux cards séparées (`PortfolioSummary` + `PnlStats`) faisaient les mêmes appels API (fetchQuote × 2) et laissaient un grand espace vide à droite sur desktop.
+- **Solution** : fusion de la logique `PnlStats` dans `PortfolioSummary` (réutilisation des quotes déjà fetchées), suppression du fichier `PnlStats.tsx`, layout `grid grid-cols-2 sm:grid-cols-4` pour remplir toute la largeur.
+- **Résultat** : 1 seule card, 0 doublon API, responsive 2→4 colonnes.
+
+*Dernière mise à jour : Session 17 — 01/04/2026*

@@ -14,6 +14,7 @@
 - **Graphique performance portfolio** (#70) — Courbe de la valeur totale dans le temps (snapshots quotidiens auto-enregistrés) avec sélecteur de période YTD / 1M / 3M / 6M / 1A / Max
 - **Heatmap Wall Street** (#70) — Vue carte des actions du portfolio : tuiles colorées rouge→vert selon variation 24h, tailles proportionnelles au poids (racine carrée pour lisibilité)
 - **Snapshots automatiques** (#70) — Upsert quotidien dans `portfolio_snapshots` à chaque chargement du dashboard (idempotent)
+- **PortfolioSummary unifié** — Meilleure/pire position et compteurs gain/perte intégrés dans la card principale ; suppression de `PnlStats` en composant séparé ; 0 doublon d'appels API (quotes fetchées une seule fois). Layout grid responsive 2→4 colonnes sur toute la largeur.
 
 ---
 

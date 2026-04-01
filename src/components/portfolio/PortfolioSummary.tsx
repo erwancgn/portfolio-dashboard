@@ -8,7 +8,8 @@ interface Props {
 
 /**
  * PortfolioSummary — Server Component.
- * Bandeau héro : valeur totale, P&L coloré, valeur investie, nombre de positions.
+ * Bandeau héro : valeur totale, P&L coloré, valeur investie, nombre de positions,
+ * meilleure/pire position et compteurs gain/perte.
  * Style épuré inspiré Trade Republic / Moning.
  */
 export default async function PortfolioSummary({ positions }: Props) {
@@ -45,6 +46,23 @@ export default async function PortfolioSummary({ positions }: Props) {
   const pnlPct = totalInvested > 0 ? (pnl / totalInvested) * 100 : 0
   const isGain = pnl >= 0
 
+  // Calculs meilleure/pire position + compteurs
+  const pnlByPosition = positions.map((pos, i) => {
+    const q = quotes[i]
+    if (!q) return null
+    const p = toEur(q.price, q.currency, usdEur, gbpEur)
+    if (p === null) return null
+    const invested = pos.quantity * pos.pru
+    const posPnl = pos.quantity * p - invested
+    const posPnlPct = invested > 0 ? (posPnl / invested) * 100 : 0
+    return { ticker: pos.ticker, pnl: posPnl, pnlPct: posPnlPct }
+  }).filter((p): p is { ticker: string; pnl: number; pnlPct: number } => p !== null)
+
+  const best = pnlByPosition.length > 0 ? pnlByPosition.reduce((a, b) => (b.pnl > a.pnl ? b : a)) : null
+  const worst = pnlByPosition.length > 0 ? pnlByPosition.reduce((a, b) => (b.pnl < a.pnl ? b : a)) : null
+  const countGain = pnlByPosition.filter((p) => p.pnl > 0).length
+  const countLoss = pnlByPosition.filter((p) => p.pnl < 0).length
+
   return (
     <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 sm:px-8 py-5 sm:py-7">
       {/* Étiquette */}
@@ -71,16 +89,16 @@ export default async function PortfolioSummary({ positions }: Props) {
         )}
       </div>
 
-      {/* Stats secondaires : séparateur vertical */}
-      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-0 sm:divide-x sm:divide-[var(--color-border)]">
-        <div className="sm:pr-6">
+      {/* Stats secondaires ligne 1 : Investi / Plus-value / Perf. / Positions */}
+      <div className="grid grid-cols-2 sm:grid-cols-4">
+        <div className="py-3 pr-4 sm:pr-6 border-b border-r border-[var(--color-border)] sm:border-b-0">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Investi</p>
           <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">
             {formatEur(totalInvested)}
           </p>
         </div>
 
-        <div className="sm:px-6">
+        <div className="py-3 pl-4 sm:px-6 border-b border-[var(--color-border)] sm:border-b-0 sm:border-r">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Plus-value</p>
           <p className={`text-base font-semibold tabular-nums ${
             priced > 0
@@ -91,7 +109,7 @@ export default async function PortfolioSummary({ positions }: Props) {
           </p>
         </div>
 
-        <div className="sm:px-6">
+        <div className="py-3 pr-4 sm:px-6 border-r border-[var(--color-border)]">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Perf.</p>
           <p className={`text-base font-semibold tabular-nums ${
             priced > 0
@@ -102,13 +120,65 @@ export default async function PortfolioSummary({ positions }: Props) {
           </p>
         </div>
 
-        <div className="sm:pl-6">
+        <div className="py-3 pl-4 sm:pl-6">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Positions</p>
           <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">
             {positions.length}
           </p>
         </div>
       </div>
+
+      {/* Séparateur */}
+      {pnlByPosition.length > 0 && (
+        <>
+          <hr className="border-[var(--color-border)]" />
+
+          {/* Stats secondaires ligne 2 : Meilleure / Pire / Gain / Perte */}
+          <div className="grid grid-cols-2 sm:grid-cols-4">
+            <div className="py-3 pr-4 sm:pr-6 border-r border-[var(--color-border)]">
+              <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Meilleure</p>
+              {best ? (
+                <p className="text-base font-semibold text-[var(--color-text)] truncate">
+                  {best.ticker}{' '}
+                  <span className="tabular-nums text-[var(--color-green-text)]">
+                    +{formatEur(best.pnl)}
+                  </span>
+                </p>
+              ) : (
+                <p className="text-base font-semibold text-[var(--color-text-sub)]">—</p>
+              )}
+            </div>
+
+            <div className="py-3 pl-4 sm:px-6 sm:border-r border-[var(--color-border)]">
+              <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Pire</p>
+              {worst ? (
+                <p className="text-base font-semibold text-[var(--color-text)] truncate">
+                  {worst.ticker}{' '}
+                  <span className="tabular-nums text-[var(--color-red-text)]">
+                    {formatEur(worst.pnl)}
+                  </span>
+                </p>
+              ) : (
+                <p className="text-base font-semibold text-[var(--color-text-sub)]">—</p>
+              )}
+            </div>
+
+            <div className="py-3 pr-4 sm:px-6 border-t border-r border-[var(--color-border)] sm:border-t-0">
+              <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">En gain</p>
+              <p className="text-base font-semibold tabular-nums text-[var(--color-green-text)]">
+                {countGain}
+              </p>
+            </div>
+
+            <div className="py-3 pl-4 sm:pl-6 border-t border-[var(--color-border)] sm:border-t-0">
+              <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">En perte</p>
+              <p className="text-base font-semibold tabular-nums text-[var(--color-red-text)]">
+                {countLoss}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
