@@ -7,7 +7,7 @@ import PositionsSectionClient from '@/components/positions/PositionsSectionClien
 import PortfolioSummary from '@/components/portfolio/PortfolioSummary'
 import PnlStats from '@/components/portfolio/PnlStats'
 import LiquidityWidget from '@/components/portfolio/LiquidityWidget'
-import AllocationSection from '@/components/portfolio/AllocationSection'
+import PerformanceSection from '@/components/portfolio/PerformanceSection'
 import PositionsTable from '@/components/positions/PositionsTable'
 
 /**
@@ -58,8 +58,8 @@ export default async function DashboardPage() {
         {/* Stats P&L */}
         <PnlStats positions={positions ?? []} />
 
-        {/* Allocation par enveloppe / secteur */}
-        <AllocationSection positions={positions ?? []} />
+        {/* Performance et heatmap */}
+        <PerformanceSection positions={positions ?? []} userId={user.id} />
 
         {/* Liquidités */}
         <LiquidityWidget />

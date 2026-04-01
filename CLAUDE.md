@@ -15,10 +15,11 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 ## Règles absolues — ne jamais enfreindre
 
 ### Code
-- Toujours lire le fichier concerné avant de proposer du code
+- Toujours lire le fichier concerné avant de modifier
 - Jamais de réécriture complète sans avoir lu l'original
-- Proposer uniquement des modifications ciblées et vérifiées
-- Ne jamais proposer du code qui n'a pas été vérifié contre le contexte existant
+- Effectuer uniquement des modifications ciblées et vérifiées
+- Ne jamais modifier du code sans l'avoir vérifié contre le contexte existant
+- **Les agents modifient les fichiers directement sans demander permission** — expliquer après, validation PO en fin de tâche
 
 ### Style
 - Tailwind CSS pour le layout et l'espacement
@@ -55,12 +56,12 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 1. Lire SESSION.md — contexte et tickets de la session en cours
 2. Plan mode pour toute tâche non trivial et vérifie plan avant de commencer
 3. Identifier la tâche précise et les fichiers associés
-4. Générer uniquement les modifications nécessaires
+4. **Modifier les fichiers directement** — pas besoin de demander permission pour éditer le code
 5. Corrige si ca ne passe pas, aide toi des logs, erreurs, presente seulement du travail fonctionnel
 6. Marque les items complets au fur et a mesure (plan, lesson.md, github)
-7. Expliquer ce qui a été fait et pourquoi
+7. Expliquer ce qui a été fait et pourquoi — la validation PO après explication suffit
 8. Attendre la validation PO avant tout commit
-9. Si valide : commit et compact ou clear le context 
+9. Si valide : commit et compact ou clear le context
 
 ---
 

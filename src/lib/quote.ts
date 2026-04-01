@@ -6,6 +6,7 @@ interface YahooChartResponse {
     result: Array<{
       meta: {
         regularMarketPrice: number
+        regularMarketChangePercent?: number
         currency: string
         longName?: string
         shortName?: string
@@ -21,6 +22,7 @@ interface YahooChartResponse {
 export interface QuoteResult {
   price: number
   currency: string
+  changePercent?: number
 }
 
 /** Reponse brute Frankfurter */
@@ -49,7 +51,11 @@ export const fetchQuote = cache(async function fetchQuote(ticker: string): Promi
     }
 
     const meta = data.chart.result[0].meta
-    return { price: meta.regularMarketPrice, currency: meta.currency }
+    return {
+      price: meta.regularMarketPrice,
+      currency: meta.currency,
+      changePercent: meta.regularMarketChangePercent,
+    }
   } catch {
     return null
   }
