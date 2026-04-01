@@ -14,9 +14,14 @@
 - **Graphique performance portfolio** (#70) — Courbe de la valeur totale dans le temps (snapshots quotidiens auto-enregistrés) avec sélecteur de période YTD / 1M / 3M / 6M / 1A / Max
 - **Heatmap Wall Street** (#70) — Vue carte des actions du portfolio : tuiles colorées rouge→vert selon variation 24h, tailles proportionnelles au poids (racine carrée pour lisibilité)
 - **Snapshots automatiques** (#70) — Upsert quotidien dans `portfolio_snapshots` à chaque chargement du dashboard (idempotent)
-- **PortfolioSummary unifié** — Meilleure/pire position et compteurs gain/perte intégrés dans la card principale ; suppression de `PnlStats` en composant séparé ; 0 doublon d'appels API (quotes fetchées une seule fois). Layout grid responsive 2→4 colonnes sur toute la largeur.
+- **PortfolioSummary unifié** — Meilleure/pire position et compteurs gain/perte intégrés dans la card principale ; suppression de `PnlStats` en composant séparé ; 0 doublon d'appels API. Layout grid responsive 2→4 colonnes.
 - **Positions hover reveal** — Boutons d'action (+ Achat, Vendre, DCA, Fair value) révélés au survol desktop, permanents sur mobile.
+- **Analyse Buffett / Lynch** (#72, #73) — Onglet dédié dans la page Analyse. Sélecteur de méthode, analyse fondamentale via Gemini 2.5 Flash, badges moat/marge de sécurité (Buffett) et PEG/catégorie/story (Lynch), rendu markdown, cache 7 jours Supabase.
+- **Fair value popup** — L'explication narrative est masquée par défaut et accessible via un bouton "?" (popup modale fermable) dans les positions et la page Analyse.
+
+### Fixed
 - **FairValueCell tooltip opaque** — Fix fond transparent (variable CSS inexistante) → fond solide `--color-bg-elevated`, texte complet adaptatif.
+- **Fair value popup couleurs** — Variables CSS illisibles en light mode → couleurs hardcodées `gray-*`.
 
 ### Fixed
 - **Déploiements Vercel** — Corrigé conflit peer deps React (`react@19.2.3` vs `react-dom@19.2.4`) + erreur TypeScript 6 sur import CSS (`globals.css.d.ts` + `allowArbitraryExtensions`).

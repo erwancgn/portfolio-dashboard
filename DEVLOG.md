@@ -291,4 +291,25 @@ Session courte de planification : analyse comparative Moning + Trade Republic, c
 - **Fix 3** : `src/app/globals.css.d.ts` — déclaration TypeScript pour le CSS side-effect import
 - **Résultat** : `npm run build` ✓ + `vercel build --prod` ✓
 
+### Tickets #72 et #73 — Analyse Buffett + Lynch (01/04/2026)
+- **Route** : `POST /api/analyse/classic` — charge le prompt agent en system instruction Gemini 2.5 Flash, extrait le JSON final, upsert dans `classic_analysis_cache` (cache 7j, RLS user_id).
+- **Migration** : `20260402000000_add_classic_analysis_cache.sql` — table + check method/signal + unique(user_id, ticker, method).
+- **Composant** `ClassicAnalysis.tsx` : sélecteur Buffett/Lynch, autocomplete, badges moat/marge sécurité (Buffett) + catégorie/PEG/story (Lynch), rendu markdown complet.
+- **Onglet** "Buffett / Lynch" ajouté dans `AssetAnalysisTabs`.
+- **Piège** : `db reset` a déclenché un push vers la base remote (prod) au lieu du local — les 3 migrations en attente ont été poussées en prod (tables nouvelles, non destructif). À éviter : toujours utiliser `--local` pour les opérations locales.
+
+### Seed données de test (01/04/2026)
+- `supabase/seed.sql` créé : user `test@test.com` / `test1234` + 7 positions (MSFT, ESEE.MI, NBIS, NVDA, DG.PA, IE000I8KRLL9.SG, ESE.PA).
+- Hash bcrypt généré via `crypt()` PostgreSQL local — idempotent (`ON CONFLICT DO NOTHING`).
+
+### Fair value — popup "?" (01/04/2026)
+- Explication masquée par défaut dans `FairValueCell.tsx` (vue positions) et `FairValue.tsx` (page Analyse).
+- Remplacement du tooltip hover par un bouton "?" → popup modale (overlay `bg-black/50`, carte centrée, fermeture par ✕ ou clic backdrop).
+- **Fix couleurs** : variables CSS `--color-bg-card`/`--color-border` illisibles en light mode → couleurs hardcodées `gray-*` pour garantir le contraste.
+
+### Prochaine session (S18)
+- **#71** Calendrier des dividendes (P1)
+- **#74** Fair Value (P1) — améliorer / compléter la page dédiée
+- **#75** Rapport fiscal — imposition et déclaration annuelle (P3)
+
 *Dernière mise à jour : Session 17 — 01/04/2026*

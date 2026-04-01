@@ -36,81 +36,33 @@
 | UI | PortfolioSummary unifié — PnlStats fusionné, layout grid responsive, 0 doublon API | ✅ Livré |
 | #71 | Calendrier des dividendes | ⬜ À faire |
 | #74 | Fair Value — valeur intrinsèque estimée | ⬜ À faire |
-| #72 | Score et Analyse Warren Buffett | ⬜ En cours |
-| #73 | Score et Analyse Peter Lynch | ⬜ En cours |
+| #72 | Score et Analyse Warren Buffett | ✅ Livré |
+| #73 | Score et Analyse Peter Lynch | ✅ Livré |
 | #75 | Rapport fiscal — imposition et déclaration annuelle | ⬜ À faire |
 | HOTFIX | Fix déploiements Vercel — peer deps React + TypeScript 6 CSS import | ✅ Livré |
 
-#72 et #73 : Plan — Tickets #72 (Buffett) & #73 (Lynch)
-
-  Architecture proposée
-
-  3 modes d'accès :
-  1. Nouvel onglet "Buffett / Lynch" dans AssetAnalysisTabs (page /dashboard/analyse)
-  2. Bouton hover-reveal [Buffett/Lynch] dans le tableau des positions (comme FairValueCell)
-
-  Nouveaux fichiers :
-
-  ┌──────────────────────────────────────────────────┬───────────────────────────────────────────┐
-  │                     Fichier                      │                   Rôle                    │
-  ├──────────────────────────────────────────────────┼───────────────────────────────────────────┤
-  │ src/agents/buffett-analyse.md                    │ Prompt Gemini : moat, DCF, marge de       │
-  │                                                  │ sécurité                                  │
-  ├──────────────────────────────────────────────────┼───────────────────────────────────────────┤
-  │ src/agents/lynch-analyse.md                      │ Prompt Gemini : PEG, catégorie, story     │
-  ├──────────────────────────────────────────────────┼───────────────────────────────────────────┤
-  │ src/app/api/analyse/classic/route.ts             │ Route POST unique, param method:          │
-  │                                                  │ 'buffett' | 'lynch', cache 7j             │
-  ├──────────────────────────────────────────────────┼───────────────────────────────────────────┤
-  │ src/components/analyse/ClassicAnalysis.tsx       │ Composant standalone : ticker input +     │
-  │                                                  │ pill Buffett/Lynch + résultat             │
-  ├──────────────────────────────────────────────────┼───────────────────────────────────────────┤
-  │ src/components/positions/ClassicAnalysisCell.tsx │ Cell hover-reveal (calqué sur             │
-  │                                                  │ FairValueCell)                            │
-  ├──────────────────────────────────────────────────┼───────────────────────────────────────────┤
-  │ Migration SQL                                    │ Table classic_analysis_cache (user_id +   │
-  │                                                  │ ticker + method, unique, RLS)             │
-  └──────────────────────────────────────────────────┴───────────────────────────────────────────┘
-
-  Fichiers modifiés :
-  - AssetAnalysisTabs.tsx → ajout onglet 'classic'
-  - PositionsTableView.tsx → ajout ClassicAnalysisCell dans hover-reveal
-  - database.ts → régénéré via supabase gen types
-
-  Flux UX
-
-  - Tableau positions : hover → [Fair value] [Buffett/Lynch] → mini-dropdown méthode → score badge +
-   signal
-  - Page analyse : onglet "Buffett / Lynch" → ticker input + sélecteur méthode → analyse markdown
-  structurée
-
-  Métriques affichées
-
-  - Buffett : score /100, signal, moat badge (wide/narrow/none), marge de sécurité %
-  - Lynch : score /100, signal, PEG, catégorie (fast grower, stalwart...), force story
-
-  Cache
-
-  Supabase classic_analysis_cache, TTL 7 jours, clé unique user_id + ticker + method
-
-  ---
-  Questions d'alignement avant de coder :
-
-  1. Onglet label : Classique
-  2. Méthode par défaut dans le sélecteur pill : deux boutons [Buffett] [Lynch] côte à côte pour choisir la méthode — défaut Buffett
-  3. Gemini model : Flash 3 flash
-  4. Hover-reveal : Deux boutons séparés [Buffett] [Lynch] dans le hover-reveal
-  ?
 ---
 
-## Session 18 — À planifier
+## Session 17 — Clôturée ✅ (01/04/2026)
+
+| Ticket | Titre | Statut |
+|--------|-------|--------|
+| #70 | Graphique performance portfolio + heatmap Wall Street | ✅ Livré |
+| UI | PortfolioSummary unifié — PnlStats fusionné | ✅ Livré |
+| HOTFIX | Fix déploiements Vercel — peer deps React + TypeScript 6 | ✅ Livré |
+| #72 | Score et Analyse Warren Buffett | ✅ Livré |
+| #73 | Score et Analyse Peter Lynch | ✅ Livré |
+| UX | Fair value — popup "?" cliquable + fix couleurs | ✅ Livré |
+| SEED | seed.sql données de test (test@test.com / test1234) | ✅ Livré |
+
+---
+
+## Session 18 — À faire
 
 | Ticket | Titre | Priorité |
 |--------|-------|----------|
 | #71 | Calendrier des dividendes | P1 |
-| #74 | Fair Value — valeur intrinsèque estimée | P1 |
-| #72 | Score et Analyse Warren Buffett | P2 |
-| #73 | Score et Analyse Peter Lynch | P2 |
+| #74 | Fair Value — valeur intrinsèque estimée (page dédiée) | P1 |
 | #75 | Rapport fiscal — imposition et déclaration annuelle | P3 |
 
 ---
