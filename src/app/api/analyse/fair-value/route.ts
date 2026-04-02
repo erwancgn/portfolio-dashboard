@@ -216,6 +216,15 @@ Réponds UNIQUEMENT avec ce JSON valide :
       )
     }
 
+    async function resolveLivePriceEur(): Promise<number | null> {
+      if (!liveQuote) return null
+
+      const usdEur = await fetchRate('USD', 'EUR')
+      const needsGbp = liveQuote.currency === 'GBP' || liveQuote.currency === 'GBp'
+      const gbpEur = needsGbp ? await fetchRate('GBP', 'EUR') : 1
+      return toEur(liveQuote.price, liveQuote.currency, usdEur, gbpEur)
+    }
+
     if (!jsonBlock) {
       const fallbackResponse = await getQuoteFallbackResponse()
       if (fallbackResponse) return fallbackResponse
@@ -272,6 +281,16 @@ Réponds UNIQUEMENT avec ce JSON valide :
       const divisor = isGBpence ? 100 : 1
       currentPriceEur = (validated.current_price / divisor) * rate
       fairValueEur = validated.fair_value != null ? (validated.fair_value / divisor) * rate : null
+    }
+
+    const liveCurrentPriceEur = await resolveLivePriceEur()
+    if (liveCurrentPriceEur != null) {
+      currentPriceEur = liveCurrentPriceEur
+      if (fairValueEur != null && currentPriceEur > 0) {
+        validated.upside_percent = Number(
+          (((fairValueEur - currentPriceEur) / currentPriceEur) * 100).toFixed(2),
+        )
+      }
     }
 
     const now = new Date().toISOString()
