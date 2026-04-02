@@ -5,15 +5,49 @@
 
 ---
 
-## Session 19 — En cours
+## Session 21 — À reprendre
 
 | Ticket | Titre | Priorité | Status |
 |--------|-------|----------|--------|
-| #74 | Fair Value — valeur intrinsèque estimée | P1 | ✅ Bugs fixes (devise USD→EUR + drawer) |
-| #71 | Calendrier des dividendes | P1 | À venir |
-| #75 | Rapport fiscal — imposition et déclaration annuelle | P3 | À venir |
+| #71 | Calendrier des dividendes | P1 | Prochain ticket produit |
+| #75 | Rapport fiscal — imposition et déclaration annuelle | P3 | À cadrer |
+| Maintenance | Refactor `classic/route.ts` + `ClassicAnalysis.tsx` | P2 | À planifier |
+| UX | `PerformanceSection` / `PerformanceChart` polish | P2 | À itérer |
 
-**Backlog non-bloquant** : Refactor résiduel `route.ts` + `ClassicAnalysis.tsx` (dépassement 200L limite)
+**État courant**
+- `main` est à jour et contient le merge de `refacto`
+- Branches et worktrees Claude/refacto obsolètes supprimés
+- Base code stable après `npm run test` et `npm run lint`
+- `SESSION.md` et `DEVLOG.md` contiennent le résumé des travaux IA/UX/fair value
+
+**Backlog non-bloquant** : refactor résiduel `route.ts` + `ClassicAnalysis.tsx` (dépassement 200L limite)
+
+**Prochain lot à reprendre en nouvelle session**
+- Vérification post-merge sur `main`
+  - dashboard
+  - page analyse
+  - fair value depuis tableau + drawer
+  - responsive mobile
+- Dette technique ciblée
+  - split `src/app/api/analyse/classic/route.ts`
+  - split `src/components/analyse/ClassicAnalysis.tsx`
+  - décider si `verdict` doit être affiché côté UI
+  - ajouter tests complémentaires sur les fallbacks fair value
+- UI/UX
+  - itération sur `PerformanceSection` / `PerformanceChart`
+  - harmoniser encore dashboard et analyse
+  - revoir micro-interactions et états vides
+- Produit / backlog
+  - reprendre `#71` Calendrier des dividendes
+  - cadrer `#75` Rapport fiscal
+  - décider si un ticket dédié doit être créé pour afficher `verdict` dans l'analyse classique
+
+**Tickets à traiter ensuite**
+1. `#71` Calendrier des dividendes
+2. Ticket maintenance: split `src/app/api/analyse/classic/route.ts`
+3. Ticket maintenance: split `src/components/analyse/ClassicAnalysis.tsx`
+4. Ticket UX: itération `PerformanceSection` / `PerformanceChart`
+5. `#75` Rapport fiscal annuel
 
 ---
 
@@ -89,4 +123,4 @@ src/types/database.ts                          ← Types générés Supabase
 - Worktrees obsolètes `.claude/worktrees/*` supprimés
 - Branches locales de worktrees supprimées
 
-*Mis à jour : Session 19 — 02/04/2026*
+*Mis à jour : Session 21 — 02/04/2026*
