@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import fs from 'fs'
 import path from 'path'
 import { createClient } from '@/lib/supabase/server'
+import { fetchFmpFinancialContext } from '@/lib/fmp-financials'
 
 /** Corps de la requête attendu */
 interface ClassicRequest {
@@ -165,9 +166,14 @@ export async function POST(
     )
   }
 
+  // Récupération des données financières réelles avant l'appel Gemini
+  const financialData = await fetchFmpFinancialContext(ticker)
+
   // Sélection du prompt selon la méthode
   const promptTemplate = method === 'buffett' ? PROMPT_BUFFETT : PROMPT_LYNCH
-  const systemPrompt = promptTemplate.replace('{ticker}', ticker)
+  const systemPrompt = promptTemplate
+    .replace('{ticker}', ticker)
+    .replace('{financial_data}', financialData || '> ⚠️ Données FMP non disponibles — base-toi sur tes connaissances les plus récentes.')
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey)
@@ -177,7 +183,7 @@ export async function POST(
     })
 
     const result = await model.generateContent(
-      `Analyse le titre ${ticker} selon la méthode ${method === 'buffett' ? 'Buffett (value investing)' : 'Lynch (growth investing)'} et retourne l'analyse complète en markdown suivie du JSON demandé.`,
+      `Analyse le titre ${ticker} selon la méthode ${method === 'buffett' ? 'Buffett (value investing)' : 'Lynch (growth investing)'}. Les données financières réelles sont déjà injectées dans le contexte système — utilise-les comme source principale. Retourne l'analyse complète en markdown suivie du JSON demandé.`,
     )
 
     const raw = result.response.text().trim()
