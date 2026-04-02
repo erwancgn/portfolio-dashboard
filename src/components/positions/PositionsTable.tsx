@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { fetchQuote, fetchRate, toEur } from '@/lib/quote'
-import { fetchFmpProfile } from '@/lib/fmp'
 import type { Tables } from '@/types/database'
 import PositionsTableView from './PositionsTableView'
 
@@ -8,49 +7,6 @@ type Position = Tables<'positions'>
 
 interface Props {
   positions: Position[]
-}
-
-/**
- * Enrichit en arrière-plan les positions sans ISIN ou secteur via FMP.
- * Met à jour la DB et retourne les positions fusionnées pour le rendu courant.
- */
-async function enrichPositions(
-  positions: Position[],
-  supabase: Awaited<ReturnType<typeof createClient>>,
-): Promise<Position[]> {
-  const toEnrich = positions.filter((p) => !p.isin || !p.sector || !p.name)
-  if (toEnrich.length === 0) return positions
-
-  const profiles = await Promise.allSettled(
-    toEnrich.map((p) => fetchFmpProfile(p.ticker)),
-  )
-
-  const enriched = new Map<string, Partial<Position>>()
-  const updates: Promise<unknown>[] = []
-
-  toEnrich.forEach((pos, i) => {
-    const result = profiles[i]
-    if (result.status !== 'fulfilled' || !result.value) return
-    const fmp = result.value
-    const patch: Partial<Position> = {}
-    if (!pos.isin && fmp.isin) patch.isin = fmp.isin
-    if (!pos.sector && fmp.sector) patch.sector = fmp.sector
-    if (!pos.logo_url && fmp.logoUrl) patch.logo_url = fmp.logoUrl
-    if (!pos.industry && fmp.industry) patch.industry = fmp.industry
-    if (!pos.country && fmp.country) patch.country = fmp.country
-    if (!pos.name && fmp.name) patch.name = fmp.name
-    if (Object.keys(patch).length === 0) return
-    enriched.set(pos.id, patch)
-    updates.push(Promise.resolve(supabase.from('positions').update(patch).eq('id', pos.id)))
-  })
-
-  // Persiste en DB sans bloquer le rendu
-  void Promise.allSettled(updates)
-
-  return positions.map((p) => {
-    const patch = enriched.get(p.id)
-    return patch ? { ...p, ...patch } : p
-  })
 }
 
 export interface PositionRow extends Position {
@@ -67,9 +23,10 @@ export type DcaRuleMap = Record<string, { id: string; is_active: boolean | null 
 /**
  * PositionsTable — Server Component.
  * Reçoit les positions depuis la page parente, calcule P&L, délègue l'affichage à PositionsTableView (Client).
+ * Les données statiques (isin, sector, logo_url…) sont stockées en DB à la création — pas d'appel FMP ici.
  */
-export default async function PositionsTable({ positions: raw }: Props) {
-  if (raw.length === 0) {
+export default async function PositionsTable({ positions }: Props) {
+  if (positions.length === 0) {
     return (
       <p className="text-sm text-[var(--color-text-sub)] py-8 text-center">
         Aucune position. Cliquez sur &quot;+ Nouvelle position&quot; pour commencer.
@@ -79,9 +36,8 @@ export default async function PositionsTable({ positions: raw }: Props) {
 
   const supabase = await createClient()
 
-  const [positions, quotes, usdEur, dcaData] = await Promise.all([
-    enrichPositions(raw, supabase),
-    Promise.all(raw.map((pos) => fetchQuote(pos.ticker))),
+  const [quotes, usdEur, dcaData] = await Promise.all([
+    Promise.all(positions.map((pos) => fetchQuote(pos.ticker))),
     fetchRate('USD', 'EUR'),
     supabase
       .from('dca_rules')

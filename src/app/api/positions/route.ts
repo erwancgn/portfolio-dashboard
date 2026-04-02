@@ -13,6 +13,7 @@ interface CreatePositionBody {
   pru: number
   envelope?: string
   currency?: string
+  name?: string
   isin?: string
   sector?: string
   logo_url?: string
@@ -30,7 +31,8 @@ interface ErrorResponse {
 /**
  * POST /api/positions
  * Insère une nouvelle position pour l'utilisateur connecté.
- * Valide les champs obligatoires avant insertion.
+ * Si des champs statiques (isin, sector, name…) sont absents du body,
+ * appelle FMP une seule fois pour les compléter avant l'insertion.
  */
 export async function POST(
   request: NextRequest,
@@ -59,7 +61,7 @@ export async function POST(
     )
   }
 
-  const { ticker, type, quantity, pru, envelope, currency, isin, sector, logo_url, description, industry, country } = body
+  const { ticker, type, quantity, pru, envelope, currency, name, isin, sector, logo_url, description, industry, country } = body
 
   if (!ticker || ticker.trim() === '') {
     return NextResponse.json(
@@ -86,6 +88,29 @@ export async function POST(
     )
   }
 
+  // Appel FMP unique à la création si des champs statiques sont manquants.
+  // Le form a la priorité : les données FMP ne comblent que les champs vides.
+  let fmpName = name ?? null
+  let fmpIsin = isin ?? null
+  let fmpSector = sector ?? null
+  let fmpLogoUrl = logo_url ?? null
+  let fmpDescription = description ?? null
+  let fmpIndustry = industry ?? null
+  let fmpCountry = country ?? null
+
+  if (!isin || !sector) {
+    const fmp = await fetchFmpProfile(ticker.trim().toUpperCase())
+    if (fmp) {
+      if (!fmpName && fmp.name) fmpName = fmp.name
+      if (!fmpIsin && fmp.isin) fmpIsin = fmp.isin
+      if (!fmpSector && fmp.sector) fmpSector = fmp.sector
+      if (!fmpLogoUrl && fmp.logoUrl) fmpLogoUrl = fmp.logoUrl
+      if (!fmpDescription && fmp.description) fmpDescription = fmp.description
+      if (!fmpIndustry && fmp.industry) fmpIndustry = fmp.industry
+      if (!fmpCountry && fmp.country) fmpCountry = fmp.country
+    }
+  }
+
   const insert: TablesInsert<'positions'> = {
     ticker: ticker.trim().toUpperCase(),
     type,
@@ -93,12 +118,13 @@ export async function POST(
     pru,
     envelope: envelope ?? null,
     currency: currency ?? 'EUR',
-    isin: isin ?? null,
-    sector: sector ?? null,
-    logo_url: logo_url ?? null,
-    description: description ?? null,
-    industry: industry ?? null,
-    country: country ?? null,
+    name: fmpName,
+    isin: fmpIsin,
+    sector: fmpSector,
+    logo_url: fmpLogoUrl,
+    description: fmpDescription,
+    industry: fmpIndustry,
+    country: fmpCountry,
     user_id: user.id,
   }
 
@@ -119,50 +145,10 @@ export async function POST(
 }
 
 /**
- * Enrichit en parallèle les positions sans ISIN ou secteur via FMP,
- * puis met à jour la DB. Appelé côté serveur uniquement.
- */
-async function enrichMissingMetadata(
-  positions: Position[],
-  supabase: Awaited<ReturnType<typeof createClient>>,
-): Promise<Position[]> {
-  const toEnrich = positions.filter((p) => !p.isin || !p.sector)
-  if (toEnrich.length === 0) return positions
-
-  const results = await Promise.allSettled(
-    toEnrich.map(async (pos) => {
-      const fmp = await fetchFmpProfile(pos.ticker)
-      if (!fmp) return pos
-      const update: Partial<Position> = {}
-      if (!pos.isin && fmp.isin) update.isin = fmp.isin
-      if (!pos.sector && fmp.sector) update.sector = fmp.sector
-      if (!pos.logo_url && fmp.logoUrl) update.logo_url = fmp.logoUrl
-      if (!pos.industry && fmp.industry) update.industry = fmp.industry
-      if (!pos.country && fmp.country) update.country = fmp.country
-      if (Object.keys(update).length === 0) return pos
-      const { data } = await supabase
-        .from('positions')
-        .update(update)
-        .eq('id', pos.id)
-        .select()
-        .single()
-      return data ?? { ...pos, ...update }
-    }),
-  )
-
-  const enriched = new Map(toEnrich.map((p, i) => {
-    const result = results[i]
-    return [p.id, result.status === 'fulfilled' ? result.value : p]
-  }))
-
-  return positions.map((p) => enriched.get(p.id) ?? p)
-}
-
-/**
  * GET /api/positions
  * Retourne toutes les positions de l'utilisateur connecté,
  * triées par date de création décroissante.
- * Enrichit automatiquement les positions sans ISIN/secteur via FMP.
+ * Aucun appel FMP — les données statiques sont stockées en DB à la création.
  */
 export async function GET(): Promise<NextResponse<Position[] | ErrorResponse>> {
   const supabase = await createClient()
@@ -192,6 +178,5 @@ export async function GET(): Promise<NextResponse<Position[] | ErrorResponse>> {
     )
   }
 
-  const positions = await enrichMissingMetadata(data ?? [], supabase)
-  return NextResponse.json(positions, { status: 200 })
+  return NextResponse.json(data ?? [], { status: 200 })
 }
