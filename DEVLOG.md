@@ -1,5 +1,66 @@
 # DEVLOG — Portfolio Dashboard IA
 
+## Session 19 — [02/04/2026]
+
+### ✅ Complété : Ticket #74 — Fair Value (bugs fixes)
+
+**Bugs rapportés par l'utilisateur:**
+1. Drawer des titres: n'affichait que "fair valued" sans prix juste ni explication
+2. Page analyse: prix faux pour Nvidia (174€ au lieu de 174$) — conflit devise USD/EUR
+3. Pas d'explication visible sur la fair value
+
+**Root causes identifiés:**
+- Bug 2 (CRITIQUE): FairValue.tsx formatait TOUJOURS en EUR, mais Gemini retournait les prix en USD
+  - NVDA: 174 USD affiché comme 174 EUR (faux!)
+- Bug 1 (IMPORTANT): PositionDrawer n'intégrait pas le composant FairValueCell
+  - Utilisateur ne voyait la fair value que dans le tableau ou la page analyse (avec saisie manuelle)
+- Bug 3: Bouton "?" existait mais peut-être peu visible
+
+**Solutions implémentées:**
+
+#### 1. Route API — Conversion devise USD→EUR
+- **Fichier:** `src/app/api/analyse/fair-value/route.ts`
+- Import `fetchRate` depuis `src/lib/quote.ts` (Frankfurter API existant)
+- Constante fallback: `FALLBACK_EUR_USD_RATE = 1.1`
+- Prompt Gemini: demande le champ `"currency"` (devise native: USD, EUR, GBP, etc.)
+- Bloc de conversion (lignes 208-226):
+  - Si `currency !== 'EUR'`: appel `fetchRate(devise, 'EUR')`
+  - Cas spécial GBp (pence sterling): diviseur 100 avant conversion
+  - Fallback USD si Frankfurter échoue: `rate = 1 / 1.1`
+  - Calcul `currentPriceEur` et `fairValueEur`
+- Cache Supabase et API retournent prix en EUR
+- Example NVDA: 174 USD → ~158 EUR (taux 1.1)
+
+#### 2. PositionDrawer — Intégration FairValueCell
+- **Fichier:** `src/components/positions/PositionDrawer.tsx`
+- Import `FairValueCell from './FairValueCell'`
+- Section "Analyse IA" ajoutée (lignes 78-81):
+  - Placée avant les actions (Acheter/Vendre/DCA)
+  - Label uppercase "ANALYSE IA"
+  - Comportement: click "Fair value" → badge signal + prix EUR + "?"
+  - Click "?" → popup explicative (analyse narrative)
+
+**QA Validation (10/10 ✅):**
+- ✅ fetchRate importé et constante FALLBACK définie
+- ✅ Prompt Gemini demande currency
+- ✅ GeminiJsonResponse a currency: string
+- ✅ Code de conversion présent (gestion GBp, fallback USD)
+- ✅ Cache stocke prix en EUR
+- ✅ API retourne prix en EUR
+- ✅ FairValueCell importé dans drawer
+- ✅ Section "Analyse IA" ajoutée avant actions
+- ✅ Syntaxe correcte, pas d'import manquants
+- ✅ Pas de regressions détectées
+
+**Commits:**
+- `6cf1199`: fix(#74): Fair Value — conversion USD→EUR + intégration drawer
+
+**Prochaines tâches:**
+- #71: Calendrier des dividendes
+- #75: Rapport fiscal
+
+---
+
 ## Session 18 — [02/04/2026]
 
 ### ✅ Complété : Agents Buffett/Lynch avec données réelles

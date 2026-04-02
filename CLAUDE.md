@@ -126,13 +126,25 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 
 ## Documentation obligatoire
 
-Après chaque tâche complétée, mettre à jour :
-- `DEVLOG.md` → ce qui a été fait, erreurs rencontrées, solutions
-- `CHANGELOG.md` → si une fonctionnalité est livrée
-- `ARCHITECTURE.md` → si une décision technique a été prise
+**WORKFLOW OPTIMISÉ (zéro conflit merge):**
 
-Avant chaque fin de session, commit, push, mettre à jour : 
-- `SESSION.md` → indiqué ce qui a été fait, et préparer la prochaine session
-- `DEVLOG.md` → ce qui a été fait, erreurs rencontrées, solutions
-- `CHANGELOG.md` → si une fonctionnalité est livrée
-- `ARCHITECTURE.md` → si une décision technique a été prise
+1. **Dans la branche feature :** CODE UNIQUEMENT (pas de doc)
+   - Implémenter la tâche
+   - Commit code avec message détaillé
+   - Ne PAS modifier SESSION.md, DEVLOG.md, etc.
+
+2. **Après merge vers main :** MISE À JOUR DOCUMENTATION
+   - SESSION.md → résumé de la tâche, status, tickets complétés
+   - DEVLOG.md → contexte, root causes, solutions, erreurs, fichiers modifiés
+   - CHANGELOG.md → si fonctionnalité livrée (user-facing)
+   - ARCHITECTURE.md → si décision technique majeure
+
+**Raison :** SESSION.md et DEVLOG.md sont des fichiers "consolidation" (une seule source de vérité). Les mettre à jour DANS main (post-merge) évite les conflits et reflète l'état réel du code.
+
+**Exemple correct :**
+```
+feature branch: git commit fix(#74): Fair Value bugs (code only)
+             → git merge → main (no conflicts)
+main:        git commit docs: update SESSION/DEVLOG for #74 (post-merge)
+             → git push origin main
+```
