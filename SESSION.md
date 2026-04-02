@@ -28,6 +28,31 @@
 **Prochain lot à reprendre en nouvelle session**
  - Cache persistant ou backoff sur `/api/dividends` pour réduire la dépendance au quota FMP
  - Export fiscal “prêt à déclarer” à partir de l’IFU Trade Republic
+
+---
+
+## Session 24 — Fait
+
+**Hotfix : quota FMP dépassé en prod (282/250 calls/jour)**
+
+**Root cause**
+- `GET /api/positions` appelait FMP pour toutes les positions sans ISIN/secteur à chaque page load
+- `PositionsTable.tsx` faisait la même chose en doublon au rendu
+- `POST /api/positions` n’appelait pas FMP → données statiques jamais sauvées → boucle infinie d’appels échoués
+
+**Ce qui a été livré**
+- `POST /api/positions` : 1 appel FMP unique à la création si isin ou sector manquants — tout sauvé en DB dès la création
+- `GET /api/positions` : suppression de `enrichMissingMetadata` — retour DB direct, zéro FMP
+- `PositionsTable.tsx` : suppression de `enrichPositions` + import FMP — zéro FMP au rendu
+- `scripts/enrich-positions.ts` : script one-shot pour les positions existantes (toutes déjà enrichies en prod)
+
+**Règle métier établie**
+- Données statiques (ISIN, secteur, pays, logo, description) → 1 fetch FMP à la création, stocké en DB, jamais re-fetché
+- Prix live → Yahoo Finance uniquement, à chaque visite (gratuit, sans quota)
+
+**Commit :** `a46b6ec` — perf: limiter les appels FMP à la création de position uniquement
+
+*Mis à jour : Session 24 — 02/04/2026*
  - Split `src/app/api/analyse/classic/route.ts`
  - Split `src/components/analyse/ClassicAnalysis.tsx`
  - Itération UI complémentaire sur `PerformanceSection` / `PerformanceChart`
