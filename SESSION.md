@@ -1,11 +1,28 @@
-# SESSION.md — Session 17
+# SESSION.md — Session 18
 
 > Format ultra-compact pour économiser les tokens de contexte.
 > Historique complet → DEVLOG.md
 
 ---
 
-## Session 16 — Clôturée ✅ (31/03/2026)
+## Session 18 — Clôturée ✅ (02/04/2026)
+
+| Ticket | Titre | Statut |
+|--------|-------|--------|
+| #72 | Score et Analyse Warren Buffett — données FMP réelles | ✅ Livré |
+| #73 | Score et Analyse Peter Lynch — données FMP réelles | ✅ Livré |
+
+**Résumé** : Réécriture agents Buffett/Lynch avec :
+- `src/lib/fmp-financials.ts` — Fetche quote/metrics/income FMP en parallèle
+- Injection données temps réel dans systemInstruction Gemini
+- Seuils d'interprétation colorés (ROIC, FCF, PEG, MoS, etc.)
+- ✅ QA pass (build, cache, security, quota handling)
+
+**Non-bloquant S19** : Split route.ts et ClassicAnalysis.tsx (dépassement 200L limite)
+
+---
+
+## Session 17 — Clôturée ✅ (31/03/2026)
 
 | Ticket | Titre | Statut |
 |--------|-------|--------|

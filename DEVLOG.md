@@ -1,5 +1,43 @@
 # DEVLOG — Portfolio Dashboard IA
 
+## Session 18 — [02/04/2026]
+
+### ✅ Complété : Agents Buffett/Lynch avec données réelles
+
+**Feature #72 + #73 : Analyse classique — données FMP en temps réel**
+
+#### Fichiers créés/modifiés
+1. **`src/lib/fmp-financials.ts`** (nouveau)
+   - Fetche en parallèle 3 endpoints FMP
+   - Formate bloc markdown avec seuils d'interprétation
+   - Calcule CAGR EPS/CA (formule exponentielle)
+   - Fallback gracieux si FMP indisponible
+
+2. **`src/app/api/analyse/classic/route.ts`**
+   - Import `fetchFmpFinancialContext`
+   - Injection données via `{financial_data}` dans prompt
+   - Gemini reçoit contexte financer complet
+
+3. **`src/agents/buffett-analyse.md`** (réécriture)
+   - Interprétations colorées par métrique (ROIC, FCF, MoS)
+   - Tableau MoS : BUY(>30%), HOLD(0-30%), SELL(<-10%)
+   - DCF simplifié basé sur données réelles
+
+4. **`src/agents/lynch-analyse.md`** (réécriture)
+   - PEG seuils : <0.5 exceptionnel à >2 éviter
+   - Catégories basées CAGR EPS réel
+   - Formule PEG ajusté documentée
+
+#### QA Report
+- ✅ Build TypeScript
+- ✅ Cache 7 jours + RLS
+- ✅ Gestion quota Gemini 429
+- ✅ Sécurité (API keys serveur)
+
+#### Non-bloquant (S19)
+- `route.ts` 294L, `ClassicAnalysis.tsx` 257L → split en helpers (limite 200L CLAUDE.md)
+
+---
 
 ### Règles de travail (à appliquer à chaque session)
 1. `git pull` pour récupérer les dernières modifications
