@@ -52,6 +52,18 @@ export default async function DashboardPage() {
             >
               Historique
             </Link>
+            <Link
+              href="/dashboard/dividendes"
+              className="text-sm text-[var(--color-text-sub)] hover:text-[var(--color-text)] transition-colors whitespace-nowrap"
+            >
+              Dividendes
+            </Link>
+            <Link
+              href="/dashboard/fiscal"
+              className="text-sm text-[var(--color-text-sub)] hover:text-[var(--color-text)] transition-colors whitespace-nowrap"
+            >
+              Fiscalité
+            </Link>
             <LogoutButton />
           </nav>
         </div>
