@@ -1,80 +1,11 @@
-# SESSION.md — Session 18
+# SESSION.md — Suivi sessions actives
 
 > Format ultra-compact pour économiser les tokens de contexte.
 > Historique complet → DEVLOG.md
 
 ---
 
-## Session 18 — Clôturée ✅ (02/04/2026)
-
-| Ticket | Titre | Statut |
-|--------|-------|--------|
-| #72 | Score et Analyse Warren Buffett — données FMP réelles | ✅ Livré |
-| #73 | Score et Analyse Peter Lynch — données FMP réelles | ✅ Livré |
-
-**Résumé** : Réécriture agents Buffett/Lynch avec :
-- `src/lib/fmp-financials.ts` — Fetche quote/metrics/income FMP en parallèle
-- Injection données temps réel dans systemInstruction Gemini
-- Seuils d'interprétation colorés (ROIC, FCF, PEG, MoS, etc.)
-- ✅ QA pass (build, cache, security, quota handling)
-
-**Non-bloquant S19** : Split route.ts et ClassicAnalysis.tsx (dépassement 200L limite)
-
----
-
-## Session 17 — Clôturée ✅ (31/03/2026)
-
-| Ticket | Titre | Statut |
-|--------|-------|--------|
-| RESEARCH | Analyse comparative Moning + Trade Republic → backlog S17 | ✅ Livré |
-| #70 | Graphique performance portfolio (courbe valeur dans le temps) | ✅ Créé |
-| #71 | Calendrier des dividendes | ✅ Créé |
-| #72 | Score et Analyse Warren Buffett | ✅ Créé |
-| #73 | Score et Analyse Peter Lynch | ✅ Créé |
-| #74 | Fair Value — valeur intrinsèque estimée | ✅ Créé |
-| #75 | Rapport fiscal — imposition et déclaration annuelle | ✅ Créé |
-| DEPS | Merge Dependabot PRs #64, #65, #67, #68 (TypeScript 6.0, @types/node, tailwind, react-dom) | ✅ Livré |
-
----
-
-## Session 15 — Clôturée ✅ (31/03/2026)
-
-| Ticket | Titre | Statut |
-|--------|-------|--------|
-| #57 | Fix Chat IA portfolio — HTTP 500 CONFIG_ERROR (`GEMINI_API_KEY` → `GOOGLE_AI_API_KEY`) | ✅ Livré |
-
----
-
-## Session 17 — En cours (01/04/2026)
-
-| Ticket | Titre | Statut |
-|--------|-------|--------|
-| #70 | Graphique performance portfolio + heatmap Wall Street | ✅ Livré |
-| UI | PortfolioSummary unifié — PnlStats fusionné, layout grid responsive, 0 doublon API | ✅ Livré |
-| #71 | Calendrier des dividendes | ⬜ À faire |
-| #74 | Fair Value — valeur intrinsèque estimée | ⬜ À faire |
-| #72 | Score et Analyse Warren Buffett | ✅ Livré |
-| #73 | Score et Analyse Peter Lynch | ✅ Livré |
-| #75 | Rapport fiscal — imposition et déclaration annuelle | ⬜ À faire |
-| HOTFIX | Fix déploiements Vercel — peer deps React + TypeScript 6 CSS import | ✅ Livré |
-
----
-
-## Session 17 — Clôturée ✅ (01/04/2026)
-
-| Ticket | Titre | Statut |
-|--------|-------|--------|
-| #70 | Graphique performance portfolio + heatmap Wall Street | ✅ Livré |
-| UI | PortfolioSummary unifié — PnlStats fusionné | ✅ Livré |
-| HOTFIX | Fix déploiements Vercel — peer deps React + TypeScript 6 | ✅ Livré |
-| #72 | Score et Analyse Warren Buffett | ✅ Livré |
-| #73 | Score et Analyse Peter Lynch | ✅ Livré |
-| UX | Fair value — popup "?" cliquable + fix couleurs | ✅ Livré |
-| SEED | seed.sql données de test (test@test.com / test1234) | ✅ Livré |
-
----
-
-## Session 18 — À faire
+## Session 19 — À venir
 
 | Ticket | Titre | Priorité |
 |--------|-------|----------|
@@ -82,46 +13,34 @@
 | #74 | Fair Value — valeur intrinsèque estimée (page dédiée) | P1 |
 | #75 | Rapport fiscal — imposition et déclaration annuelle | P3 |
 
+**Backlog non-bloquant** : Refactor route.ts + ClassicAnalysis.tsx (dépassement 200L limite)
+
 ---
 
 ## Stack en place
 
-- Auth Supabase ✅ · FMP `/stable/profile` (logo, ISIN, secteur, pays, nom) ✅
-- `AllocationChart` (donut Recharts) ✅ · `AnalyseSection` (Poids/Secteur/Pays) → page Analyse ✅
-- `PortfolioSummary` hero ✅ · `LiquidityWidget` grille 3 colonnes ✅
-- Transactions atomiques (RPCs PostgreSQL) ✅ · Historique `/dashboard/historique` ✅
-- Fiscalité flat tax 30% CTO/Crypto, 0% PEA ✅ · Thème light blanc/noir/bleu ✅
-- `src/lib/fmp.ts` (fetchFmpProfile : logo, secteur, ISIN, pays, nom) ✅
-- Page Analyse `/dashboard/analyse` + QuickAnalysis (Gemini 2.5 Flash-Lite + Search Grounding) ✅
-- Chat IA portfolio (Gemini 2.5 Flash, historique multi-tours) ✅
-- DCA : table `dca_rules` + route `/api/dca` + `DcaButton` + `PositionDrawer` ✅
-- Responsive mobile : cards double-ligne, grille métriques, header compact ✅
-- VersionBadge v0.3.1 ✅
+- Auth Supabase ✅ · FMP API ✅ (quote, key-metrics, income-statement, profile)
+- Gemini 2.5 Flash ✅ · Agents Buffett/Lynch ✅
+- `AllocationChart` (Recharts donut) ✅ · `PortfolioSummary` hero ✅
+- Transactions atomiques (RPCs PostgreSQL) ✅ · Historique transactions ✅
+- Fiscalité flat tax 30% CTO/Crypto, 0% PEA ✅ · Thème light ✅
+- DCA : table + route + UI ✅ · Responsive mobile ✅
 - Production : https://portfolio-zeta-fawn-73.vercel.app ✅
+
+---
 
 ## Fichiers clés
 
 ```
 src/app/dashboard/page.tsx
-src/app/dashboard/analyse/page.tsx              ← QuickAnalysis + ChatIA + AllocationSection + AnalyseSection
-src/app/dashboard/historique/page.tsx
-src/components/analyse/QuickAnalysis.tsx        ← analyse IA titre (Gemini 2.5 Flash-Lite)
-src/components/analyse/ChatIA.tsx               ← chat IA portfolio (Gemini 2.5 Flash)
-src/components/positions/PositionsTableView.tsx ← cards double-ligne + responsive
-src/components/portfolio/AllocationSection.tsx  ← donut enveloppe/secteur
-src/app/api/analyse/ticker/route.ts             ← Gemini Search Grounding
-src/app/api/analyse/chat/route.ts               ← Chat IA portfolio
-src/lib/fmp.ts                                  ← fetchFmpProfile
-src/lib/version.ts                              ← historique versions
-src/types/database.ts                           ← types générés Supabase
+src/app/api/analyse/classic/route.ts           ← Buffett/Lynch avec FMP
+src/lib/fmp-financials.ts                      ← Fetche quote/metrics/income FMP
+src/lib/fmp.ts                                 ← fetchFmpProfile
+src/agents/buffett-analyse.md                  ← Value investing (moat, MoS)
+src/agents/lynch-analyse.md                    ← Growth investing (PEG, story)
+src/types/database.ts                          ← Types générés Supabase
 ```
 
 ---
 
-## Protocole de validation
-
-Après chaque US/TASK : appel obligatoire au `test-agent` avant de considérer le ticket terminé.
-
----
-
-*Mis à jour : Session 17 — 01/04/2026*
+*Mis à jour : Session 18 — 02/04/2026*
