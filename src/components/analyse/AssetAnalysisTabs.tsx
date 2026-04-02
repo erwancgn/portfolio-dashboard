@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import QuickAnalysis from './QuickAnalysis'
-import FairValue from './FairValue'
-import ClassicAnalysis from './ClassicAnalysis'
+import dynamic from 'next/dynamic'
+
+const QuickAnalysis = dynamic(() => import('./QuickAnalysis'))
+const FairValue = dynamic(() => import('./FairValue'))
+const ClassicAnalysis = dynamic(() => import('./ClassicAnalysis'))
 
 type Tab = 'quick' | 'fairvalue' | 'classic'
 
@@ -28,15 +30,15 @@ export default function AssetAnalysisTabs() {
   return (
     <div className="space-y-0">
       {/* Barre d'onglets */}
-      <div className="flex gap-1 border-b border-[var(--color-border)] mb-4">
+      <div className="mb-4 flex gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-1">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActive(tab.id)}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
               active === tab.id
-                ? 'text-[var(--color-text)] border-[var(--color-accent)]'
-                : 'text-[var(--color-text-sub)] border-transparent hover:text-[var(--color-text)]'
+                ? 'bg-[var(--color-accent)] text-white'
+                : 'text-[var(--color-text-sub)] hover:text-[var(--color-text)]'
             }`}
           >
             {tab.label}
@@ -50,14 +52,17 @@ export default function AssetAnalysisTabs() {
       ) : active === 'classic' ? (
         <ClassicAnalysis />
       ) : (
-        <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)]">
-          <div className="px-4 py-3 border-b border-[var(--color-border)]">
-            <h2 className="text-base font-semibold text-[var(--color-text)]">Fair value</h2>
-            <p className="text-xs text-[var(--color-text-sub)] mt-0.5">
+        <section className="glass-card rounded-[28px] overflow-hidden">
+          <div className="border-b border-[var(--color-border)] px-5 py-4">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-text-dim)]">
+              Valorisation
+            </p>
+            <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">Fair value</h2>
+            <p className="mt-1 text-sm text-[var(--color-text-sub)]">
               Estimation du prix cible par analyse fondamentale IA
             </p>
           </div>
-          <div className="px-4 py-4">
+          <div className="px-5 py-5">
             <FairValue />
           </div>
         </section>

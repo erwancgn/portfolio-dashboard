@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import type { SearchResult } from '@/app/api/search/route'
 import type { ClassicAnalysisResult } from '@/app/api/analyse/classic/route'
+import { useAssetSearch } from './useAssetSearch'
 
 type Method = 'buffett' | 'lynch'
 
@@ -49,30 +49,13 @@ export default function ClassicAnalysis() {
   const [method, setMethod] = useState<Method>('buffett')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<ClassicResult | null>(null)
-  const [suggestions, setSuggestions] = useState<SearchResult[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const wrapperRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (ticker.trim().length < 2) { setSuggestions([]); return }
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(ticker)}`)
-        if (res.ok) { setSuggestions((await res.json()) as SearchResult[]); setShowSuggestions(true) }
-      } catch { /* silencieux */ }
-    }, 300)
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  }, [ticker])
-
-  useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setShowSuggestions(false)
-    }
-    document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
-  }, [])
+  const {
+    suggestions,
+    showSuggestions,
+    wrapperRef,
+    setShowSuggestions,
+    selectSuggestion,
+  } = useAssetSearch(ticker)
 
   async function handleAnalyse() {
     const t = ticker.trim().toUpperCase()
@@ -101,28 +84,31 @@ export default function ClassicAnalysis() {
   }
 
   return (
-    <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)]">
-      <div className="px-4 py-3 border-b border-[var(--color-border)]">
-        <h2 className="text-base font-semibold text-[var(--color-text)]">Analyse classique</h2>
-        <p className="text-xs text-[var(--color-text-sub)] mt-0.5">
+    <section className="glass-card overflow-hidden rounded-[28px]">
+      <div className="border-b border-[var(--color-border)] px-5 py-4">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-text-dim)]">
+          Lecture fondamentale
+        </p>
+        <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">Analyse classique</h2>
+        <p className="mt-1 text-sm text-[var(--color-text-sub)]">
           Évaluation fondamentale selon Buffett (value) ou Lynch (growth)
         </p>
       </div>
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="space-y-5 px-5 py-5">
         {/* Sélecteur de méthode */}
-        <div className="flex gap-1 p-1 rounded-lg bg-[var(--color-bg-surface)] w-fit">
+        <div className="flex w-fit gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-1">
           {(['buffett', 'lynch'] as Method[]).map((m) => (
             <button
               key={m}
               onClick={() => setMethod(m)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 method === m
-                  ? 'bg-[var(--color-bg-card)] text-[var(--color-text)] shadow-sm'
+                  ? 'bg-[var(--color-accent)] text-white shadow-sm'
                   : 'text-[var(--color-text-sub)] hover:text-[var(--color-text)]'
               }`}
             >
-              {m === 'buffett' ? '🏰 Buffett' : '📈 Lynch'}
+              {m === 'buffett' ? 'Buffett' : 'Lynch'}
             </button>
           ))}
         </div>
@@ -138,21 +124,21 @@ export default function ClassicAnalysis() {
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
               disabled={loading}
               placeholder="Ex : AAPL, MSFT, BTC-USD, Nvidia…"
-              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text)] placeholder:text-[var(--color-text-sub)] text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] disabled:opacity-50"
+              className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-sub)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] disabled:opacity-50"
             />
             {showSuggestions && suggestions.length > 0 && (
-              <ul className="absolute top-full left-0 right-0 mt-1 z-50 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] shadow-xl overflow-hidden">
+              <ul className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] shadow-xl">
                 {suggestions.map((s) => (
                   <li
                     key={s.ticker}
-                    onMouseDown={() => { setTicker(s.ticker); setSuggestions([]); setShowSuggestions(false) }}
-                    className="flex items-center justify-between gap-3 px-3 py-2.5 cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors border-b border-[var(--color-border)] last:border-0"
+                    onMouseDown={() => setTicker(selectSuggestion(s))}
+                    className="flex cursor-pointer items-center justify-between gap-3 border-b border-[var(--color-border)] px-3 py-3 transition-colors hover:bg-[var(--color-bg-secondary)] last:border-0"
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-[var(--color-text)] truncate">{s.name}</p>
                       <p className="text-xs text-[var(--color-text-sub)] font-mono">{s.ticker}</p>
                     </div>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-bg-elevated)] text-[var(--color-text-sub)] shrink-0">
+                    <span className="shrink-0 rounded-full bg-[var(--color-bg-elevated)] px-2 py-0.5 text-xs text-[var(--color-text-sub)]">
                       {TYPE_LABELS[s.type] ?? s.type}
                     </span>
                   </li>
@@ -163,10 +149,14 @@ export default function ClassicAnalysis() {
           <button
             onClick={() => void handleAnalyse()}
             disabled={loading || ticker.trim() === ''}
-            className="px-4 py-2 rounded-lg bg-[var(--color-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+            className="whitespace-nowrap rounded-2xl bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {loading ? 'Analyse…' : 'Analyser'}
           </button>
+        </div>
+
+        <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3 text-sm text-[var(--color-text-sub)]">
+          Deux cadres mentaux complémentaires: Buffett pour la qualité/prix, Lynch pour la croissance/pricing relatif.
         </div>
 
         {/* Résultat */}

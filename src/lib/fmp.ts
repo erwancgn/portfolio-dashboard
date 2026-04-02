@@ -2,6 +2,9 @@
  * Fonctions d'acces a l'API Financial Modeling Prep (FMP).
  * Cle API lue via process.env.FMP_API_KEY — jamais exposee cote client.
  */
+import { readThroughTtlCache } from '@/lib/cache'
+
+const FMP_PROFILE_TTL_MS = 60 * 60 * 1000
 
 /** Profil retourne par FMP /profile */
 export interface FmpProfile {
@@ -57,28 +60,30 @@ export async function fetchFmpProfile(ticker: string): Promise<FmpProfile | null
     return null
   }
 
-  try {
-    const url = `https://financialmodelingprep.com/stable/profile?symbol=${encodeURIComponent(ticker)}&apikey=${apiKey}`
-    const res = await fetch(url, { cache: 'no-store' })
-    if (!res.ok) return null
+  return readThroughTtlCache(`fmp:profile:${ticker}`, FMP_PROFILE_TTL_MS, async () => {
+    try {
+      const url = `https://financialmodelingprep.com/stable/profile?symbol=${encodeURIComponent(ticker)}&apikey=${apiKey}`
+      const res = await fetch(url, { next: { revalidate: 3600 } })
+      if (!res.ok) return null
 
-    const data = (await res.json()) as FmpProfileRaw[]
-    if (!Array.isArray(data) || data.length === 0) return null
+      const data = (await res.json()) as FmpProfileRaw[]
+      if (!Array.isArray(data) || data.length === 0) return null
 
-    const item = data[0]
-    return {
-      name: item.companyName || undefined,
-      sector: item.sector || undefined,
-      industry: item.industry || undefined,
-      description: item.description || undefined,
-      country: item.country || undefined,
-      logoUrl: item.image || undefined,
-      isin: item.isin || undefined,
+      const item = data[0]
+      return {
+        name: item.companyName || undefined,
+        sector: item.sector || undefined,
+        industry: item.industry || undefined,
+        description: item.description || undefined,
+        country: item.country || undefined,
+        logoUrl: item.image || undefined,
+        isin: item.isin || undefined,
+      }
+    } catch (err) {
+      console.error('[fmp] fetchFmpProfile error:', err)
+      return null
     }
-  } catch (err) {
-    console.error('[fmp] fetchFmpProfile error:', err)
-    return null
-  }
+  })
 }
 
 /**

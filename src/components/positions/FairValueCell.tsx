@@ -76,48 +76,58 @@ export default function FairValueCell({ ticker }: Props) {
 
   /* Résultat : badge + prix + bouton "?" */
   return (
-    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+    <div className="flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
       <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${SIGNAL_CLASSES[data.signal]}`}>
         {SIGNAL_LABELS[data.signal]}
+      </span>
+
+      <span className="text-xs tabular-nums text-[var(--color-text)]">
+        Prix {fmtPrice(data.current_price)}
       </span>
 
       {data.fair_value !== null && (
         <span className="flex items-center gap-1">
           <span className="text-xs tabular-nums text-[var(--color-text)]">
-            {fmtPrice(data.fair_value)}
+            FV {fmtPrice(data.fair_value)}
           </span>
-          <button
-            onClick={(e) => { e.stopPropagation(); setShowPopup(true) }}
-            title="Voir l'explication"
-            className="w-4 h-4 rounded-full border border-[var(--color-border)] text-[var(--color-text-sub)] hover:text-[var(--color-text)] hover:border-[var(--color-text-sub)] transition-colors text-[10px] font-bold leading-none flex items-center justify-center"
-          >
-            ?
-          </button>
         </span>
       )}
+
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowPopup(true) }}
+        title="Voir l'explication"
+        className="w-4 h-4 rounded-full border border-[var(--color-border)] text-[var(--color-text-sub)] hover:text-[var(--color-text)] hover:border-[var(--color-text-sub)] transition-colors text-[10px] font-bold leading-none flex items-center justify-center"
+      >
+        ?
+      </button>
 
       {/* Popup explication */}
       {showPopup && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
           onClick={(e) => { e.stopPropagation(); setShowPopup(false) }}
         >
           <div
-            className="relative w-full max-w-md rounded-xl border border-gray-300 bg-white p-5 shadow-2xl space-y-3"
+            className="glass-card relative w-full max-w-md rounded-[28px] p-5 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowPopup(false)}
-              className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+              className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-full text-[var(--color-text-sub)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg-secondary)] transition-colors text-sm"
               aria-label="Fermer"
             >
               ✕
             </button>
-            <h3 className="text-sm font-semibold text-gray-900 pr-6">
+            <h3 className="text-sm font-semibold text-[var(--color-text)] pr-6">
               Fair value — {ticker}
             </h3>
-            <p className="text-sm text-gray-700 leading-relaxed">{data.analysis}</p>
-            <div className="flex items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-200">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-sub)]">
+              <span>Prix {fmtPrice(data.current_price)}</span>
+              {data.fair_value !== null && <span>· FV {fmtPrice(data.fair_value)}</span>}
+              <span>· {SIGNAL_LABELS[data.signal]}</span>
+            </div>
+            <p className="text-sm text-[var(--color-text-sub)] leading-relaxed">{data.analysis}</p>
+            <div className="flex items-center gap-2 text-xs text-[var(--color-text-sub)] pt-3 border-t border-[var(--color-border)]">
               <span>{data.methodology}</span>
               <span>·</span>
               <span>Confiance {data.confidence === 'high' ? 'élevée' : data.confidence === 'medium' ? 'moyenne' : 'faible'}</span>

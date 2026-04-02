@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import Groq from 'groq-sdk'
+import {
+  compactHistory,
+  formatPortfolioContext,
+  normalizeModelText,
+  sanitizeModelAnalysis,
+} from '@/lib/ai'
+import { readThroughTtlCache } from '@/lib/cache'
+
+const PORTFOLIO_CONTEXT_TTL_MS = 60 * 1000
 
 /** Message d'historique de conversation */
 interface HistoryMessage {
@@ -31,37 +40,15 @@ interface ErrorResponse {
  * Récupère les positions depuis Supabase et les formate pour l'IA.
  */
 async function buildSystemPrompt(userId: string): Promise<string> {
-  const supabase = await createClient()
+  return readThroughTtlCache(`portfolio:context:${userId}`, PORTFOLIO_CONTEXT_TTL_MS, async () => {
+    const supabase = await createClient()
+    const { data: positions } = await supabase
+      .from('positions')
+      .select('ticker, name, quantity, pru, sector, envelope, current_price')
+      .eq('user_id', userId)
 
-  const { data: positions } = await supabase
-    .from('positions')
-    .select('ticker, name, quantity, pru, sector, envelope, current_price')
-    .eq('user_id', userId)
-
-  if (!positions || positions.length === 0) {
-    return "Tu es un assistant financier expert. L'utilisateur n'a pas encore de positions dans son portfolio. Réponds en français."
-  }
-
-  const lines = positions.map((pos) => {
-    const valeurInvestie = pos.quantity * pos.pru
-    const valeurActuelle = pos.current_price
-      ? pos.quantity * pos.current_price
-      : valeurInvestie
-    const pnl = valeurActuelle - valeurInvestie
-    const pnlPct = valeurInvestie > 0 ? (pnl / valeurInvestie) * 100 : 0
-    const label = pos.name ? `${pos.ticker} (${pos.name})` : pos.ticker
-    const secteur = pos.sector ? `, secteur: ${pos.sector}` : ''
-    const enveloppe = pos.envelope ? `, enveloppe: ${pos.envelope}` : ''
-
-    return `- ${label}: ${pos.quantity} parts, PRU ${pos.pru.toFixed(2)} €, valeur investie ${valeurInvestie.toFixed(2)} €, valeur actuelle ~${valeurActuelle.toFixed(2)} €, P&L ${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} € (${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)${secteur}${enveloppe}`
+    return formatPortfolioContext(positions ?? [])
   })
-
-  return `Tu es un assistant financier expert, spécialisé dans l'analyse de portefeuilles d'investissement personnels.
-Voici le portfolio de l'utilisateur :
-
-${lines.join('\n')}
-
-Réponds toujours en français. Sois concis, précis et bienveillant. Ne donne pas de conseils d'investissement formels, mais tu peux analyser la composition, les risques, la diversification et répondre aux questions sur les positions.`
 }
 
 /**
@@ -88,7 +75,7 @@ async function callGemini(
   })
 
   const result = await chat.sendMessage(message.trim())
-  return result.response.text()
+  return sanitizeModelAnalysis(result.response.text())
 }
 
 /**
@@ -105,7 +92,7 @@ async function callGroq(
 
   const historyMessages = history.map((m) => ({
     role: m.role as 'user' | 'assistant',
-    content: m.content,
+    content: normalizeModelText(m.content, 500),
   }))
 
   const completion = await groq.chat.completions.create({
@@ -118,7 +105,9 @@ async function callGroq(
     max_tokens: 1024,
   })
 
-  return completion.choices[0]?.message?.content ?? 'Réponse non disponible.'
+  return sanitizeModelAnalysis(
+    completion.choices[0]?.message?.content ?? 'Réponse non disponible.',
+  )
 }
 
 /**
@@ -170,7 +159,7 @@ export async function POST(
     )
   }
 
-  const history = (body.history ?? []).slice(-20)
+  const history = compactHistory(body.history ?? [])
 
   try {
     const systemPrompt = await buildSystemPrompt(user.id)

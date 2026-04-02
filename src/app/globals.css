@@ -4,26 +4,53 @@
    THÈME PORTFOLIO DASHBOARD — Light (Trade Republic + Moning)
    ================================================ */
 @theme inline {
-  --color-bg-primary:    #ffffff;
-  --color-bg-surface:    #f8fafc;
-  --color-bg-elevated:   #f1f5f9;
-  --color-border:        #e2e8f0;
-  --color-accent:        #2563eb;
-  --color-accent-hover:  #1d4ed8;
-  --color-accent-sub:    #dbeafe;
-  --color-text:          #0f172a;
-  --color-text-sub:      #64748b;
-  --color-text-dim:      #cbd5e1;
-  --color-green:         #16a34a;
-  --color-green-bg:      #f0fdf4;
-  --color-green-text:    #15803d;
-  --color-red:           #dc2626;
-  --color-red-bg:        #fef2f2;
-  --color-red-text:      #b91c1c;
+  --color-bg-primary: #f5f7f2;
+  --color-bg-card: #ffffff;
+  --color-bg-surface: #eef2e8;
+  --color-bg-secondary: #f8faf5;
+  --color-bg-elevated: #e4ebdd;
+  --color-border: #d8dfd2;
+  --color-border-strong: #b7c3af;
+  --color-accent: #183628;
+  --color-accent-hover: #0f2419;
+  --color-accent-sub: #dde8dc;
+  --color-text: #111714;
+  --color-text-sub: #5c675f;
+  --color-text-dim: #97a198;
+  --color-green: #1e8b57;
+  --color-green-bg: #e8f6ef;
+  --color-green-text: #146341;
+  --color-red: #c44e38;
+  --color-red-bg: #fff0eb;
+  --color-red-text: #96311f;
+  --shadow-card: 0 18px 40px rgba(17, 23, 20, 0.06);
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(221, 232, 220, 0.8), transparent 30%),
+    linear-gradient(180deg, #f9fbf7 0%, var(--color-bg-primary) 32%, #eef3ea 100%);
 }
 
 body {
+  min-height: 100vh;
   background-color: var(--color-bg-primary);
   color: var(--color-text);
-  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-family: var(--font-geist-sans), 'Segoe UI', sans-serif;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.glass-card {
+  background: color-mix(in srgb, var(--color-bg-card) 88%, white 12%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white 18%);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(18px);
+}
+
+.data-grid {
+  content-visibility: auto;
 }

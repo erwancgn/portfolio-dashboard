@@ -97,12 +97,12 @@ export default function FairValue({ ticker: initialTicker }: Props) {
             onKeyDown={(e) => { if (e.key === 'Enter') void handleEstimate() }}
             disabled={loading}
             placeholder="Ex : AAPL, MSFT, CW8.PA…"
-            className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text)] placeholder:text-[var(--color-text-sub)] text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] disabled:opacity-50"
+            className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-sub)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] disabled:opacity-50"
           />
           <button
             onClick={() => void handleEstimate()}
             disabled={loading || ticker.trim() === ''}
-            className="px-4 py-2 rounded-lg bg-[var(--color-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+            className="whitespace-nowrap rounded-2xl bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {loading ? 'Calcul…' : 'Estimer'}
           </button>
@@ -114,7 +114,7 @@ export default function FairValue({ ticker: initialTicker }: Props) {
         <button
           onClick={() => void handleEstimate()}
           disabled={loading}
-          className="w-full px-4 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-sub)] text-sm hover:bg-[var(--color-bg-surface)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3 text-sm text-[var(--color-text-sub)] transition-colors hover:bg-[var(--color-bg-surface)] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {loading ? 'Calcul en cours…' : 'Calculer la fair value'}
         </button>
@@ -127,7 +127,7 @@ export default function FairValue({ ticker: initialTicker }: Props) {
             <>
               {/* Header : badge signal + fair value + "?" + cache */}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide ${SIGNAL_CLASSES[result.data.signal]}`}>
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold tracking-wide ${SIGNAL_CLASSES[result.data.signal]}`}>
                   {SIGNAL_LABELS[result.data.signal]}
                 </span>
                 {result.data.fair_value !== null && (
@@ -138,7 +138,7 @@ export default function FairValue({ ticker: initialTicker }: Props) {
                     <button
                       onClick={() => setShowExplanation(true)}
                       title="Voir l'explication"
-                      className="w-4 h-4 rounded-full border border-[var(--color-border)] text-[var(--color-text-sub)] hover:text-[var(--color-text)] hover:border-[var(--color-text-sub)] transition-colors text-[10px] font-bold leading-none flex items-center justify-center"
+                      className="flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-border)] text-[10px] font-bold leading-none text-[var(--color-text-sub)] transition-colors hover:border-[var(--color-text-sub)] hover:text-[var(--color-text)]"
                     >
                       ?
                     </button>
@@ -153,13 +153,13 @@ export default function FairValue({ ticker: initialTicker }: Props) {
 
               {/* Prix actuel vs upside */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-lg bg-[var(--color-bg-surface)] px-3 py-2">
+                <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3">
                   <p className="text-xs text-[var(--color-text-sub)] mb-0.5">Prix actuel</p>
                   <p className="text-sm font-semibold tabular-nums text-[var(--color-text)]">
                     {fmtPrice(result.data.current_price)}
                   </p>
                 </div>
-                <div className="rounded-lg bg-[var(--color-bg-surface)] px-3 py-2">
+                <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3">
                   <p className="text-xs text-[var(--color-text-sub)] mb-0.5">Upside</p>
                   <p className={`text-sm font-semibold tabular-nums ${result.data.fair_value !== null ? (result.data.upside_percent >= 0 ? 'text-green-400' : 'text-red-400') : 'text-[var(--color-text)]'}`}>
                     {result.data.fair_value !== null
@@ -183,30 +183,30 @@ export default function FairValue({ ticker: initialTicker }: Props) {
               {/* Popup explication — fond semi-transparent + carte centrée */}
               {showExplanation && (
                 <div
-                  className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
                   onClick={() => setShowExplanation(false)}
                 >
                   <div
-                    className="relative w-full max-w-md rounded-xl border border-gray-300 bg-white p-5 shadow-2xl space-y-3"
+                    className="glass-card relative w-full max-w-md space-y-4 rounded-[28px] p-5"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
                       onClick={() => setShowExplanation(false)}
-                      className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+                      className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full text-sm text-[var(--color-text-sub)] transition-colors hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text)]"
                       aria-label="Fermer"
                     >
                       ✕
                     </button>
 
-                    <h3 className="text-sm font-semibold text-gray-900 pr-6">
+                    <h3 className="pr-6 text-sm font-semibold text-[var(--color-text)]">
                       Analyse — {result.data.ticker}
                     </h3>
 
-                    <p className="text-sm text-gray-700 leading-relaxed">
+                    <p className="text-sm leading-relaxed text-[var(--color-text-sub)]">
                       {result.data.analysis}
                     </p>
 
-                    <div className="flex items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-200">
+                    <div className="flex items-center gap-2 border-t border-[var(--color-border)] pt-3 text-xs text-[var(--color-text-sub)]">
                       <span>Méthode : {result.data.methodology}</span>
                       <span>·</span>
                       <span>Confiance : {CONFIDENCE_LABELS[result.data.confidence]}</span>

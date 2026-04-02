@@ -4,6 +4,8 @@ import fs from 'fs'
 import path from 'path'
 import { createClient } from '@/lib/supabase/server'
 import { fetchFmpFinancialContext } from '@/lib/fmp-financials'
+import { extractLastJsonObject, sanitizeModelAnalysis } from '@/lib/ai'
+import { isSafeTicker, validateClassicAnalysisJson } from '@/lib/ai-validation'
 
 /** Corps de la requête attendu */
 interface ClassicRequest {
@@ -117,6 +119,12 @@ export async function POST(
       { status: 400 },
     )
   }
+  if (!isSafeTicker(ticker)) {
+    return NextResponse.json(
+      { error: 'Ticker invalide', code: 'INVALID_PARAM' },
+      { status: 400 },
+    )
+  }
 
   if (!method || !(VALID_METHODS as readonly string[]).includes(method)) {
     return NextResponse.json(
@@ -187,11 +195,8 @@ export async function POST(
     )
 
     const raw = result.response.text().trim()
-
-    // Extraction du dernier bloc JSON de la réponse
-    const matches = [...raw.matchAll(/\{[\s\S]*?\}/g)]
-    const jsonMatch = matches[matches.length - 1]
-    if (!jsonMatch) {
+    const jsonBlock = extractLastJsonObject(raw)
+    if (!jsonBlock) {
       return NextResponse.json(
         { error: 'Format de réponse invalide', code: 'PARSE_ERROR' },
         { status: 503 },
@@ -200,7 +205,7 @@ export async function POST(
 
     let parsed: GeminiJson
     try {
-      parsed = JSON.parse(jsonMatch[0]) as GeminiJson
+      parsed = JSON.parse(jsonBlock) as GeminiJson
     } catch {
       return NextResponse.json(
         { error: 'JSON invalide dans la réponse', code: 'PARSE_ERROR' },
@@ -208,7 +213,11 @@ export async function POST(
       )
     }
 
-    if (!(VALID_SIGNALS as readonly string[]).includes(parsed.signal) || typeof parsed.score !== 'number') {
+    const validated = validateClassicAnalysisJson(method, parsed)
+    if (
+      !validated ||
+      !(VALID_SIGNALS as readonly string[]).includes(validated.signal)
+    ) {
       return NextResponse.json(
         { error: 'Structure JSON invalide', code: 'PARSE_ERROR' },
         { status: 503 },
@@ -216,22 +225,30 @@ export async function POST(
     }
 
     // Retire le bloc JSON final de l'analyse markdown
-    const analysis = raw.slice(0, jsonMatch.index).trimEnd()
+    const analysis = sanitizeModelAnalysis(
+      raw.slice(0, raw.lastIndexOf(jsonBlock)).trimEnd(),
+    )
+    if (!analysis) {
+      return NextResponse.json(
+        { error: 'Analyse vide retournée par le modèle', code: 'PARSE_ERROR' },
+        { status: 503 },
+      )
+    }
     const now = new Date().toISOString()
 
     // Construction des métadonnées selon la méthode
     const metadata: Record<string, unknown> =
       method === 'buffett'
         ? {
-            moat: (parsed as BuffettJson).moat,
-            margin_of_safety: (parsed as BuffettJson).margin_of_safety,
-            verdict: parsed.verdict,
+            moat: validated.moat,
+            margin_of_safety: validated.margin_of_safety,
+            verdict: validated.verdict,
           }
         : {
-            peg: (parsed as LynchJson).peg,
-            category: (parsed as LynchJson).category,
-            story: (parsed as LynchJson).story,
-            verdict: parsed.verdict,
+            peg: validated.peg,
+            category: validated.category,
+            story: validated.story,
+            verdict: validated.verdict,
           }
 
     // Upsert dans classic_analysis_cache
@@ -242,8 +259,8 @@ export async function POST(
           user_id: user.id,
           ticker,
           method,
-          signal: parsed.signal,
-          score: parsed.score,
+          signal: validated.signal,
+          score: validated.score,
           analysis,
           metadata,
           computed_at: now,
@@ -254,24 +271,22 @@ export async function POST(
     const response: ClassicAnalysisResult = {
       ticker,
       method,
-      signal: parsed.signal,
-      score: parsed.score,
+      signal: validated.signal,
+      score: validated.score,
       analysis,
       computed_at: now,
       from_cache: false,
     }
 
     if (method === 'buffett') {
-      const b = parsed as BuffettJson
-      response.moat = b.moat
-      response.margin_of_safety = b.margin_of_safety
-      response.verdict = b.verdict
+      response.moat = validated.moat
+      response.margin_of_safety = validated.margin_of_safety
+      response.verdict = validated.verdict
     } else {
-      const l = parsed as LynchJson
-      response.peg = l.peg
-      response.category = l.category
-      response.story = l.story
-      response.verdict = l.verdict
+      response.peg = validated.peg
+      response.category = validated.category
+      response.story = validated.story
+      response.verdict = validated.verdict
     }
 
     return NextResponse.json(response, { status: 200 })
