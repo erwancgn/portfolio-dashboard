@@ -7,6 +7,7 @@ import DcaButton from './DcaButton'
 import type { PositionRow, DcaRuleMap } from './PositionsTable'
 import { formatEur, formatPct, countryToFlag } from '@/lib/format'
 import TickerLogo from '@/components/ui/TickerLogo'
+import FairValueCell from './FairValueCell'
 
 interface Props {
   selected: PositionRow | null
@@ -71,6 +72,12 @@ export default function PositionDrawer({ selected, onClose, dcaRules }: Props) {
                   </div>
                 ),
               )}
+            </div>
+
+            {/* Analyse */}
+            <div className="mb-4 py-3 border-t border-[var(--color-border)]">
+              <span className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide block mb-2">Analyse IA</span>
+              <FairValueCell ticker={selected.ticker} />
             </div>
 
             {/* Actions */}

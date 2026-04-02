@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { createClient } from '@/lib/supabase/server'
+import { fetchRate } from '@/lib/quote'
+
+/** Taux de repli EUR/USD si Frankfurter est indisponible */
+const FALLBACK_EUR_USD_RATE = 1.1
 
 /** Corps de la requête attendu */
 interface FairValueRequest {
@@ -31,6 +35,7 @@ interface ErrorResponse {
 interface GeminiJsonResponse {
   fair_value: number | null
   current_price: number
+  currency: string
   signal: 'undervalued' | 'fair' | 'overvalued'
   upside_percent: number
   analysis: string
@@ -136,17 +141,22 @@ export async function POST(
   const prompt = `Tu es un analyste financier senior. Estime la fair value de l'actif ${ticker}.
 
 Recherche :
-1. Le prix actuel du marché
+1. Le prix actuel du marché (dans sa devise native)
 2. Les métriques de valorisation clés (P/E, P/B, EV/EBITDA selon le type d'actif)
 3. Le consensus des analystes (prix cible moyen)
 4. Les données fondamentales récentes (croissance revenus, marges, dette)
 
 Pour les ETF : utilise la valeur liquidative, la composition sectorielle, et compare aux ETF similaires.
 
+IMPORTANT : Retourne current_price et fair_value dans la devise NATIVE de l'actif (USD pour les actions US, EUR pour les actions européennes, GBP pour les actions UK, etc.). Indique cette devise dans le champ "currency".
+
+Dans le champ "analysis", mentionne le prix original en devise locale si différent d'EUR (ex: "Prix cible : 145 € (160 USD)").
+
 Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
 {
   "fair_value": <number ou null si ETF non applicable>,
-  "current_price": <number>,
+  "current_price": <number, dans la devise native>,
+  "currency": "<devise ISO 4217, ex: USD, EUR, GBP>",
   "signal": "undervalued" | "fair" | "overvalued",
   "upside_percent": <number>,
   "analysis": "<paragraphe narratif 2-3 phrases en français>",
@@ -195,20 +205,40 @@ Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
       )
     }
 
+    // Conversion vers EUR si la devise retournée n'est pas EUR
+    const originalCurrency = parsed.currency ?? 'EUR'
+    const normCurrency = originalCurrency.toUpperCase()
+    // GBp = pence sterling (Yahoo Finance) → diviser par 100 avant conversion GBP→EUR
+    const isGBpence = originalCurrency === 'GBp'
+    const lookupCurrency = isGBpence ? 'GBP' : normCurrency
+    let currentPriceEur = parsed.current_price
+    let fairValueEur = parsed.fair_value
+
+    if (normCurrency !== 'EUR') {
+      let rate = await fetchRate(lookupCurrency, 'EUR')
+      // Si Frankfurter a échoué (rate = 1) et devise est USD, on applique le repli
+      if (rate === 1 && lookupCurrency === 'USD') {
+        rate = 1 / FALLBACK_EUR_USD_RATE
+      }
+      const divisor = isGBpence ? 100 : 1
+      currentPriceEur = (parsed.current_price / divisor) * rate
+      fairValueEur = parsed.fair_value != null ? (parsed.fair_value / divisor) * rate : null
+    }
+
     const now = new Date().toISOString()
 
-    // Upsert dans fair_value_cache
+    // Upsert dans fair_value_cache — prix stockés en EUR
     await supabase
       .from('fair_value_cache')
       .upsert(
         {
           user_id: user.id,
           ticker,
-          fair_value: parsed.fair_value,
+          fair_value: fairValueEur,
           signal: parsed.signal,
           analysis: parsed.analysis,
           sources: {
-            current_price: parsed.current_price,
+            current_price: currentPriceEur,
             upside_percent: parsed.upside_percent,
             methodology: parsed.methodology,
             confidence: parsed.confidence,
@@ -221,8 +251,8 @@ Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
     return NextResponse.json(
       {
         ticker,
-        fair_value: parsed.fair_value,
-        current_price: parsed.current_price,
+        fair_value: fairValueEur,
+        current_price: currentPriceEur,
         signal: parsed.signal,
         upside_percent: parsed.upside_percent,
         analysis: parsed.analysis,
