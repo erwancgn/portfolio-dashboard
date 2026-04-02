@@ -7,10 +7,17 @@
  */
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { fetchTickerDividends } from '@/lib/fmp-dividends'
+import {
+  fetchTickerDividends,
+  FmpConfigurationError,
+  FmpRateLimitError,
+  FmpServiceError,
+} from '@/lib/fmp-dividends'
+import { getQuantityHeldOnDate } from '@/lib/dividend-position-history'
 import type { Tables } from '@/types/database'
 
 type Position = Tables<'positions'>
+type Transaction = Tables<'transactions'>
 
 /** Résumé d'une position avec ses données dividendes */
 export interface PositionDividendSummary {
@@ -19,6 +26,7 @@ export interface PositionDividendSummary {
   quantity: number
   pru: number
   envelope: string | null
+  currency: string | null
   frequency: string
   annualDividendPerShare: number
   annualDividendTotal: number
@@ -39,9 +47,16 @@ export interface PositionDividendSummary {
 /** Réponse de la route */
 export interface DividendsApiResponse {
   positions: PositionDividendSummary[]
-  totalAnnualEstimate: number
+  totalAnnualEstimate: number | null
+  totalsByCurrency: Array<{
+    currency: string
+    totalAnnualEstimate: number
+  }>
+  isMultiCurrency: boolean
   bestMonth: string | null
   avgYieldOnCost: number
+  warnings: string[]
+  skippedTickers: string[]
 }
 
 /** Réponse d'erreur */
@@ -70,6 +85,11 @@ function findBestMonth(
   return best ? best[0] : null
 }
 
+function normalizeCurrency(currency: string | null | undefined): string | null {
+  if (!currency) return null
+  return currency.trim().toUpperCase()
+}
+
 /**
  * GET /api/dividends
  * Auth requise. Fetche FMP en parallèle pour toutes les positions equity.
@@ -92,7 +112,7 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
 
   const { data: positions, error: dbError } = await supabase
     .from('positions')
-    .select('id, ticker, name, quantity, pru, envelope, type')
+    .select('id, ticker, name, quantity, pru, envelope, currency, type')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -105,8 +125,45 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
 
   const safePositions = (positions ?? []) as Pick<
     Position,
-    'id' | 'ticker' | 'name' | 'quantity' | 'pru' | 'envelope' | 'type'
+    'id' | 'ticker' | 'name' | 'quantity' | 'pru' | 'envelope' | 'currency' | 'type'
   >[]
+
+  const { data: transactions, error: transactionsError } = await supabase
+    .from('transactions')
+    .select('position_id, ticker, type, quantity, executed_at')
+    .eq('user_id', user.id)
+    .in('type', ['buy', 'sell'])
+
+  if (transactionsError) {
+    return NextResponse.json(
+      { error: `Erreur base de données : ${transactionsError.message}`, code: 'DB_ERROR' },
+      { status: 500 },
+    )
+  }
+
+  const transactionIndex = new Map<string, Array<{
+    positionId: string | null
+    ticker: string
+    type: string
+    quantity: number
+    executedAt: string
+  }>>()
+
+  for (const transaction of ((transactions ?? []) as Pick<
+    Transaction,
+    'position_id' | 'ticker' | 'type' | 'quantity' | 'executed_at'
+  >[])) {
+    const key = transaction.position_id ?? transaction.ticker
+    const existing = transactionIndex.get(key) ?? []
+    existing.push({
+      positionId: transaction.position_id,
+      ticker: transaction.ticker,
+      type: transaction.type,
+      quantity: Number(transaction.quantity),
+      executedAt: transaction.executed_at,
+    })
+    transactionIndex.set(key, existing)
+  }
 
   // Fetch FMP en parallèle pour toutes les positions
   const results = await Promise.allSettled(
@@ -117,6 +174,32 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
   )
 
   const dividendPositions: PositionDividendSummary[] = []
+  const warnings: string[] = []
+  const skippedTickers = new Set<string>()
+
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      const error = result.reason
+      if (error instanceof FmpRateLimitError) {
+        skippedTickers.add(error.ticker)
+        continue
+      }
+      if (error instanceof FmpConfigurationError) {
+        return NextResponse.json(
+          { error: error.message, code: error.code },
+          { status: 503 },
+        )
+      }
+      if (error instanceof FmpServiceError) {
+        warnings.push(error.message)
+        continue
+      }
+      return NextResponse.json(
+        { error: 'Erreur inattendue lors du chargement des dividendes.', code: 'UNKNOWN_ERROR' },
+        { status: 500 },
+      )
+    }
+  }
 
   for (const result of results) {
     if (result.status !== 'fulfilled') continue
@@ -124,6 +207,8 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
     if (!data) continue // Pas de dividende pour ce ticker
 
     const annualTotal = data.annualDividendPerShare * pos.quantity
+    const positionTransactions = transactionIndex.get(pos.id) ?? transactionIndex.get(pos.ticker) ?? []
+    const currency = normalizeCurrency(pos.currency)
     const yieldOnCost =
       pos.pru > 0 ? (data.annualDividendPerShare / pos.pru) * 100 : 0
 
@@ -133,16 +218,25 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
       quantity: pos.quantity,
       pru: pos.pru,
       envelope: pos.envelope,
+      currency,
       frequency: data.frequency,
       annualDividendPerShare: data.annualDividendPerShare,
       annualDividendTotal: annualTotal,
       yieldOnCost,
-      history: data.history.slice(0, 20).map((h) => ({
-        date: h.date,
-        amount: h.amount,
-        total: h.amount * pos.quantity,
-        paymentDate: h.paymentDate,
-      })),
+      history: data.history.slice(0, 20).map((h) => {
+        const quantityAtDate = getQuantityHeldOnDate(
+          pos.quantity,
+          h.recordDate ?? h.date,
+          positionTransactions,
+        )
+
+        return {
+          date: h.date,
+          amount: h.amount,
+          total: h.amount * quantityAtDate,
+          paymentDate: h.paymentDate,
+        }
+      }),
       projected: data.projected.map((p) => ({
         date: p.date,
         amount: p.amount,
@@ -151,13 +245,21 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
     })
   }
 
-  const totalAnnualEstimate = dividendPositions.reduce(
-    (sum, p) => sum + p.annualDividendTotal,
-    0,
-  )
+  const totalsByCurrency = [...dividendPositions.reduce((map, position) => {
+    const currency = position.currency ?? 'UNKNOWN'
+    map.set(currency, (map.get(currency) ?? 0) + position.annualDividendTotal)
+    return map
+  }, new Map<string, number>()).entries()]
+    .map(([currency, totalAnnualEstimate]) => ({ currency, totalAnnualEstimate }))
+    .sort((a, b) => a.currency.localeCompare(b.currency))
+
+  const knownCurrencies = totalsByCurrency.filter(({ currency }) => currency !== 'UNKNOWN')
+  const isMultiCurrency = knownCurrencies.length > 1
+  const totalAnnualEstimate =
+    totalsByCurrency.length === 1 ? totalsByCurrency[0].totalAnnualEstimate : null
 
   const allProjected = dividendPositions.flatMap((p) => p.projected)
-  const bestMonth = findBestMonth(allProjected)
+  const bestMonth = isMultiCurrency ? null : findBestMonth(allProjected)
 
   const yieldsWithValue = dividendPositions.filter((p) => p.yieldOnCost > 0)
   const avgYieldOnCost =
@@ -166,7 +268,25 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
       : 0
 
   return NextResponse.json(
-    { positions: dividendPositions, totalAnnualEstimate, bestMonth, avgYieldOnCost },
+    {
+      positions: dividendPositions,
+      totalAnnualEstimate,
+      totalsByCurrency,
+      isMultiCurrency,
+      bestMonth,
+      avgYieldOnCost,
+      warnings: [
+        ...warnings,
+        ...(skippedTickers.size > 0
+          ? [
+              `Certaines lignes ont été ignorées car FMP a limité les requêtes: ${[...skippedTickers]
+                .sort((a, b) => a.localeCompare(b))
+                .join(', ')}.`,
+            ]
+          : []),
+      ],
+      skippedTickers: [...skippedTickers].sort((a, b) => a.localeCompare(b)),
+    },
     { status: 200 },
   )
 }

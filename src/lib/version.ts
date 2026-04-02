@@ -6,9 +6,21 @@ export interface VersionEntry {
   features: string[]
 }
 
-export const VERSION_CURRENT = '0.3.0'
+export const VERSION_CURRENT = '0.4.0'
 
 export const VERSION_HISTORY: VersionEntry[] = [
+  {
+    version: '0.4.0',
+    date: 'Avril 2026',
+    label: 'Fiscalité, imports broker et dividendes robustes',
+    features: [
+      'Page Fiscalité avec synthèse annuelle, exports CSV/PDF et alertes de déclaration',
+      'Import PDF Trade Republic avec lecture de l’IFU 2025 et résumé fiscal broker',
+      'Bootstrap local de données démo après reset Supabase pour tester plus vite',
+      'Calendrier des dividendes corrigé : endpoint FMP valide, historique reconstitué et affichage multi-devises',
+      'Tolérance aux limites FMP : chargement partiel avec warnings au lieu d’un écran bloquant',
+    ],
+  },
   {
     version: '0.3.0',
     date: 'Mars 2026',

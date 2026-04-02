@@ -61,6 +61,119 @@ export type Database = {
         }
         Relationships: []
       }
+      broker_import_events: {
+        Row: {
+          asset_name: string | null
+          broker: string
+          currency: string
+          event_type: string
+          executed_at: string | null
+          fee_amount: number
+          gross_amount: number | null
+          id: string
+          import_id: string
+          isin: string | null
+          label: string
+          net_amount: number | null
+          quantity: number | null
+          raw_block: string | null
+          tax_amount: number
+          ticker: string | null
+          unit_price: number | null
+          user_id: string
+        }
+        Insert: {
+          asset_name?: string | null
+          broker: string
+          currency?: string
+          event_type: string
+          executed_at?: string | null
+          fee_amount?: number
+          gross_amount?: number | null
+          id?: string
+          import_id: string
+          isin?: string | null
+          label: string
+          net_amount?: number | null
+          quantity?: number | null
+          raw_block?: string | null
+          tax_amount?: number
+          ticker?: string | null
+          unit_price?: number | null
+          user_id: string
+        }
+        Update: {
+          asset_name?: string | null
+          broker?: string
+          currency?: string
+          event_type?: string
+          executed_at?: string | null
+          fee_amount?: number
+          gross_amount?: number | null
+          id?: string
+          import_id?: string
+          isin?: string | null
+          label?: string
+          net_amount?: number | null
+          quantity?: number | null
+          raw_block?: string | null
+          tax_amount?: number
+          ticker?: string | null
+          unit_price?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broker_import_events_import_id_fkey"
+            columns: ["import_id"]
+            isOneToOne: false
+            referencedRelation: "broker_imports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broker_imports: {
+        Row: {
+          broker: string
+          file_hash: string
+          filename: string
+          id: string
+          imported_at: string
+          parser_warnings: Json
+          raw_text: string | null
+          source_year: number | null
+          status: string
+          summary: Json
+          user_id: string
+        }
+        Insert: {
+          broker: string
+          file_hash: string
+          filename: string
+          id?: string
+          imported_at?: string
+          parser_warnings?: Json
+          raw_text?: string | null
+          source_year?: number | null
+          status?: string
+          summary?: Json
+          user_id: string
+        }
+        Update: {
+          broker?: string
+          file_hash?: string
+          filename?: string
+          id?: string
+          imported_at?: string
+          parser_warnings?: Json
+          raw_text?: string | null
+          source_year?: number | null
+          status?: string
+          summary?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       classic_analysis_cache: {
         Row: {
           analysis: string | null
@@ -379,36 +492,48 @@ export type Database = {
       }
       transactions: {
         Row: {
+          asset_type: Database["public"]["Enums"]["asset_type"] | null
+          envelope: string | null
           executed_at: string
           id: string
           position_id: string | null
           price: number
           quantity: number
+          realized_gain: number
           tax_amount: number
+          tax_rate: number
           ticker: string
           total: number
           type: string
           user_id: string
         }
         Insert: {
+          asset_type?: Database["public"]["Enums"]["asset_type"] | null
+          envelope?: string | null
           executed_at?: string
           id?: string
           position_id?: string | null
           price: number
           quantity: number
+          realized_gain?: number
           tax_amount?: number
+          tax_rate?: number
           ticker: string
           total: number
           type: string
           user_id: string
         }
         Update: {
+          asset_type?: Database["public"]["Enums"]["asset_type"] | null
+          envelope?: string | null
           executed_at?: string
           id?: string
           position_id?: string | null
           price?: number
           quantity?: number
+          realized_gain?: number
           tax_amount?: number
+          tax_rate?: number
           ticker?: string
           total?: number
           type?: string
@@ -593,4 +718,3 @@ export const Constants = {
     },
   },
 } as const
-

@@ -3,12 +3,14 @@
  * Transforme les données de l'API en événements groupés par mois.
  */
 import type { DividendsApiResponse } from '@/app/api/dividends/route'
+import { formatCurrency } from '@/lib/format'
 
 export interface CalendarEvent {
   date: string
   ticker: string
   amountPerShare: number
   totalAmount: number
+  currency: string | null
   isPast: boolean
 }
 
@@ -41,6 +43,7 @@ export function buildCalendarEvents(
           ticker: pos.ticker,
           amountPerShare: h.amount,
           totalAmount: h.total,
+          currency: pos.currency,
           isPast: true,
         })
       }
@@ -52,6 +55,7 @@ export function buildCalendarEvents(
           ticker: pos.ticker,
           amountPerShare: p.amount,
           totalAmount: p.total,
+          currency: pos.currency,
           isPast: false,
         })
       }
@@ -78,12 +82,20 @@ export function formatMonthLabel(ym: string): string {
   return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 }
 
-/** Formate un montant en EUR */
-export function formatEurCal(amount: number): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount)
+export function formatCalendarAmount(amount: number, currency: string | null): string {
+  return formatCurrency(amount, currency)
+}
+
+export function formatMonthTotal(events: CalendarEvent[]): string {
+  const totalsByCurrency = [...events.reduce((map, event) => {
+    const currency = event.currency ?? 'UNKNOWN'
+    map.set(currency, (map.get(currency) ?? 0) + event.totalAmount)
+    return map
+  }, new Map<string, number>()).entries()]
+
+  return totalsByCurrency
+    .map(([currency, total]) =>
+      formatCalendarAmount(total, currency === 'UNKNOWN' ? null : currency),
+    )
+    .join(' · ')
 }

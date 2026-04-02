@@ -2,7 +2,12 @@
 
 import { useState } from 'react'
 import type { DividendsApiResponse } from '@/app/api/dividends/route'
-import { buildCalendarEvents, formatMonthLabel, formatEurCal } from './calendar-utils'
+import {
+  buildCalendarEvents,
+  formatCalendarAmount,
+  formatMonthLabel,
+  formatMonthTotal,
+} from './calendar-utils'
 
 interface Props {
   data: DividendsApiResponse
@@ -24,7 +29,7 @@ export default function DividendCalendar({ data }: Props) {
           Aucune position avec des dividendes détectés.
         </p>
         <p className="mt-1 text-xs text-[var(--color-text-dim)]">
-          FMP ne retourne pas de dividendes pour les ETF ou crypto sans historique de distribution.
+          La source est ignorée si aucun historique de distribution n’est retourné.
         </p>
       </div>
     )
@@ -93,7 +98,6 @@ export default function DividendCalendar({ data }: Props) {
         )}
 
         {displayed.map(({ month, events }) => {
-          const monthTotal = events.reduce((sum, e) => sum + e.totalAmount, 0)
           return (
             <div key={month}>
               <div className="flex items-center justify-between px-5 py-3 bg-[var(--color-bg-secondary)]">
@@ -101,7 +105,7 @@ export default function DividendCalendar({ data }: Props) {
                   {formatMonthLabel(month)}
                 </span>
                 <span className="text-xs font-semibold text-[var(--color-text)]">
-                  {formatEurCal(monthTotal)}
+                  {formatMonthTotal(events)}
                 </span>
               </div>
 
@@ -130,7 +134,7 @@ export default function DividendCalendar({ data }: Props) {
                         {event.ticker}
                       </span>
                       <p className="text-xs text-[var(--color-text-dim)]">
-                        {formatEurCal(event.amountPerShare)} / action
+                        {formatCalendarAmount(event.amountPerShare, event.currency)} / action
                         {event.isPast ? '' : ' · estimé'}
                       </p>
                     </div>
@@ -142,7 +146,7 @@ export default function DividendCalendar({ data }: Props) {
                         event.isPast ? 'text-[var(--color-text-sub)]' : 'text-[var(--color-text)]',
                       ].join(' ')}
                     >
-                      {formatEurCal(event.totalAmount)}
+                      {formatCalendarAmount(event.totalAmount, event.currency)}
                     </span>
                     {!event.isPast && (
                       <p className="text-[10px] text-[var(--color-text-dim)]">projeté</p>

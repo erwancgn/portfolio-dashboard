@@ -1,6 +1,6 @@
 /**
  * Récupération et projection des dividendes via FMP.
- * Endpoint : GET /stable/dividends/{symbol}
+ * Endpoint : GET /stable/dividends?symbol={symbol}
  * Clé API lue via process.env.FMP_API_KEY — jamais exposée côté client.
  */
 import { readThroughTtlCache } from '@/lib/cache'
@@ -13,7 +13,7 @@ import {
 
 const FMP_DIVIDENDS_TTL_MS = 6 * 60 * 60 * 1000 // 6h
 
-/** Entrée brute retournée par FMP /stable/dividends/{symbol} */
+/** Entrée brute retournée par FMP /stable/dividends */
 interface FmpDividendRaw {
   date?: string
   adjDividend?: number
@@ -44,6 +44,35 @@ export interface TickerDividendData {
   projected: DividendEntry[]
 }
 
+export class FmpConfigurationError extends Error {
+  code = 'CONFIG_ERROR' as const
+
+  constructor(message: string) {
+    super(message)
+    this.name = 'FmpConfigurationError'
+  }
+}
+
+export class FmpServiceError extends Error {
+  code = 'FMP_UNAVAILABLE' as const
+
+  constructor(message: string) {
+    super(message)
+    this.name = 'FmpServiceError'
+  }
+}
+
+export class FmpRateLimitError extends Error {
+  code = 'RATE_LIMITED' as const
+  ticker: string
+
+  constructor(ticker: string, message: string) {
+    super(message)
+    this.name = 'FmpRateLimitError'
+    this.ticker = ticker
+  }
+}
+
 /**
  * Récupère l'historique brut des dividendes d'un ticker via FMP.
  * Retourne null si l'actif ne distribue pas de dividendes ou en cas d'erreur.
@@ -56,12 +85,52 @@ async function fetchRawDividends(
   apiKey: string,
 ): Promise<DividendEntry[] | null> {
   try {
-    const url = `https://financialmodelingprep.com/stable/dividends/${encodeURIComponent(ticker)}?apikey=${apiKey}`
+    const url = `https://financialmodelingprep.com/stable/dividends?symbol=${encodeURIComponent(ticker)}&apikey=${apiKey}`
     const res = await fetch(url, { next: { revalidate: 21600 } })
 
-    if (!res.ok) return null
+    if (!res.ok) {
+      if (res.status === 429) {
+        throw new FmpRateLimitError(
+          ticker,
+          `FMP limite temporairement les requêtes pour ${ticker} (HTTP 429).`,
+        )
+      }
+
+      if (res.status === 401 || res.status === 403) {
+        throw new FmpConfigurationError(
+          'FMP_API_KEY invalide ou non autorisée pour l’endpoint dividendes.',
+        )
+      }
+
+      if (res.status === 404 || res.status === 422) {
+        return null
+      }
+
+      throw new FmpServiceError(
+        `FMP indisponible pour ${ticker} (HTTP ${res.status}).`,
+      )
+    }
 
     const data = (await res.json()) as FmpDividendRaw[] | Record<string, unknown>
+    if (!Array.isArray(data)) {
+      const message =
+        typeof data['Error Message'] === 'string'
+          ? data['Error Message']
+          : typeof data.message === 'string'
+            ? data.message
+            : typeof data.error === 'string'
+              ? data.error
+              : null
+
+      if (message) {
+        const lowerMessage = message.toLowerCase()
+        if (lowerMessage.includes('api key') || lowerMessage.includes('apikey')) {
+          throw new FmpConfigurationError(message)
+        }
+        throw new FmpServiceError(message)
+      }
+    }
+
     const rawArray: FmpDividendRaw[] = Array.isArray(data) ? data : []
 
     if (rawArray.length === 0) return null
@@ -77,8 +146,15 @@ async function fetchRawDividends(
       }))
       .sort((a, b) => b.date.localeCompare(a.date))
   } catch (err) {
+    if (
+      err instanceof FmpConfigurationError ||
+      err instanceof FmpServiceError ||
+      err instanceof FmpRateLimitError
+    ) {
+      throw err
+    }
     console.error(`[fmp-dividends] fetchRawDividends error for ${ticker}:`, err)
-    return null
+    throw new FmpServiceError(`Impossible de récupérer les dividendes FMP pour ${ticker}.`)
   }
 }
 
@@ -91,8 +167,7 @@ async function fetchRawDividends(
 export async function fetchTickerDividends(ticker: string): Promise<TickerDividendData | null> {
   const apiKey = process.env.FMP_API_KEY
   if (!apiKey) {
-    console.error('[fmp-dividends] FMP_API_KEY manquante')
-    return null
+    throw new FmpConfigurationError('FMP_API_KEY manquante.')
   }
 
   return readThroughTtlCache(`fmp:dividends:${ticker}`, FMP_DIVIDENDS_TTL_MS, async () => {

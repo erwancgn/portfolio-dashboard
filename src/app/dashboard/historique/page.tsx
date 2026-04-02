@@ -33,6 +33,12 @@ export default async function HistoriquePage() {
             >
               ← Retour
             </Link>
+            <Link
+              href="/dashboard/fiscal"
+              className="text-sm text-[var(--color-text-sub)] hover:text-[var(--color-text)] transition-colors"
+            >
+              Fiscalité
+            </Link>
             <span className="font-bold text-[var(--color-text)] tracking-tight">Historique</span>
           </div>
           <LogoutButton />

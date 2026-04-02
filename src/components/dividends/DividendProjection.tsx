@@ -1,19 +1,10 @@
 'use client'
 
 import type { DividendsApiResponse } from '@/app/api/dividends/route'
+import { formatCurrency } from '@/lib/format'
 
 interface Props {
   data: DividendsApiResponse
-}
-
-/** Formate un montant en EUR avec 2 décimales */
-function formatEur(amount: number): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount)
 }
 
 /** Formate un pourcentage */
@@ -40,15 +31,39 @@ function formatMonth(ym: string): string {
   return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 }
 
+function formatTotalsByCurrency(data: DividendsApiResponse): string {
+  if (data.totalAnnualEstimate !== null) {
+    const currency = data.totalsByCurrency[0]?.currency ?? null
+    return formatCurrency(data.totalAnnualEstimate, currency)
+  }
+
+  if (data.totalsByCurrency.length === 0) {
+    return '—'
+  }
+
+  return data.totalsByCurrency
+    .map(({ currency, totalAnnualEstimate }) =>
+      formatCurrency(totalAnnualEstimate, currency === 'UNKNOWN' ? null : currency),
+    )
+    .join(' · ')
+}
+
 /**
  * DividendProjection — résumé des projections annuelles et tableau yield on cost.
  * Affiche les cards de synthèse + le tableau par position.
  */
 export default function DividendProjection({ data }: Props) {
   const { positions, totalAnnualEstimate, bestMonth, avgYieldOnCost } = data
+  const hasTotals = totalAnnualEstimate !== null || data.totalsByCurrency.length > 0
 
   return (
     <div className="space-y-6">
+      {data.isMultiCurrency && (
+        <div className="glass-card rounded-2xl border border-amber-200 px-4 py-3 text-sm text-amber-800">
+          Les montants restent dans la devise de chaque position. Les agrégats globaux sont affichés par devise.
+        </div>
+      )}
+
       {/* Cards de synthèse */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="glass-card rounded-2xl px-4 py-4">
@@ -56,7 +71,7 @@ export default function DividendProjection({ data }: Props) {
             Revenu estimé / an
           </p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-[var(--color-text)]">
-            {formatEur(totalAnnualEstimate)}
+            {hasTotals ? formatTotalsByCurrency(data) : '—'}
           </p>
           <p className="mt-1 text-xs text-[var(--color-text-sub)]">
             {positions.length} position{positions.length > 1 ? 's' : ''} versant des dividendes
@@ -78,9 +93,11 @@ export default function DividendProjection({ data }: Props) {
             Meilleur mois
           </p>
           <p className="mt-2 text-xl font-semibold tracking-tight text-[var(--color-text)] capitalize">
-            {bestMonth ? formatMonth(bestMonth) : '—'}
+            {!data.isMultiCurrency && bestMonth ? formatMonth(bestMonth) : '—'}
           </p>
-          <p className="mt-1 text-xs text-[var(--color-text-sub)]">Versements concentrés</p>
+          <p className="mt-1 text-xs text-[var(--color-text-sub)]">
+            {data.isMultiCurrency ? 'Comparaison désactivée en multi-devises' : 'Versements concentrés'}
+          </p>
         </div>
 
         <div className="glass-card rounded-2xl px-4 py-4">
@@ -152,16 +169,16 @@ export default function DividendProjection({ data }: Props) {
                         {labelFrequency(pos.frequency)}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums text-[var(--color-text)]">
-                        {formatEur(pos.annualDividendPerShare)}
+                        {formatCurrency(pos.annualDividendPerShare, pos.currency)}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums text-[var(--color-text-sub)]">
-                        {formatEur(pos.pru)}
+                        {formatCurrency(pos.pru, pos.currency)}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums font-medium text-[var(--color-text)]">
                         {formatPct(pos.yieldOnCost)}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums font-medium text-[var(--color-text)]">
-                        {formatEur(pos.annualDividendTotal)}
+                        {formatCurrency(pos.annualDividendTotal, pos.currency)}
                       </td>
                     </tr>
                   ))}

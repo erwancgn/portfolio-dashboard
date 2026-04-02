@@ -5,49 +5,71 @@
 
 ---
 
-## Session 21 — À reprendre
+## Session 23 — Fait
 
 | Ticket | Titre | Priorité | Status |
 |--------|-------|----------|--------|
-| #71 | Calendrier des dividendes | P1 | Prochain ticket produit |
-| #75 | Rapport fiscal — imposition et déclaration annuelle | P3 | À cadrer |
-| Maintenance | Refactor `classic/route.ts` + `ClassicAnalysis.tsx` | P2 | À planifier |
-| UX | `PerformanceSection` / `PerformanceChart` polish | P2 | À itérer |
+| #71 | Calendrier des dividendes | P1 | Livré |
+| #75 | Rapport fiscal — imposition et déclaration annuelle | P3 | Livré |
+| Maintenance | Historisation enrichie des transactions fiscales | P2 | Livré |
+| UX | Navigation + page `/dashboard/fiscal` + export | P2 | Livré |
+| Import | PDF Trade Republic + IFU 2025 | P1 | Livré |
 
 **État courant**
-- `main` est à jour et contient le merge de `refacto`
-- Branches et worktrees Claude/refacto obsolètes supprimés
-- Base code stable après `npm run test` et `npm run lint`
-- `SESSION.md` et `DEVLOG.md` contiennent le résumé des travaux IA/UX/fair value
+- `main` contient désormais le lot fiscalité + import broker + correctifs dividendes
+- La page `/dashboard/fiscal` est testable en local après `supabase db reset` via le bootstrap démo
+- La page `/dashboard/dividendes` utilise le bon endpoint FMP, affiche les devises natives et tolère les `429`
+- Base code stable après `npm run test`, `npm run lint` et `npm run build`
 
-**Backlog non-bloquant** : refactor résiduel `route.ts` + `ClassicAnalysis.tsx` (dépassement 200L limite)
+**Backlog non-bloquant**
+- Cache persistant des dividendes pour amortir les `429` FMP sur les gros portefeuilles
+- Refactor résiduel `route.ts` + `ClassicAnalysis.tsx` (dépassement 200L limite)
 
 **Prochain lot à reprendre en nouvelle session**
-- Vérification post-merge sur `main`
-  - dashboard
-  - page analyse
-  - fair value depuis tableau + drawer
-  - responsive mobile
-- Dette technique ciblée
-  - split `src/app/api/analyse/classic/route.ts`
-  - split `src/components/analyse/ClassicAnalysis.tsx`
-  - décider si `verdict` doit être affiché côté UI
-  - ajouter tests complémentaires sur les fallbacks fair value
-- UI/UX
-  - itération sur `PerformanceSection` / `PerformanceChart`
-  - harmoniser encore dashboard et analyse
-  - revoir micro-interactions et états vides
-- Produit / backlog
-  - reprendre `#71` Calendrier des dividendes
-  - cadrer `#75` Rapport fiscal
-  - décider si un ticket dédié doit être créé pour afficher `verdict` dans l'analyse classique
+ - Cache persistant ou backoff sur `/api/dividends` pour réduire la dépendance au quota FMP
+ - Export fiscal “prêt à déclarer” à partir de l’IFU Trade Republic
+ - Split `src/app/api/analyse/classic/route.ts`
+ - Split `src/components/analyse/ClassicAnalysis.tsx`
+ - Itération UI complémentaire sur `PerformanceSection` / `PerformanceChart`
 
 **Tickets à traiter ensuite**
-1. `#71` Calendrier des dividendes
-2. Ticket maintenance: split `src/app/api/analyse/classic/route.ts`
-3. Ticket maintenance: split `src/components/analyse/ClassicAnalysis.tsx`
-4. Ticket UX: itération `PerformanceSection` / `PerformanceChart`
-5. `#75` Rapport fiscal annuel
+1. Export fiscal “prêt à déclarer”
+2. Cache persistant des dividendes / anti-`429`
+3. Ticket maintenance: split `src/app/api/analyse/classic/route.ts`
+4. Ticket maintenance: split `src/components/analyse/ClassicAnalysis.tsx`
+5. Ticket UX: itération `PerformanceSection` / `PerformanceChart`
+
+---
+
+## Session 22 — Fait
+
+**Ticket #71 — Calendrier des dividendes**
+- Page dédiée `/dashboard/dividendes`
+- Projection sur 12 mois et tableau de yield on cost
+- Historique reconstitué à partir des transactions `buy/sell`
+- Affichage des montants dans la devise native de chaque ligne
+- Chargement partiel si FMP limite certains tickers (`429`)
+- Correction de l’endpoint FMP : `stable/dividends?symbol=...`
+
+**Ticket #75 — Rapport fiscal annuel**
+- Route `GET /api/fiscal?year=YYYY`
+- Page dédiée `/dashboard/fiscal`
+- Synthèse annuelle par enveloppe + review des ventes
+- Export CSV + export PDF via impression navigateur
+- Alerte d'exonération crypto sous 305 €
+- Warnings explicites quand les métadonnées historiques sont incomplètes
+
+**Maintenance livrée**
+- Persistance de `envelope`, `asset_type`, `realized_gain`, `tax_rate` dans `transactions`
+- RPCs Supabase mis à jour pour figer les métadonnées fiscales au moment de l'exécution
+- Tests unitaires sur l'agrégation fiscale
+
+**UX livrée**
+- Nouveau point d'entrée `Fiscalité` depuis dashboard et historique
+- Cartes de synthèse annuelles + filtres d'année
+- États vides et messages de limites fonctionnelles (PEA / historique incomplet)
+- Bootstrap local “Charger les données démo” après reset Supabase
+- Import PDF Trade Republic dans l’UI avec parsing IFU 2025
 
 ---
 

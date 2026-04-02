@@ -87,8 +87,8 @@ export default function DividendesPage() {
               Calendrier des dividendes
             </h1>
             <p className="mt-2 text-sm leading-6 text-[var(--color-text-sub)] sm:text-base">
-              Historique réel et projections sur 12 mois à partir de vos positions.
-              Les montants projetés sont estimés depuis la fréquence et le montant historique détectés via FMP.
+              Historique reconstitué depuis vos achats/ventes et projections sur 12 mois à partir des positions ouvertes.
+              Les montants restent affichés dans la devise native de chaque ligne.
             </p>
           </div>
         </section>
@@ -112,6 +112,17 @@ export default function DividendesPage() {
 
         {state === 'success' && data && (
           <>
+            {data.warnings.length > 0 && (
+              <div className="glass-card rounded-2xl border border-amber-200 px-5 py-4">
+                <p className="text-sm font-medium text-amber-800">Chargement partiel</p>
+                <div className="mt-1 space-y-1 text-xs text-amber-700">
+                  {data.warnings.map((warning) => (
+                    <p key={warning}>{warning}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Résumé projection */}
             <DividendProjection data={data} />
 
