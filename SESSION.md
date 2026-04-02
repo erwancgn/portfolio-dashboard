@@ -13,7 +13,7 @@
 | #71 | Calendrier des dividendes | P1 | À venir |
 | #75 | Rapport fiscal — imposition et déclaration annuelle | P3 | À venir |
 
-**Backlog non-bloquant** : Refactor route.ts + ClassicAnalysis.tsx (dépassement 200L limite)
+**Backlog non-bloquant** : Refactor résiduel `route.ts` + `ClassicAnalysis.tsx` (dépassement 200L limite)
 
 ---
 
@@ -59,5 +59,34 @@ src/types/database.ts                          ← Types générés Supabase
   - Comportement identique au tableau
 
 **Commits:** `6cf1199` — fix(#74): Fair Value — conversion USD→EUR + intégration drawer
+
+---
+
+## Session 20 — Fait
+
+**Refacto IA + UX Dashboard / Analyse**
+- Branche de travail : `refacto`
+- PR : `#79`
+- Commits principaux : `b228e17`, `3bc0c98`
+
+**Ce qui a été livré**
+- Durcissement des routes IA : validation stricte des JSON, bornes numériques, sanitation des analyses, vérification ticker
+- Réduction de contexte : compactage portfolio/FMP + cache TTL applicatif
+- Tests unitaires `vitest` sur helpers IA et validation
+- Refonte UI dashboard + analyse + drawer position + fair value
+- Alignement du prix live fair value sur la même source Yahoo que le tableau des positions
+- Fallback fair value : si le modèle ne produit pas de valorisation fiable, on renvoie au moins le prix live + une explication
+
+**Traitement des notes QA locales**
+- Ticket #70 : observation `style={{}}` considérée non bloquante, aucun correctif nécessaire
+- Tickets #72/#73 :
+  - fragilité regex JSON traitée via helper `extractLastJsonObject` + validation centralisée
+  - dépassement 200 lignes reste une dette de maintenabilité non bloquante
+  - champ `verdict` toujours non affiché côté UI, accepté pour l'instant
+
+**État Git**
+- PR ouverte puis finalisée depuis `refacto`
+- Worktrees obsolètes `.claude/worktrees/*` supprimés
+- Branches locales de worktrees supprimées
 
 *Mis à jour : Session 19 — 02/04/2026*

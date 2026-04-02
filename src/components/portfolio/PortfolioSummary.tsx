@@ -64,9 +64,9 @@ export default async function PortfolioSummary({ positions }: Props) {
   const countLoss = pnlByPosition.filter((p) => p.pnl < 0).length
 
   return (
-    <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 sm:px-8 py-5 sm:py-7">
+    <div className="glass-card rounded-[28px] px-4 py-5 sm:px-8 sm:py-7">
       {/* Étiquette */}
-      <p className="text-xs font-medium text-[var(--color-text-sub)] uppercase tracking-widest mb-3">
+      <p className="mb-3 text-xs font-medium uppercase tracking-[0.22em] text-[var(--color-text-sub)]">
         Portefeuille
       </p>
 
@@ -77,7 +77,7 @@ export default async function PortfolioSummary({ positions }: Props) {
         </p>
 
         {priced > 0 && (
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold tabular-nums ${
+          <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold tabular-nums ${
             isGain
               ? 'bg-[var(--color-green-bg)] text-[var(--color-green-text)]'
               : 'bg-[var(--color-red-bg)] text-[var(--color-red-text)]'
@@ -91,14 +91,14 @@ export default async function PortfolioSummary({ positions }: Props) {
 
       {/* Stats secondaires ligne 1 : Investi / Plus-value / Perf. / Positions */}
       <div className="grid grid-cols-2 sm:grid-cols-4">
-        <div className="py-3 pr-4 sm:pr-6 border-b border-r border-[var(--color-border)] sm:border-b-0">
+        <div className="border-b border-r border-[var(--color-border)] py-3 pr-4 sm:border-b-0 sm:pr-6">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Investi</p>
           <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">
             {formatEur(totalInvested)}
           </p>
         </div>
 
-        <div className="py-3 pl-4 sm:px-6 border-b border-[var(--color-border)] sm:border-b-0 sm:border-r">
+        <div className="border-b border-[var(--color-border)] py-3 pl-4 sm:border-b-0 sm:border-r sm:px-6">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Plus-value</p>
           <p className={`text-base font-semibold tabular-nums ${
             priced > 0
@@ -109,7 +109,7 @@ export default async function PortfolioSummary({ positions }: Props) {
           </p>
         </div>
 
-        <div className="py-3 pr-4 sm:px-6 border-r border-[var(--color-border)]">
+        <div className="border-r border-[var(--color-border)] py-3 pr-4 sm:px-6">
           <p className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Perf.</p>
           <p className={`text-base font-semibold tabular-nums ${
             priced > 0
@@ -131,7 +131,7 @@ export default async function PortfolioSummary({ positions }: Props) {
       {/* Séparateur */}
       {pnlByPosition.length > 0 && (
         <>
-          <hr className="border-[var(--color-border)]" />
+          <hr className="border-[var(--color-border)]/90" />
 
           {/* Stats secondaires ligne 2 : Meilleure / Pire / Gain / Perte */}
           <div className="grid grid-cols-2 sm:grid-cols-4">

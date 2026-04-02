@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { createClient } from '@/lib/supabase/server'
-import { fetchRate } from '@/lib/quote'
+import { fetchQuote, fetchRate, toEur } from '@/lib/quote'
+import { extractLastJsonObject } from '@/lib/ai'
+import { isSafeTicker, validateFairValueJson } from '@/lib/ai-validation'
 
 /** Taux de repli EUR/USD si Frankfurter est indisponible */
 const FALLBACK_EUR_USD_RATE = 1.1
@@ -46,6 +48,23 @@ interface GeminiJsonResponse {
 const VALID_SIGNALS = ['undervalued', 'fair', 'overvalued'] as const
 const VALID_CONFIDENCE = ['low', 'medium', 'high'] as const
 
+function buildQuoteFallback(
+  ticker: string,
+  currentPriceEur: number,
+): Omit<FairValueResponse, 'computed_at' | 'from_cache'> {
+  return {
+    ticker,
+    fair_value: null,
+    current_price: Number(currentPriceEur.toFixed(2)),
+    signal: 'fair',
+    upside_percent: 0,
+    analysis:
+      "Le modèle n'a pas pu produire une fair value fiable pour cet actif. Le prix de marché actuel a néanmoins été récupéré automatiquement pour conserver un repère exploitable.",
+    methodology: 'Prix de marché',
+    confidence: 'low',
+  }
+}
+
 /**
  * Vérifie qu'une erreur est un dépassement de quota Gemini (HTTP 429).
  */
@@ -89,6 +108,12 @@ export async function POST(
   if (!ticker) {
     return NextResponse.json(
       { error: 'Paramètre manquant : ticker', code: 'MISSING_PARAM' },
+      { status: 400 },
+    )
+  }
+  if (!isSafeTicker(ticker)) {
+    return NextResponse.json(
+      { error: 'Ticker invalide', code: 'INVALID_PARAM' },
       { status: 400 },
     )
   }
@@ -138,21 +163,12 @@ export async function POST(
   }
 
   // Appel Gemini avec Search Grounding
-  const prompt = `Tu es un analyste financier senior. Estime la fair value de l'actif ${ticker}.
-
-Recherche :
-1. Le prix actuel du marché (dans sa devise native)
-2. Les métriques de valorisation clés (P/E, P/B, EV/EBITDA selon le type d'actif)
-3. Le consensus des analystes (prix cible moyen)
-4. Les données fondamentales récentes (croissance revenus, marges, dette)
-
-Pour les ETF : utilise la valeur liquidative, la composition sectorielle, et compare aux ETF similaires.
-
-IMPORTANT : Retourne current_price et fair_value dans la devise NATIVE de l'actif (USD pour les actions US, EUR pour les actions européennes, GBP pour les actions UK, etc.). Indique cette devise dans le champ "currency".
-
-Dans le champ "analysis", mentionne le prix original en devise locale si différent d'EUR (ex: "Prix cible : 145 € (160 USD)").
-
-Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
+  const prompt = `Tu es un analyste financier senior. Estime la fair value de ${ticker}.
+Utilise des données récentes: prix actuel, multiples adaptés au type d'actif, consensus analystes et fondamentaux récents.
+Pour un ETF, appuie-toi sur NAV, composition et comparaison avec des ETF proches.
+Retourne fair_value et current_price dans la devise native de l'actif et indique cette devise dans "currency".
+Le champ "analysis" doit être un court paragraphe en français, 2 phrases max, mentionnant la devise d'origine si elle n'est pas en EUR.
+Réponds UNIQUEMENT avec ce JSON valide :
 {
   "fair_value": <number ou null si ETF non applicable>,
   "current_price": <number, dans la devise native>,
@@ -165,6 +181,7 @@ Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
 }`
 
   try {
+    const liveQuotePromise = fetchQuote(ticker)
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
@@ -174,10 +191,44 @@ Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
 
     const result = await model.generateContent(prompt)
     const raw = result.response.text().trim()
+    const jsonBlock = extractLastJsonObject(raw)
+    const liveQuote = await liveQuotePromise
 
-    // Extraction du bloc JSON (peut être enveloppé dans ```json...```)
-    const jsonMatch = raw.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
+    async function getQuoteFallbackResponse():
+      Promise<NextResponse<FairValueResponse | ErrorResponse> | null> {
+      if (!liveQuote) return null
+
+      const usdEur = await fetchRate('USD', 'EUR')
+      const needsGbp = liveQuote.currency === 'GBP' || liveQuote.currency === 'GBp'
+      const gbpEur = needsGbp ? await fetchRate('GBP', 'EUR') : 1
+      const fallbackPrice = toEur(liveQuote.price, liveQuote.currency, usdEur, gbpEur)
+
+      if (fallbackPrice == null) return null
+
+      const fallback = buildQuoteFallback(ticker, fallbackPrice)
+      return NextResponse.json(
+        {
+          ...fallback,
+          computed_at: new Date().toISOString(),
+          from_cache: false,
+        },
+        { status: 200 },
+      )
+    }
+
+    async function resolveLivePriceEur(): Promise<number | null> {
+      if (!liveQuote) return null
+
+      const usdEur = await fetchRate('USD', 'EUR')
+      const needsGbp = liveQuote.currency === 'GBP' || liveQuote.currency === 'GBp'
+      const gbpEur = needsGbp ? await fetchRate('GBP', 'EUR') : 1
+      return toEur(liveQuote.price, liveQuote.currency, usdEur, gbpEur)
+    }
+
+    if (!jsonBlock) {
+      const fallbackResponse = await getQuoteFallbackResponse()
+      if (fallbackResponse) return fallbackResponse
+
       return NextResponse.json(
         { error: 'Format de réponse invalide', code: 'PARSE_ERROR' },
         { status: 503 },
@@ -186,19 +237,26 @@ Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
 
     let parsed: GeminiJsonResponse
     try {
-      parsed = JSON.parse(jsonMatch[0]) as GeminiJsonResponse
+      parsed = JSON.parse(jsonBlock) as GeminiJsonResponse
     } catch {
+      const fallbackResponse = await getQuoteFallbackResponse()
+      if (fallbackResponse) return fallbackResponse
+
       return NextResponse.json(
         { error: 'JSON invalide dans la réponse', code: 'PARSE_ERROR' },
         { status: 503 },
       )
     }
 
+    const validated = validateFairValueJson(parsed)
     if (
-      !VALID_SIGNALS.includes(parsed.signal) ||
-      !VALID_CONFIDENCE.includes(parsed.confidence) ||
-      typeof parsed.current_price !== 'number'
+      !validated ||
+      !VALID_SIGNALS.includes(validated.signal) ||
+      !VALID_CONFIDENCE.includes(validated.confidence)
     ) {
+      const fallbackResponse = await getQuoteFallbackResponse()
+      if (fallbackResponse) return fallbackResponse
+
       return NextResponse.json(
         { error: 'Structure JSON invalide', code: 'PARSE_ERROR' },
         { status: 503 },
@@ -206,13 +264,13 @@ Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
     }
 
     // Conversion vers EUR si la devise retournée n'est pas EUR
-    const originalCurrency = parsed.currency ?? 'EUR'
+    const originalCurrency = validated.currency ?? 'EUR'
     const normCurrency = originalCurrency.toUpperCase()
     // GBp = pence sterling (Yahoo Finance) → diviser par 100 avant conversion GBP→EUR
     const isGBpence = originalCurrency === 'GBp'
     const lookupCurrency = isGBpence ? 'GBP' : normCurrency
-    let currentPriceEur = parsed.current_price
-    let fairValueEur = parsed.fair_value
+    let currentPriceEur = validated.current_price
+    let fairValueEur = validated.fair_value
 
     if (normCurrency !== 'EUR') {
       let rate = await fetchRate(lookupCurrency, 'EUR')
@@ -221,8 +279,18 @@ Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
         rate = 1 / FALLBACK_EUR_USD_RATE
       }
       const divisor = isGBpence ? 100 : 1
-      currentPriceEur = (parsed.current_price / divisor) * rate
-      fairValueEur = parsed.fair_value != null ? (parsed.fair_value / divisor) * rate : null
+      currentPriceEur = (validated.current_price / divisor) * rate
+      fairValueEur = validated.fair_value != null ? (validated.fair_value / divisor) * rate : null
+    }
+
+    const liveCurrentPriceEur = await resolveLivePriceEur()
+    if (liveCurrentPriceEur != null) {
+      currentPriceEur = liveCurrentPriceEur
+      if (fairValueEur != null && currentPriceEur > 0) {
+        validated.upside_percent = Number(
+          (((fairValueEur - currentPriceEur) / currentPriceEur) * 100).toFixed(2),
+        )
+      }
     }
 
     const now = new Date().toISOString()
@@ -235,13 +303,13 @@ Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
           user_id: user.id,
           ticker,
           fair_value: fairValueEur,
-          signal: parsed.signal,
-          analysis: parsed.analysis,
+          signal: validated.signal,
+          analysis: validated.analysis,
           sources: {
             current_price: currentPriceEur,
-            upside_percent: parsed.upside_percent,
-            methodology: parsed.methodology,
-            confidence: parsed.confidence,
+            upside_percent: validated.upside_percent,
+            methodology: validated.methodology,
+            confidence: validated.confidence,
           },
           computed_at: now,
         },
@@ -253,11 +321,11 @@ Réponds UNIQUEMENT en JSON valide, sans markdown, sans blocs de code :
         ticker,
         fair_value: fairValueEur,
         current_price: currentPriceEur,
-        signal: parsed.signal,
-        upside_percent: parsed.upside_percent,
-        analysis: parsed.analysis,
-        methodology: parsed.methodology,
-        confidence: parsed.confidence,
+        signal: validated.signal,
+        upside_percent: validated.upside_percent,
+        analysis: validated.analysis,
+        methodology: validated.methodology,
+        confidence: validated.confidence,
         computed_at: now,
         from_cache: false,
       },

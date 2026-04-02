@@ -1,5 +1,61 @@
 # DEVLOG — Portfolio Dashboard IA
 
+## Session 20 — [02/04/2026]
+
+### ✅ Complété : Refacto IA + UX dashboard/analyse
+
+**Scope livré**
+- validation et durcissement des routes IA
+- réduction de contexte et cache TTL portfolio/FMP
+- tests unitaires `vitest`
+- amélioration UX/UI dashboard + analyse + positions
+- correction Fair Value sur les positions
+- nettoyage des worktrees obsolètes
+
+#### Backend IA
+- Helpers centralisés : `src/lib/ai.ts`, `src/lib/ai-validation.ts`, `src/lib/cache.ts`
+- Tests : `src/lib/ai.test.ts`, `src/lib/ai-validation.test.ts`, `vitest.config.ts`
+- Routes durcies :
+  - `src/app/api/analyse/chat/route.ts`
+  - `src/app/api/analyse/ticker/route.ts`
+  - `src/app/api/analyse/classic/route.ts`
+  - `src/app/api/analyse/fair-value/route.ts`
+- Compaction prompts/contexts :
+  - `src/agents/*.md`
+  - `src/lib/fmp.ts`
+  - `src/lib/fmp-financials.ts`
+
+#### Fair Value — correction supplémentaire
+- Le prix live affiché dans la fair value est maintenant réaligné sur la même source Yahoo que le tableau des positions
+- Si le modèle ne produit pas une fair value exploitable :
+  - l'API retourne quand même un prix live si disponible
+  - une analyse fallback courte est renvoyée
+- Côté UI, l'explication reste visible même quand `fair_value = null`
+
+#### UX/UI
+- Dashboard : hero, hiérarchie, liquidités, positions, mobile polish
+- Analyse : hero, tabs, surfaces, fair value, chat
+- Positions : drawer enrichi, rendu fair value plus robuste
+- Dialogs/sheets harmonisés avec le nouveau langage visuel
+
+#### Traitement des notes QA locales
+- `qa-ticket-70-performance-chart.md`
+  - observation `style={{}}` jugée borderline mais non bloquante
+  - pas de correctif nécessaire dans ce lot
+- `qa-tickets-72-73-classic-analysis.md`
+  - fragilité d'extraction JSON traitée via helper + validation centralisée
+  - dette longueur de fichiers toujours ouverte, non bloquante
+  - champ `verdict` non affiché, accepté pour l'instant
+
+#### Git / livraison
+- Branche : `refacto`
+- Commits :
+  - `b228e17` — Refactor IA flows, fair value resilience, and analysis UI
+  - `3bc0c98` — Polish dashboard UX and align fair value live pricing
+- PR : `#79`
+- Note QA ajoutée : `tickets/reports/qa-refacto-dashboard-analyse.md`
+- Worktrees `.claude/worktrees/*` supprimés car sans commit unique utile
+
 ## Session 19 — [02/04/2026]
 
 ### ✅ Complété : Ticket #74 — Fair Value (bugs fixes)

@@ -73,14 +73,14 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
   return (
     <>
       {/* Barre de tri */}
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-xs text-[var(--color-text-sub)]">Trier par</span>
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <span className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-sub)]">Trier par</span>
         <div className="flex flex-wrap gap-1.5">
           {SORT_OPTIONS.map((opt) => (
             <button key={opt.key} onClick={() => handleSort(opt.key)}
               className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${sortKey === opt.key
                 ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white font-medium'
-                : 'border-[var(--color-border)] text-[var(--color-text-sub)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'}`}>
+                : 'border-[var(--color-border)] bg-[var(--color-bg-card)] text-[var(--color-text-sub)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'}`}>
               {opt.label}{sortKey === opt.key && <span className="ml-1 opacity-80">{sortDir === 'asc' ? '↑' : '↓'}</span>}
             </button>
           ))}
@@ -96,10 +96,10 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
 
           return (
             <div key={row.id} onClick={() => setSelected(row)}
-              className="group flex rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-accent)] cursor-pointer transition-colors">
+              className="group flex rounded-[24px] border border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-card)] cursor-pointer transition-all">
 
               {/* Logo — hauteur auto, centré verticalement */}
-              <div className="flex items-center justify-center px-4 border-r border-[var(--color-border)] shrink-0">
+              <div className="flex shrink-0 items-center justify-center border-r border-[var(--color-border)] px-4">
                 <TickerLogo logoUrl={row.logo_url} ticker={row.ticker} size="md" />
               </div>
 
@@ -107,7 +107,7 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
               <div className="flex-1 flex flex-col min-w-0">
 
                 {/* ── 1a : nom + pays | badges investissement ── */}
-                <div className="flex items-center justify-between gap-4 px-4 pt-3 pb-2">
+                <div className="flex items-center justify-between gap-4 px-4 pt-4 pb-2">
                   <div className="min-w-0 flex items-center gap-2">
                     <p className="font-semibold text-sm text-[var(--color-text)] leading-tight truncate">{row.name ?? row.ticker}</p>
                     {row.country && (
@@ -132,7 +132,7 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                 </div>
 
                 {/* ── 1b desktop : actions révélées au hover ── */}
-                <div className="hidden sm:group-hover:flex items-center gap-1.5 px-4 pb-2"
+                <div className="hidden sm:group-hover:flex items-center gap-1.5 px-4 pb-3"
                   onClick={(e) => e.stopPropagation()}>
                   <AddBuyButton id={row.id} ticker={row.ticker} />
                   <SellButton id={row.id} ticker={row.ticker} maxQuantity={row.quantity} pru={row.pru} envelope={row.envelope} />
@@ -142,7 +142,7 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                 </div>
 
                 {/* ── Mobile : badges qty×PRU + montant ── */}
-                <div className="sm:hidden flex items-center gap-2 px-4 pb-2">
+                <div className="sm:hidden flex flex-wrap items-center gap-2 px-4 pb-3">
                   {montantInvesti !== null && row.pru !== null && row.quantity != null && (
                     <span className="text-xs text-[var(--color-text-sub)] bg-[var(--color-bg-surface)] border border-[var(--color-border)] px-2 py-1 rounded-lg tabular-nums">
                       {row.quantity % 1 === 0 ? row.quantity : row.quantity.toFixed(4)} × {formatEur(row.pru)}
@@ -156,11 +156,11 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                 </div>
 
                 {/* ── Ligne 2 : métriques ── */}
-                <div className="bg-[var(--color-bg-surface)] border-t border-[var(--color-border)] rounded-b-xl overflow-hidden"
+                <div className="overflow-hidden rounded-b-[24px] border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
                   onClick={(e) => e.stopPropagation()}>
 
                   {/* Mobile : grille 2×2 */}
-                  <div className="sm:hidden grid grid-cols-2 gap-x-4 gap-y-3 px-4 py-3 cursor-pointer" onClick={() => setSelected(row)}>
+                  <div className="sm:hidden grid grid-cols-2 gap-x-4 gap-y-3 px-4 py-4 cursor-pointer" onClick={() => setSelected(row)}>
                     <MetricCell label="Valeur"><span className="font-medium">{row.valeur !== null ? formatEur(row.valeur) : '—'}</span></MetricCell>
                     <MetricCell label="P&L €"><span className={`font-semibold ${pnlColor}`}>{row.pnl !== null ? `${isGain ? '+' : ''}${formatEur(row.pnl)}` : '—'}</span></MetricCell>
                     <MetricCell label="P&L %">
@@ -172,7 +172,7 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                   </div>
 
                   {/* Mobile : actions */}
-                  <div className="sm:hidden flex items-center gap-1.5 px-4 pb-3" onClick={(e) => e.stopPropagation()}>
+                  <div className="sm:hidden flex flex-wrap items-center gap-1.5 px-4 pb-4" onClick={(e) => e.stopPropagation()}>
                     <AddBuyButton id={row.id} ticker={row.ticker} />
                     <SellButton id={row.id} ticker={row.ticker} maxQuantity={row.quantity} pru={row.pru} envelope={row.envelope} />
                     <DcaButton positionId={row.id} ticker={row.ticker} hasActiveDca={dcaRules[row.id]?.is_active === true} activeDcaId={dcaRules[row.id]?.id} />
@@ -180,7 +180,7 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                   </div>
 
                   {/* Desktop : métriques justify-between */}
-                  <div className="hidden sm:flex items-center justify-between px-4 py-2.5 cursor-pointer" onClick={() => setSelected(row)}>
+                  <div className="hidden sm:flex items-center justify-between px-4 py-3 cursor-pointer" onClick={() => setSelected(row)}>
                     <MetricCell label="Ticker"><span className="font-semibold">{row.ticker}</span></MetricCell>
                     <MetricCell label="Type">{row.type ?? <span className="text-[var(--color-text-sub)]">—</span>}</MetricCell>
                     <MetricCell label="Enveloppe">{row.envelope ?? <span className="text-[var(--color-text-sub)]">—</span>}</MetricCell>

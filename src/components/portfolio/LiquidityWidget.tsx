@@ -23,23 +23,26 @@ export default async function LiquidityWidget() {
   const autres = total - pea
 
   return (
-    <div className="rounded-xl bg-[var(--color-bg-surface)] border border-[var(--color-border)] px-4 py-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-[var(--color-text-sub)] uppercase tracking-wide">Liquidités</p>
+    <div className="glass-card rounded-[28px] px-4 py-4 sm:px-5 sm:py-5">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-text-dim)]">Cash</p>
+          <p className="mt-1 text-lg font-semibold tracking-[-0.03em] text-[var(--color-text)]">Liquidités</p>
+        </div>
         <DepositButton />
       </div>
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg bg-[var(--color-bg-primary)] border border-[var(--color-border)] px-3 py-2.5">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-3">
           <p className="text-[10px] font-medium text-[var(--color-text-sub)] uppercase tracking-wide mb-1">Total</p>
           <p className={`text-base font-bold tabular-nums ${total >= 0 ? 'text-[var(--color-text)]' : 'text-[var(--color-red-text)]'}`}>
             {formatEur(total)}
           </p>
         </div>
-        <div className="rounded-lg bg-[var(--color-bg-primary)] border border-[var(--color-border)] px-3 py-2.5">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-3">
           <p className="text-[10px] font-medium text-[var(--color-text-sub)] uppercase tracking-wide mb-1">PEA</p>
           <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">{formatEur(pea)}</p>
         </div>
-        <div className="rounded-lg bg-[var(--color-bg-primary)] border border-[var(--color-border)] px-3 py-2.5">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-3">
           <p className="text-[10px] font-medium text-[var(--color-text-sub)] uppercase tracking-wide mb-1">CTO</p>
           <p className="text-base font-semibold tabular-nums text-[var(--color-text)]">{formatEur(autres)}</p>
         </div>

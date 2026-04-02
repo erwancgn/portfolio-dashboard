@@ -80,18 +80,29 @@ export default function AllocationChart({ envelopeData, sectorData, weightData, 
   // N'afficher que les onglets qui ont des données
   const visibleTabs = ALL_TABS.filter(({ key }) => dataMap[key].length > 0)
   const activeData = dataMap[tab].length > 0 ? dataMap[tab] : envelopeData
+  const total = activeData.reduce((sum, item) => sum + item.value, 0)
 
   return (
-    <section className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-semibold text-[var(--color-text)]">Allocation</h2>
+    <section className="glass-card rounded-[28px] p-5 sm:p-6">
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-text-dim)]">
+            Exposition
+          </p>
+          <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">
+            Allocation
+          </h2>
+          <p className="mt-1 text-sm text-[var(--color-text-sub)]">
+            {formatEur(total)} sur la vue sélectionnée
+          </p>
+        </div>
         {visibleTabs.length > 1 && (
-          <div className="flex gap-1 text-xs bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-lg p-0.5">
+          <div className="flex gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-1 text-xs">
             {visibleTabs.map(({ key, label }) => (
               <button
                 key={key}
                 onClick={() => setTab(key)}
-                className={`px-3 py-1 rounded-md transition-colors ${
+                className={`rounded-full px-3 py-1.5 transition-colors ${
                   tab === key
                     ? 'bg-[var(--color-accent)] text-white font-medium'
                     : 'text-[var(--color-text-sub)] hover:text-[var(--color-text)]'
@@ -104,8 +115,8 @@ export default function AllocationChart({ envelopeData, sectorData, weightData, 
         )}
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-6">
-        <div className="w-full sm:w-48 h-48 flex-shrink-0">
+      <div className="grid gap-6 lg:grid-cols-[260px_1fr] lg:items-center">
+        <div className="mx-auto h-56 w-full max-w-[260px] flex-shrink-0 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-3">
           <ResponsiveContainer width="100%" height={192}>
             <PieChart>
               <Pie
@@ -128,9 +139,9 @@ export default function AllocationChart({ envelopeData, sectorData, weightData, 
           </ResponsiveContainer>
         </div>
 
-        <div className="flex-1 w-full">
+        <div className="w-full">
           <ChartLegend data={activeData} />
-          <p className="text-xs text-[var(--color-text-dim)] mt-3">
+          <p className="mt-4 text-xs uppercase tracking-[0.16em] text-[var(--color-text-dim)]">
             Basé sur la valeur actuelle (prix live ou quantité × PRU)
           </p>
         </div>

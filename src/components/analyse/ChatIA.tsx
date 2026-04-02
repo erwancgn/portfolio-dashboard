@@ -7,6 +7,8 @@ interface Message {
   content: string
 }
 
+const MAX_CLIENT_HISTORY = 8
+
 /**
  * ChatIA — Client Component.
  * Interface de chat avec Gemini pour analyser le portfolio.
@@ -27,7 +29,9 @@ export default function ChatIA() {
     if (!trimmed || loading) return
 
     const userMessage: Message = { role: 'user', content: trimmed }
-    setMessages((prev) => [...prev, userMessage])
+    const nextHistory = [...messages, userMessage].slice(-MAX_CLIENT_HISTORY)
+
+    setMessages(nextHistory)
     setInput('')
     setLoading(true)
 
@@ -35,7 +39,7 @@ export default function ChatIA() {
       const res = await fetch('/api/analyse/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed, history: messages }),
+        body: JSON.stringify({ message: trimmed, history: nextHistory }),
       })
 
       if (!res.ok) {
@@ -69,22 +73,27 @@ export default function ChatIA() {
   }
 
   return (
-    <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] flex flex-col overflow-hidden">
-      <div className="px-4 py-3 border-b border-[var(--color-border)]">
-        <h2 className="text-base font-semibold text-[var(--color-text)]">
+    <section className="glass-card flex flex-col overflow-hidden rounded-[28px]">
+      <div className="border-b border-[var(--color-border)] px-5 py-4">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-text-dim)]">
+          Conversation
+        </p>
+        <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">
           Assistant IA
         </h2>
-        <p className="text-xs text-[var(--color-text-sub)] mt-0.5">
+        <p className="mt-1 text-sm text-[var(--color-text-sub)]">
           Posez vos questions sur votre portfolio
         </p>
       </div>
 
       {/* Fil de conversation */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-64 max-h-96">
+      <div className="min-h-64 max-h-[30rem] flex-1 space-y-3 overflow-y-auto px-5 py-5">
         {messages.length === 0 && (
-          <p className="text-sm text-[var(--color-text-sub)] text-center mt-8">
-            Bonjour ! Posez-moi une question sur votre portfolio.
-          </p>
+          <div className="mt-8 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-5 py-8 text-center">
+            <p className="text-sm text-[var(--color-text-sub)]">
+              Commencez par une question sur la diversification, les risques, vos plus grosses positions ou les arbitrages possibles.
+            </p>
+          </div>
         )}
         {messages.map((msg, idx) => (
           <div
@@ -95,7 +104,7 @@ export default function ChatIA() {
               className={`max-w-[80%] rounded-xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
                 msg.role === 'user'
                   ? 'bg-[var(--color-accent)] text-white'
-                  : 'bg-[var(--color-bg-secondary)] text-[var(--color-text)]'
+                  : 'border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text)]'
               }`}
             >
               {msg.content}
@@ -104,7 +113,7 @@ export default function ChatIA() {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-[var(--color-bg-secondary)] rounded-xl px-3 py-2">
+            <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2">
               <span className="text-sm text-[var(--color-text-sub)]">
                 Gemini réfléchit…
               </span>
@@ -115,7 +124,7 @@ export default function ChatIA() {
       </div>
 
       {/* Zone de saisie */}
-      <div className="px-4 py-3 border-t border-[var(--color-border)] flex gap-2 items-end">
+      <div className="flex items-end gap-2 border-t border-[var(--color-border)] px-5 py-4">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -123,12 +132,12 @@ export default function ChatIA() {
           disabled={loading}
           placeholder="Écrivez votre message… (Entrée pour envoyer)"
           rows={2}
-          className="flex-1 resize-none rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text)] placeholder:text-[var(--color-text-sub)] text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] disabled:opacity-50"
+          className="flex-1 resize-none rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-sub)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] disabled:opacity-50"
         />
         <button
           onClick={() => void handleSend()}
           disabled={loading || input.trim() === ''}
-          className="px-4 py-2 rounded-lg bg-[var(--color-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+          className="rounded-2xl bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Envoyer
         </button>

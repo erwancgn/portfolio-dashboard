@@ -24,12 +24,12 @@ export default function PositionsSectionClient() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-sm font-medium px-3 py-1.5 rounded-lg bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] transition-colors"
+        className="rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)]"
       >
         + Nouvelle position
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg bg-[var(--color-bg-primary)] border-[var(--color-border)]">
+        <DialogContent className="glass-card max-w-lg border-[var(--color-border)] bg-[var(--color-bg-primary)]">
           <DialogHeader>
             <DialogTitle className="text-[var(--color-text)]">Nouvelle position</DialogTitle>
           </DialogHeader>

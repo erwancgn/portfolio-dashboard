@@ -7,7 +7,7 @@ import DcaButton from './DcaButton'
 import type { PositionRow, DcaRuleMap } from './PositionsTable'
 import { formatEur, formatPct, countryToFlag } from '@/lib/format'
 import TickerLogo from '@/components/ui/TickerLogo'
-import FairValueCell from './FairValueCell'
+import FairValue from '@/components/analyse/FairValue'
 
 interface Props {
   selected: PositionRow | null
@@ -24,12 +24,15 @@ export default function PositionDrawer({ selected, onClose, dcaRules }: Props) {
 
   return (
     <Sheet open={!!selected} onOpenChange={(open) => { if (!open) onClose() }}>
-      <SheetContent className="bg-[var(--color-bg-primary)] border-[var(--color-border)] w-80">
+      <SheetContent className="w-full border-[var(--color-border)] bg-[var(--color-bg-primary)] px-5 pb-5 pt-8 sm:w-[28rem]">
         {selected && (
           <>
             <SheetHeader className="mb-6">
-              <div className="mb-3">
+              <div className="mb-3 flex items-center gap-3">
                 <TickerLogo logoUrl={selected.logo_url} ticker={selected.ticker} size="md" />
+                <div className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[var(--color-text-sub)]">
+                  Position
+                </div>
               </div>
               <SheetTitle className="text-[var(--color-text)]">{selected.ticker}</SheetTitle>
               {selected.name && (
@@ -37,10 +40,25 @@ export default function PositionDrawer({ selected, onClose, dcaRules }: Props) {
               )}
             </SheetHeader>
 
+            <div className="mb-6 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-bg-card)] px-4 py-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-2xl bg-[var(--color-bg-secondary)] px-3 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-dim)]">Valeur</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--color-text)]">
+                    {selected.valeur !== null ? formatEur(selected.valeur) : '—'}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-[var(--color-bg-secondary)] px-3 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-dim)]">Performance</p>
+                  <p className={`mt-2 text-lg font-semibold ${isGain ? 'text-[var(--color-green-text)]' : 'text-[var(--color-red-text)]'}`}>
+                    {selected.pnl !== null ? formatEur(selected.pnl) : '—'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-4 mb-6">
               {([
-                { label: 'Valeur', value: selected.valeur !== null ? formatEur(selected.valeur) : '—' },
-                { label: 'P&L', value: selected.pnl !== null ? formatEur(selected.pnl) : '—', colored: true, isGain },
                 { label: 'P&L %', value: selected.pnlPct !== null ? formatPct(selected.pnlPct) : '—', colored: true, isGain },
                 { label: 'Quantité', value: String(selected.quantity) },
                 { label: 'PRU', value: formatEur(selected.pru) },
@@ -59,9 +77,9 @@ export default function PositionDrawer({ selected, onClose, dcaRules }: Props) {
                 ({ label, value, colored, isGain: itemIsGain }) => (
                   <div
                     key={label}
-                    className="flex justify-between items-center py-2 border-b border-[var(--color-border)] last:border-0"
+                    className="flex items-center justify-between border-b border-[var(--color-border)] py-2 last:border-0"
                   >
-                    <span className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide">{label}</span>
+                    <span className="text-xs uppercase tracking-wide text-[var(--color-text-sub)]">{label}</span>
                     <span className={`text-sm font-semibold tabular-nums ${
                       colored
                         ? itemIsGain ? 'text-[var(--color-green-text)]' : 'text-[var(--color-red-text)]'
@@ -75,9 +93,9 @@ export default function PositionDrawer({ selected, onClose, dcaRules }: Props) {
             </div>
 
             {/* Analyse */}
-            <div className="mb-4 py-3 border-t border-[var(--color-border)]">
-              <span className="text-xs text-[var(--color-text-sub)] uppercase tracking-wide block mb-2">Analyse IA</span>
-              <FairValueCell ticker={selected.ticker} />
+            <div className="mb-5 border-t border-[var(--color-border)] py-4">
+              <span className="mb-3 block text-xs uppercase tracking-wide text-[var(--color-text-sub)]">Analyse IA</span>
+              <FairValue ticker={selected.ticker} />
             </div>
 
             {/* Actions */}

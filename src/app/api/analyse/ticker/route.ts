@@ -3,6 +3,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import fs from 'fs'
 import path from 'path'
 import { fetchFmpProfile } from '@/lib/fmp'
+import {
+  extractLastJsonObject,
+  normalizeModelText,
+  sanitizeModelAnalysis,
+} from '@/lib/ai'
+import { isSafeTicker, validateTickerAnalysisJson } from '@/lib/ai-validation'
 
 /** Corps de la requête attendu par cette route */
 interface TickerRequest {
@@ -65,14 +71,11 @@ async function buildFmpContext(ticker: string): Promise<string> {
   if (profile.industry) lines.push(`Industrie : ${profile.industry}`)
   if (profile.country) lines.push(`Pays : ${profile.country}`)
   if (profile.description) {
-    const truncated =
-      profile.description.length > 400
-        ? `${profile.description.slice(0, 400)}…`
-        : profile.description
+    const truncated = normalizeModelText(profile.description, 220)
     lines.push(`Description : ${truncated}`)
   }
 
-  return lines.length > 0 ? `## Données fondamentales\n\n${lines.join('\n')}` : ''
+  return lines.length > 0 ? `Contexte FMP:\n${lines.join('\n')}` : ''
 }
 
 /**
@@ -126,6 +129,12 @@ export async function POST(
       { status: 400 },
     )
   }
+  if (!isSafeTicker(ticker)) {
+    return NextResponse.json(
+      { error: 'Ticker invalide', code: 'INVALID_PARAM' },
+      { status: 400 },
+    )
+  }
 
   // Enrichissement du contexte via FMP
   const fmpContext = await buildFmpContext(ticker)
@@ -149,21 +158,16 @@ export async function POST(
     )
 
     const raw = result.response.text().trim()
-
-    // Extraction du dernier bloc JSON de la réponse (le markdown contient des blocs ```json
-    // intermédiaires dans le template — on veut le dernier, qui contient signal + score)
-    const matches = [...raw.matchAll(/\{[\s\S]*?\}/g)]
-    const jsonMatch = matches[matches.length - 1]
-    if (!jsonMatch) {
+    const jsonBlock = extractLastJsonObject(raw)
+    if (!jsonBlock) {
       return NextResponse.json(
         { error: 'Format de réponse invalide', code: 'PARSE_ERROR' },
         { status: 503 },
       )
     }
 
-    const parsed = JSON.parse(jsonMatch[0]) as AgentJsonResponse
-
-    if (!isValidSignal(parsed.signal) || typeof parsed.score !== 'number') {
+    const parsed = validateTickerAnalysisJson(JSON.parse(jsonBlock) as AgentJsonResponse)
+    if (!parsed || !isValidSignal(parsed.signal)) {
       return NextResponse.json(
         { error: 'Structure JSON invalide', code: 'PARSE_ERROR' },
         { status: 503 },
@@ -171,7 +175,16 @@ export async function POST(
     }
 
     // Retire le bloc JSON final de l'analyse markdown (signal + score déjà parsés)
-    const analysis = raw.slice(0, jsonMatch.index).trimEnd()
+    const analysis = sanitizeModelAnalysis(
+      raw.slice(0, raw.lastIndexOf(jsonBlock)).trimEnd(),
+    )
+
+    if (!analysis) {
+      return NextResponse.json(
+        { error: 'Analyse vide retournée par le modèle', code: 'PARSE_ERROR' },
+        { status: 503 },
+      )
+    }
 
     return NextResponse.json(
       { signal: parsed.signal, score: parsed.score, analysis, ticker },
