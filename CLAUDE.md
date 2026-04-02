@@ -53,15 +53,27 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 ---
 
 ## Workflow obligatoire
+
+### Phase 0 : Choix du modèle (TOUJOURS EN PREMIER)
+- **Tâche simple** (1-2 fichiers, bug évident, typo) → Haiku 4.5 (10× moins cher)
+- **Tâche standard** (feature 3-5 fichiers, refactor ciblé) → Sonnet 4.6 (défaut)
+- **Tâche complexe** (architecture, multi-système, décisions majeures) → Opus 4.6
+- **IA/Prompts** (agents, évals, skill creation) → Opus 4.6 (qualité critique)
+
+### Phase 1-9 : Implémentation + QA
 1. Lire SESSION.md — contexte et tickets de la session en cours
-2. Plan mode pour toute tâche non trivial et vérifie plan avant de commencer
+2. Plan mode (tech-lead) pour toute décision d'architecture/design
 3. Identifier la tâche précise et les fichiers associés
-4. **Modifier les fichiers directement** — pas besoin de demander permission pour éditer le code
-5. Corrige si ca ne passe pas, aide toi des logs, erreurs, presente seulement du travail fonctionnel
-6. Marque les items complets au fur et a mesure (plan, lesson.md, github)
-7. Expliquer ce qui a été fait et pourquoi — la validation PO après explication suffit
-8. Attendre la validation PO avant tout commit
-9. Si valide : commit et compact ou clear le context
+4. **Exploration multi-fichiers** → déléguer à agent `Explore` (économise tokens)
+5. **Implémentation** → déléguer à agent `dev-agent` (isolation contexte)
+6. **Design/UX** → appeler agent `ux-agent` si UI/composant concerné
+7. **Validation** → appeler agent `test-agent` (acceptance criteria + regressions)
+8. Modifier les fichiers directement (pas de demande permission)
+9. Corrige si ça ne passe pas (aide toi des logs, erreurs)
+10. Marque les items complétés au fur et à mesure
+11. Expliquer ce qui a été fait et pourquoi — validation PO après
+12. Attendre validation PO avant commit
+13. Si valide : commit et `/compact` ou `/clear` le contexte
 
 ---
 
@@ -78,10 +90,22 @@ Stack : Next.js 16 · React 19 · TypeScript · Tailwind v4 · Supabase · Verce
 - **Non** : bug évident 1–2 lignes, renommage, correction typo, ajout d'entrée dans un fichier de config
 - Un bug avec cause claire → fix direct, expliquer après. Pas de plan mode.
 
-### Subagents — garder le contexte principal propre
-- Exploration codebase multi-fichiers → agent `Explore` (isole les résultats dans un sous-contexte)
-- Implémentation feature complète → agent `dev-agent`
-- Ne pas lire 3+ fichiers de doc en parallèle dans le contexte principal si un agent peut le faire
+### Subagents — appel obligatoire par spécialité
+
+**Règle d'or** : Un agent spécialisé coûte 5-10% du contexte principal, fait mieux, et remet un rapport résumé.
+
+| Agent | Quand l'appeler | Économies |
+|-------|-----------------|-----------|
+| **Explore** | Multi-fichiers exploration (3+), patterns search, arch discovery | -20% tokens |
+| **dev-agent** | Feature implémentation complète, multi-fichiers changes | -30% tokens |
+| **tech-lead** | Décisions architecture, trade-offs techniques, reviews, design patterns | -15% tokens |
+| **ux-agent** | UI/UX audit, redesign, composants, Trade Republic/Moning style | -20% tokens |
+| **test-agent** | QA vérification, acceptance criteria, regressions, reports | -10% tokens |
+| **mentor** | Explication code, onboarding, user understanding | -15% tokens |
+
+**Quand NE PAS appeler** :
+- Bug 1-ligne (fix direct) · Typo (fix direct) · Config simple (edit direct)
+- Changement trivial local à 1-2 fichiers
 
 ### Self-improvement loop
 - Après toute correction du PO (technique ou process) → ajouter une règle dans `LESSONS.md` immédiatement
