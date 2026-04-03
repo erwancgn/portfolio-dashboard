@@ -13,6 +13,8 @@ metadata:
 
 ## Processus de vérification
 
+Utilise les checklists `.claude/checklists/story-dod.md` et `.claude/checklists/pre-commit.md` comme base.
+
 ### Étape 0 — Lire le ticket
 
 Récupérer le ticket GitHub pour connaître les critères d'acceptation :
@@ -46,7 +48,7 @@ Pour chaque critère d'acceptation du ticket :
 ### Étape 3 — Vérifications spécifiques
 
 **Si le ticket touche des calculs financiers :**
-- Comparer les formules implémentées avec celles de CLAUDE.md (section "Calculs financiers")
+- Comparer les formules implémentées avec celles de `.claude/skills/finance-formulas/SKILL.md`
 - Vérifier les cas limites : division par zéro, quantité nulle, valeur négative
 - Vérifier que les pourcentages somment à 100% quand applicable
 - Vérifier la précision décimale (centimes vs euros)
@@ -71,7 +73,7 @@ Vérifier les points dans `references/checklist-regression.md` et :
 
 ### Étape 5 — Conventions
 
-Vérifier la conformité avec CLAUDE.md :
+Vérifier la conformité avec `.claude/rules/` :
 - Pas de `any` en TypeScript
 - Pas de `style={{}}` inline
 - Pas de `NEXT_PUBLIC_` sur une clé secrète

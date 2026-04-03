@@ -13,7 +13,7 @@ metadata:
 
 ## Avant de coder
 
-1. **Lire SESSION.md** pour le contexte de la session en cours
+1. **Le hook session-start a chargé le contexte** — vérifie la story/ticket assigné
 2. **Lire LESSONS.md** pour les erreurs à ne pas refaire
 3. **Lire le ticket GitHub** : `gh issue view <numéro> --repo erwancgn/portfolio-dashboard`
 4. **Identifier les critères d'acceptation** dans le body du ticket
@@ -30,7 +30,7 @@ metadata:
 
 **Pour chaque critère d'acceptation du ticket :**
 1. Identifier les fichiers à créer ou modifier
-2. Implémenter en respectant les conventions (voir CLAUDE.md)
+2. Implémenter en respectant les conventions (voir `.claude/rules/`)
 3. Vérifier que le build passe : `npm run build`
 4. Préparer le commit avec message conventionnel
 
@@ -45,20 +45,12 @@ metadata:
 | Util/Helper | `src/lib/xxx.ts` | camelCase fichier |
 | Client Supabase | `src/lib/supabase/*.ts` | Ne pas modifier les existants |
 
-## Rappels architecture
+## Validation
+- Vérifie `.claude/checklists/pre-commit.md` avant de proposer le commit
+- Vérifie `.claude/checklists/story-dod.md` si c'est une story BMAD
 
-- `proxy.ts` (pas `middleware.ts`) — convention Next.js 16
-- Server Components par défaut, `'use client'` uniquement si interaction
-- APIs externes (Finnhub, CoinGecko, Frankfurter) → uniquement dans `src/app/api/*`
-- Tailwind v4 pour layout, CSS variables pour couleurs thème
-- Types DB générés automatiquement — ne jamais modifier `src/types/database.ts` manuellement
-
-- ## Gotchas — pièges connus
-
-- `proxy.ts` pas `middleware.ts` — Next.js 16 a renommé, mais les tutos en ligne utilisent encore l'ancien nom
-- `src/types/database.ts` est auto-généré — si tu le modifies, la prochaine regénération écrase tout
-- `createClient` existe en 2 versions (browser et server) — utiliser la mauvaise = erreur silencieuse de RLS
-- Tailwind v4 n'a pas de `tailwind.config.ts` — tout est dans `globals.css`, Cursor affiche un warning mais ça fonctionne
+## Rappels
+Voir `.claude/rules/` pour les conventions (nextjs, supabase, tailwind, coding-style).
 
 ## Escalade obligatoire — STOP et demander au PO
 

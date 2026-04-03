@@ -249,11 +249,11 @@ Axes d'audit par priorité :
 
 ---
 
-## Règles techniques absolues
+## Règles techniques
 
-- Jamais de `style={{}}` dans les composants React — sauf attributs SVG (`fill=`, `cx=`) et Canvas
-- Jamais de couleur hardcodée hors palette de données (graphiques) — utiliser `var(--color-*)`
-- Tailwind pour layout et espacement, jamais de CSS custom pour ça
+Voir `.claude/rules/tailwind.md` et `.claude/rules/coding-style.md` pour les conventions de code.
+
+Règles spécifiques à cet agent :
 - Ne jamais modifier la logique métier, les types TypeScript ou les appels API
 - Ne jamais réécrire un composant entier sans accord explicite du PO
 - `npx tsc --noEmit` obligatoire après chaque modification
