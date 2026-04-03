@@ -12,6 +12,12 @@ import {
 } from '@/lib/fmp-dividends-helpers'
 
 const FMP_DIVIDENDS_TTL_MS = 6 * 60 * 60 * 1000 // 6h
+const FMP_RATE_LIMIT_COOLDOWN_MS = 15 * 60 * 1000 // 15 min
+let fmpRateLimitedUntil = 0
+
+export function resetFmpDividendsRateLimitCooldownForTests(): void {
+  fmpRateLimitedUntil = 0
+}
 
 /** Entrée brute retournée par FMP /stable/dividends */
 interface FmpDividendRaw {
@@ -21,6 +27,21 @@ interface FmpDividendRaw {
   recordDate?: string
   paymentDate?: string
   declarationDate?: string
+}
+
+interface YahooDividendEventRaw {
+  amount?: number
+  date?: number
+}
+
+interface YahooChartDividendsResponse {
+  chart?: {
+    result?: Array<{
+      events?: {
+        dividends?: Record<string, YahooDividendEventRaw>
+      }
+    }>
+  }
 }
 
 /** Dividende normalisé */
@@ -160,6 +181,38 @@ async function fetchRawDividends(
   }
 }
 
+async function fetchRawDividendsFromYahoo(ticker: string): Promise<DividendEntry[] | null> {
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1mo&range=10y&events=div`
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' },
+      next: { revalidate: 21600 },
+    })
+    if (!res.ok) return null
+
+    const data = (await res.json()) as YahooChartDividendsResponse
+    const dividends = data.chart?.result?.[0]?.events?.dividends
+    if (!dividends) return null
+
+    const entries = Object.values(dividends)
+      .filter((entry): entry is YahooDividendEventRaw & { amount: number; date: number } => (
+        typeof entry.amount === 'number' && typeof entry.date === 'number'
+      ))
+      .map((entry) => ({
+        date: new Date(entry.date * 1000).toISOString().slice(0, 10),
+        amount: entry.amount,
+        recordDate: null,
+        paymentDate: null,
+        declarationDate: null,
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date))
+
+    return entries.length > 0 ? entries : null
+  } catch {
+    return null
+  }
+}
+
 /**
  * Récupère l'historique + projections de dividendes pour un ticker.
  * Met en cache 6h. Retourne null si aucun dividende n'est trouvé.
@@ -173,7 +226,25 @@ export async function fetchTickerDividends(ticker: string): Promise<TickerDivide
   }
 
   return readThroughTtlCache(`fmp:dividends:${ticker}`, FMP_DIVIDENDS_TTL_MS, async () => {
-    const history = await fetchRawDividends(ticker, apiKey)
+    let history: DividendEntry[] | null = null
+    const now = Date.now()
+
+    if (now < fmpRateLimitedUntil) {
+      history = await fetchRawDividendsFromYahoo(ticker)
+    } else {
+      try {
+        history = await fetchRawDividends(ticker, apiKey)
+      } catch (error) {
+        if (error instanceof FmpRateLimitError) {
+          fmpRateLimitedUntil = Date.now() + FMP_RATE_LIMIT_COOLDOWN_MS
+          history = await fetchRawDividendsFromYahoo(ticker)
+          if (!history) throw error
+        } else {
+          throw error
+        }
+      }
+    }
+
     if (!history || history.length === 0) return null
 
     const frequency = detectFrequency(history)

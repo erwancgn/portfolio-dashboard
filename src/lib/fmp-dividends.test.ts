@@ -4,6 +4,7 @@ import {
   FmpConfigurationError,
   FmpRateLimitError,
   FmpServiceError,
+  resetFmpDividendsRateLimitCooldownForTests,
 } from '@/lib/fmp-dividends'
 import { clearTtlCache } from '@/lib/cache'
 
@@ -12,6 +13,7 @@ describe('fetchTickerDividends', () => {
     clearTtlCache()
     vi.restoreAllMocks()
     delete process.env.FMP_API_KEY
+    resetFmpDividendsRateLimitCooldownForTests()
   })
 
   it('remonte une erreur explicite si FMP_API_KEY est absente', async () => {
