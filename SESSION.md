@@ -64,9 +64,25 @@ src/types/database.ts                          ← Types générés Supabase
 
 ---
 
-## Prochaine session
+## Session 25 — Fait (03/04/2026)
 
-1. **Cache persistant dividendes** — amortir les `429` FMP sur `/api/dividends` (gros portefeuilles)
-2. **Export fiscal "prêt à déclarer"** — à partir de l'IFU Trade Republic
-3. **Split fichiers** — `classic/route.ts` + `ClassicAnalysis.tsx` dépassent 200L
-4. **UX** — itération `PerformanceSection` / `PerformanceChart`
+**Nettoyage + review backlog**
+
+- Worktrees orphelins nettoyés (6 worktrees + branches supprimés)
+- GH-75 clôturé (rapport fiscal 100% implémenté, tous CAs couverts)
+- Split `ClassicAnalysis.tsx` 247L → `ClassicAnalysis.tsx` 142L + `ClassicResultCard.tsx` 120L
+- Review SM backlog complet : aucune autre story à clôturer
+
+---
+
+## Sprint — Tickets prioritaires
+
+| # | Ticket | Statut | Ce qui manque |
+|---|--------|--------|---------------|
+| 1 | **GH-22** DCA règles | Partiel | `next_expected_at` par ligne, indicateur retard, vue tableau dédiée |
+| 2 | **GH-33** Chat IA | Partiel | Streaming SSE, compteur tokens, limite quotidienne configurable |
+| 3 | **GH-54** Export CSV portfolio | À faire | Route `/api/export/csv`, bouton dans dashboard |
+| 4 | **GH-23** DCA passage | À faire | Table `dca_history`, route execute, modal, calcul PRU (bloqué par GH-22) |
+| 5 | **GH-24** DCA historique | À faire | Route GET history, composant tableau (bloqué par GH-23) |
+| 6 | **UX** PerformanceSection | Dette | Itération `PerformanceSection` / `PerformanceChart` |
+| 7 | **GH-31** Surveillance auto | À faire | Tout : cron, Resend, tables alert, UI |
