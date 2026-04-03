@@ -31,7 +31,7 @@ export default function TickerInput({ value, assetType, onChange, onValidated }:
       setStatus('checking')
       try {
         const res = await fetch(
-          `/api/quote?ticker=${encodeURIComponent(value)}&type=${quoteType}`,
+          `/api/quote?ticker=${encodeURIComponent(value)}&type=${quoteType}&enrich=0`,
         )
         if (res.ok) {
           const data = (await res.json()) as QuoteResponse

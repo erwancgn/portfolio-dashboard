@@ -89,10 +89,12 @@ async function fetchRawDividends(
     const res = await fetch(url, { next: { revalidate: 21600 } })
 
     if (!res.ok) {
-      if (res.status === 429) {
+      if (res.status === 429 || res.status === 402) {
         throw new FmpRateLimitError(
           ticker,
-          `FMP limite temporairement les requêtes pour ${ticker} (HTTP 429).`,
+          res.status === 429
+            ? `FMP limite temporairement les requêtes pour ${ticker} (HTTP 429).`
+            : `FMP a atteint la limite de plan pour ${ticker} (HTTP 402).`,
         )
       }
 

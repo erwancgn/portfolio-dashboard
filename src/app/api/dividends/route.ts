@@ -92,8 +92,9 @@ function normalizeCurrency(currency: string | null | undefined): string | null {
 
 /**
  * GET /api/dividends
- * Auth requise. Fetche FMP en parallèle pour toutes les positions equity.
- * Les ETF et crypto sont filtrés silencieusement si FMP ne retourne rien.
+ * Auth requise. Évite les appels inutiles et limite l'usage quota FMP.
+ * Les lignes crypto sont ignorées (pas de dividendes), et en cas de quota atteint
+ * les tickers restants sont sautés pour éviter de brûler plus de requêtes.
  */
 export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorResponse>> {
   const supabase = await createClient()
@@ -165,23 +166,25 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
     transactionIndex.set(key, existing)
   }
 
-  // Fetch FMP en parallèle pour toutes les positions
-  const results = await Promise.allSettled(
-    safePositions.map(async (pos) => {
-      const data = await fetchTickerDividends(pos.ticker)
-      return { pos, data }
-    }),
-  )
-
   const dividendPositions: PositionDividendSummary[] = []
   const warnings: string[] = []
   const skippedTickers = new Set<string>()
+  const dividendCandidates = safePositions.filter((pos) => pos.type !== 'crypto')
+  let fmpQuotaLimited = false
 
-  for (const result of results) {
-    if (result.status === 'rejected') {
-      const error = result.reason
+  for (const pos of dividendCandidates) {
+    if (fmpQuotaLimited) {
+      skippedTickers.add(pos.ticker)
+      continue
+    }
+
+    let data: Awaited<ReturnType<typeof fetchTickerDividends>>
+    try {
+      data = await fetchTickerDividends(pos.ticker)
+    } catch (error) {
       if (error instanceof FmpRateLimitError) {
-        skippedTickers.add(error.ticker)
+        skippedTickers.add(pos.ticker)
+        fmpQuotaLimited = true
         continue
       }
       if (error instanceof FmpConfigurationError) {
@@ -199,11 +202,7 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
         { status: 500 },
       )
     }
-  }
 
-  for (const result of results) {
-    if (result.status !== 'fulfilled') continue
-    const { pos, data } = result.value
     if (!data) continue // Pas de dividende pour ce ticker
 
     const annualTotal = data.annualDividendPerShare * pos.quantity
@@ -243,6 +242,26 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
         total: p.amount * pos.quantity,
       })),
     })
+  }
+
+  if (dividendPositions.length === 0 && skippedTickers.size > 0) {
+    for (const pos of dividendCandidates) {
+      if (!skippedTickers.has(pos.ticker)) continue
+      dividendPositions.push({
+        ticker: pos.ticker,
+        name: pos.name,
+        quantity: pos.quantity,
+        pru: pos.pru,
+        envelope: pos.envelope,
+        currency: normalizeCurrency(pos.currency),
+        frequency: 'unknown',
+        annualDividendPerShare: 0,
+        annualDividendTotal: 0,
+        yieldOnCost: 0,
+        history: [],
+        projected: [],
+      })
+    }
   }
 
   const totalsByCurrency = [...dividendPositions.reduce((map, position) => {

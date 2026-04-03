@@ -28,7 +28,7 @@ interface ErrorResponse {
  * Recupere le prix et les metadonnees d'un actif.
  * Cascade : DB cache → Yahoo /chart → FMP /profile.
  */
-async function fetchPrice(ticker: string): Promise<QuoteResponse> {
+async function fetchPrice(ticker: string, enrich: boolean): Promise<QuoteResponse> {
   // 1. Lookup DB — isin + secteur deja connus pour ce ticker
   let cachedIsin: string | undefined
   let cachedSector: string | undefined
@@ -54,8 +54,8 @@ async function fetchPrice(ticker: string): Promise<QuoteResponse> {
   // 2. Yahoo /chart — prix + nom + isin (si dispo)
   const meta = await fetchYahooChart(ticker)
 
-  // 3. FMP /profile — secteur, industry, description, country, logoUrl, isin
-  const fmp = await fetchFmpProfile(ticker)
+  // 3. FMP /profile — enrichissement optionnel pour limiter le coût API
+  const fmp = enrich ? await fetchFmpProfile(ticker) : null
   const isin = cachedIsin ?? fmp?.isin ?? meta.isin
   const sector = cachedSector ?? fmp?.sector
 
@@ -85,6 +85,8 @@ async function fetchPrice(ticker: string): Promise<QuoteResponse> {
 export async function GET(request: NextRequest): Promise<NextResponse<QuoteResponse | ErrorResponse>> {
   const { searchParams } = request.nextUrl
   const ticker = searchParams.get('ticker')
+  const enrichParam = searchParams.get('enrich')
+  const enrich = enrichParam !== '0'
 
   if (!ticker || ticker.trim() === '') {
     return NextResponse.json(
@@ -94,7 +96,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<QuoteRespo
   }
 
   try {
-    const quote = await fetchPrice(ticker.trim())
+    const quote = await fetchPrice(ticker.trim(), enrich)
     return NextResponse.json(quote, { status: 200 })
   } catch (err) {
     if (err instanceof YahooApiError) {
