@@ -12,6 +12,7 @@ import {
   FmpConfigurationError,
   FmpRateLimitError,
   FmpServiceError,
+  type TickerDividendData,
 } from '@/lib/fmp-dividends'
 import { getQuantityHeldOnDate } from '@/lib/dividend-position-history'
 import type { Tables } from '@/types/database'
@@ -65,6 +66,11 @@ interface ErrorResponse {
   code: string
 }
 
+type DividendsCachePayload = {
+  hasData: boolean
+  data: TickerDividendData | null
+}
+
 /**
  * Calcule le meilleur mois (celui qui concentre le plus de dividendes projetés).
  *
@@ -90,6 +96,56 @@ function normalizeCurrency(currency: string | null | undefined): string | null {
   return currency.trim().toUpperCase()
 }
 
+function mapToPositionSummary(
+  pos: Pick<Position, 'id' | 'ticker' | 'name' | 'quantity' | 'pru' | 'envelope' | 'currency' | 'type'>,
+  data: TickerDividendData,
+  transactionIndex: Map<string, Array<{
+    positionId: string | null
+    ticker: string
+    type: string
+    quantity: number
+    executedAt: string
+  }>>,
+): PositionDividendSummary {
+  const annualTotal = data.annualDividendPerShare * pos.quantity
+  const positionTransactions = transactionIndex.get(pos.id) ?? transactionIndex.get(pos.ticker) ?? []
+  const currency = normalizeCurrency(pos.currency)
+  const yieldOnCost =
+    pos.pru > 0 ? (data.annualDividendPerShare / pos.pru) * 100 : 0
+
+  return {
+    ticker: pos.ticker,
+    name: pos.name,
+    quantity: pos.quantity,
+    pru: pos.pru,
+    envelope: pos.envelope,
+    currency,
+    frequency: data.frequency,
+    annualDividendPerShare: data.annualDividendPerShare,
+    annualDividendTotal: annualTotal,
+    yieldOnCost,
+    history: data.history.slice(0, 20).map((h) => {
+      const quantityAtDate = getQuantityHeldOnDate(
+        pos.quantity,
+        h.recordDate ?? h.date,
+        positionTransactions,
+      )
+
+      return {
+        date: h.date,
+        amount: h.amount,
+        total: h.amount * quantityAtDate,
+        paymentDate: h.paymentDate,
+      }
+    }),
+    projected: data.projected.map((p) => ({
+      date: p.date,
+      amount: p.amount,
+      total: p.amount * pos.quantity,
+    })),
+  }
+}
+
 /**
  * GET /api/dividends
  * Auth requise. Évite les appels inutiles et limite l'usage quota FMP.
@@ -98,6 +154,18 @@ function normalizeCurrency(currency: string | null | undefined): string | null {
  */
 export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorResponse>> {
   const supabase = await createClient()
+  const supabaseAny = supabase as unknown as {
+    from: (table: string) => {
+      select: (columns: string) => {
+        eq: (column: string, value: string) => {
+          in: (column: string, values: string[]) => {
+            gt: (column: string, value: string) => Promise<{ data: Array<{ ticker: string; payload: unknown }> | null }>
+          }
+        }
+      }
+      upsert: (rows: Array<Record<string, unknown>>, opts: { onConflict: string }) => Promise<unknown>
+    }
+  }
 
   const {
     data: { user },
@@ -170,9 +238,36 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
   const warnings: string[] = []
   const skippedTickers = new Set<string>()
   const dividendCandidates = safePositions.filter((pos) => pos.type !== 'crypto')
+  const nowIso = new Date().toISOString()
+  const tickerList = dividendCandidates.map((pos) => pos.ticker)
+  const cachedByTicker = new Map<string, TickerDividendData | null>()
+
+  if (tickerList.length > 0) {
+    const { data: cachedRows } = await supabaseAny
+      .from('dividends_cache')
+      .select('ticker,payload')
+      .eq('user_id', user.id)
+      .in('ticker', tickerList)
+      .gt('expires_at', nowIso)
+
+    for (const row of cachedRows ?? []) {
+      const payload = row.payload as DividendsCachePayload | null
+      if (!payload || payload.hasData !== true && payload.hasData !== false) continue
+      cachedByTicker.set(row.ticker, payload.hasData ? payload.data : null)
+    }
+  }
+
   let fmpQuotaLimited = false
 
   for (const pos of dividendCandidates) {
+    if (cachedByTicker.has(pos.ticker)) {
+      const cachedData = cachedByTicker.get(pos.ticker)
+      if (cachedData) {
+        dividendPositions.push(mapToPositionSummary(pos, cachedData, transactionIndex))
+      }
+      continue
+    }
+
     if (fmpQuotaLimited) {
       skippedTickers.add(pos.ticker)
       continue
@@ -203,45 +298,25 @@ export async function GET(): Promise<NextResponse<DividendsApiResponse | ErrorRe
       )
     }
 
+    const ttlHours = data ? 24 : 6
+    const expiresAtIso = new Date(Date.now() + ttlHours * 60 * 60 * 1000).toISOString()
+    await supabaseAny
+      .from('dividends_cache')
+      .upsert(
+        [{
+          user_id: user.id,
+          ticker: pos.ticker,
+          payload: { hasData: Boolean(data), data: data ?? null },
+          source: 'mixed',
+          computed_at: nowIso,
+          expires_at: expiresAtIso,
+        }],
+        { onConflict: 'user_id,ticker' },
+      )
+
     if (!data) continue // Pas de dividende pour ce ticker
 
-    const annualTotal = data.annualDividendPerShare * pos.quantity
-    const positionTransactions = transactionIndex.get(pos.id) ?? transactionIndex.get(pos.ticker) ?? []
-    const currency = normalizeCurrency(pos.currency)
-    const yieldOnCost =
-      pos.pru > 0 ? (data.annualDividendPerShare / pos.pru) * 100 : 0
-
-    dividendPositions.push({
-      ticker: pos.ticker,
-      name: pos.name,
-      quantity: pos.quantity,
-      pru: pos.pru,
-      envelope: pos.envelope,
-      currency,
-      frequency: data.frequency,
-      annualDividendPerShare: data.annualDividendPerShare,
-      annualDividendTotal: annualTotal,
-      yieldOnCost,
-      history: data.history.slice(0, 20).map((h) => {
-        const quantityAtDate = getQuantityHeldOnDate(
-          pos.quantity,
-          h.recordDate ?? h.date,
-          positionTransactions,
-        )
-
-        return {
-          date: h.date,
-          amount: h.amount,
-          total: h.amount * quantityAtDate,
-          paymentDate: h.paymentDate,
-        }
-      }),
-      projected: data.projected.map((p) => ({
-        date: p.date,
-        amount: p.amount,
-        total: p.amount * pos.quantity,
-      })),
-    })
+    dividendPositions.push(mapToPositionSummary(pos, data, transactionIndex))
   }
 
   if (dividendPositions.length === 0 && skippedTickers.size > 0) {
