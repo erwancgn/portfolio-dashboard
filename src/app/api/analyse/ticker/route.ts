@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import fs from 'fs'
-import path from 'path'
-import { fetchFmpProfile } from '@/lib/fmp'
+import { buildFmpContext } from '@/lib/fmp'
 import {
   extractLastJsonObject,
-  normalizeModelText,
   sanitizeModelAnalysis,
 } from '@/lib/ai'
 import { isSafeTicker, validateTickerAnalysisJson } from '@/lib/ai-validation'
+import { loadAgent, resolveModelId } from '@/lib/agent-loader'
 
 /** Corps de la requête attendu par cette route */
 interface TickerRequest {
@@ -41,11 +39,8 @@ interface AgentJsonResponse {
 /** Valeurs de signal autorisées */
 const VALID_SIGNALS: Signal[] = ['BUY', 'HOLD', 'SELL']
 
-/** System prompt chargé une seule fois au démarrage du module */
-const PROMPT_TEMPLATE = fs.readFileSync(
-  path.join(process.cwd(), 'src/agents/quick-analyse.md'),
-  'utf-8',
-)
+/** Agent chargé une seule fois au démarrage du module */
+const AGENT = loadAgent('quick-analyse')
 
 /**
  * Vérifie qu'une valeur est un signal valide.
@@ -54,28 +49,6 @@ const PROMPT_TEMPLATE = fs.readFileSync(
  */
 function isValidSignal(value: unknown): value is Signal {
   return typeof value === 'string' && (VALID_SIGNALS as string[]).includes(value)
-}
-
-/**
- * Construit le contexte FMP à injecter dans le prompt.
- * Retourne une chaîne vide si le profil est indisponible.
- *
- * @param ticker - Symbole boursier
- */
-async function buildFmpContext(ticker: string): Promise<string> {
-  const profile = await fetchFmpProfile(ticker)
-  if (!profile) return ''
-
-  const lines: string[] = []
-  if (profile.sector) lines.push(`Secteur : ${profile.sector}`)
-  if (profile.industry) lines.push(`Industrie : ${profile.industry}`)
-  if (profile.country) lines.push(`Pays : ${profile.country}`)
-  if (profile.description) {
-    const truncated = normalizeModelText(profile.description, 220)
-    lines.push(`Description : ${truncated}`)
-  }
-
-  return lines.length > 0 ? `Contexte FMP:\n${lines.join('\n')}` : ''
 }
 
 /**
@@ -140,14 +113,14 @@ export async function POST(
   const fmpContext = await buildFmpContext(ticker)
 
   // Injection des variables dans le prompt
-  const systemPrompt = PROMPT_TEMPLATE
+  const systemPrompt = AGENT.prompt
     .replace('{ticker}', ticker)
     .replace('{context}', fmpContext)
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash-lite',
+      model: resolveModelId(AGENT.meta.model),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tools: [{ googleSearch: {} } as any],
       systemInstruction: systemPrompt,

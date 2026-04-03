@@ -14,7 +14,7 @@ describe('ai helpers', () => {
 
   it('keeps only the recent compact history within budget', () => {
     const history = Array.from({ length: 12 }, (_, index) => ({
-      role: index % 2 === 0 ? 'user' : 'assistant',
+      role: (index % 2 === 0 ? 'user' : 'assistant') as 'user' | 'assistant',
       content: `message ${index} ${'x'.repeat(480)}`,
     }))
 

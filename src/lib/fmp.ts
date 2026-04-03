@@ -3,6 +3,7 @@
  * Cle API lue via process.env.FMP_API_KEY — jamais exposee cote client.
  */
 import { readThroughTtlCache } from '@/lib/cache'
+import { normalizeModelText } from '@/lib/ai'
 
 const FMP_PROFILE_TTL_MS = 60 * 60 * 1000
 
@@ -84,6 +85,28 @@ export async function fetchFmpProfile(ticker: string): Promise<FmpProfile | null
       return null
     }
   })
+}
+
+/**
+ * Construit le contexte FMP (secteur, industrie, pays, description) à injecter dans un prompt IA.
+ * Retourne une chaîne vide si le profil est indisponible.
+ *
+ * @param ticker - Symbole boursier
+ */
+export async function buildFmpContext(ticker: string): Promise<string> {
+  const profile = await fetchFmpProfile(ticker)
+  if (!profile) return ''
+
+  const lines: string[] = []
+  if (profile.sector) lines.push(`Secteur : ${profile.sector}`)
+  if (profile.industry) lines.push(`Industrie : ${profile.industry}`)
+  if (profile.country) lines.push(`Pays : ${profile.country}`)
+  if (profile.description) {
+    const truncated = normalizeModelText(profile.description, 220)
+    lines.push(`Description : ${truncated}`)
+  }
+
+  return lines.length > 0 ? `Contexte FMP:\n${lines.join('\n')}` : ''
 }
 
 /**
