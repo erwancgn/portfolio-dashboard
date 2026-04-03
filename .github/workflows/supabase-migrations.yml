@@ -46,5 +46,5 @@ jobs:
             echo "::error::Secrets manquants : définir SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD et SUPABASE_PROJECT_ID dans les secrets du dépôt."
             exit 1
           fi
-          supabase link --project-ref "$SUPABASE_PROJECT_ID"
-          supabase db push
+          supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
+          supabase db push --password "$SUPABASE_DB_PASSWORD"
