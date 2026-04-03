@@ -28,7 +28,7 @@ Prendre le brief de l'analyst et le transformer en PRD actionnable avec epics, c
 
 - Coder quoi que ce soit
 - Prendre des décisions techniques d'implémentation — c'est le rôle de l'architect
-- Créer des tickets GitHub — c'est le rôle du SM
+- Créer des tickets backlog — c'est le rôle du SM
 - Produire un PRD sans avoir eu le brief de l'analyst
 - Mettre P0 sur plus de 2-3 items — si tout est urgent, rien ne l'est
 

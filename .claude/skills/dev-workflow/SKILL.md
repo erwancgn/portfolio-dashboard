@@ -5,8 +5,8 @@ context: fork
 agent: dev-agent
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 metadata:
-  version: "2.1"
-  last-updated: "2026-03-19"
+  version: "2.2"
+  last-updated: "2026-04-03"
 ---
 
 # Dev Workflow — Portfolio Dashboard
@@ -15,8 +15,10 @@ metadata:
 
 1. **Le hook session-start a chargé le contexte** — vérifie la story/ticket assigné
 2. **Lire LESSONS.md** pour les erreurs à ne pas refaire
-3. **Lire le ticket GitHub** : `gh issue view <numéro> --repo erwancgn/portfolio-dashboard`
-4. **Identifier les critères d'acceptation** dans le body du ticket
+3. **Lire le ticket local dans le backlog** :
+   - Chercher `GH-<numéro>.md` dans `.claude/backlog/Task/`, `.claude/backlog/Story/` ou `.claude/backlog/Epic/`
+   - Source de vérité: `.claude/backlog/**/GH-<numéro>.md` (et non GitHub)
+4. **Identifier les critères d'acceptation** dans le ticket backlog (`## Critères d'acceptation`)
 5. **Lire les fichiers impactés** (listés dans "Fichiers concernés" du ticket) avec Read/Glob
 6. **Vérifier `src/types/database.ts`** pour les noms de colonnes et tables exacts
 7. **Si la tâche touche la DB** : lire `references/schema.md` pour le schéma complet
@@ -59,7 +61,7 @@ Ne pas coder si l'un de ces cas se présente. Documenter la question et attendre
 - Choix entre deux approches d'architecture
 - Nouvelle dépendance npm à installer
 - Impact sur plus de 5 fichiers existants
-- Doute sur le périmètre du ticket (vérifier "Hors périmètre" dans le ticket)
+- Doute sur le périmètre du ticket (vérifier "Hors périmètre" dans le ticket backlog)
 
 ## Après le code — Explication obligatoire avant commit
 
@@ -74,3 +76,10 @@ Le PO apprend le développement à travers ce projet. Chaque changement doit êt
 4. Proposer le message de commit (format conventionnel)
 5. Si une erreur a été rencontrée et corrigée : proposer une entrée pour `LESSONS.md` au format `[SX] contexte → règle`
 6. Attendre la validation PO avant tout commit
+
+## Clôture du ticket backlog
+
+Quand un ticket est **traité et validé comme terminé** (implémentation + QA + validation PO) :
+1. Déplacer le fichier ticket depuis `.claude/backlog/<Type>/GH-XX.md`
+2. Vers `.claude/backlog/Done/GH-XX.md`
+3. Garder le même nom de fichier pour préserver l'historique

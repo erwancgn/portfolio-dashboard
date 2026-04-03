@@ -3,7 +3,7 @@ name: planning
 description: "Workflow de planification BMAD complet : du besoin PO aux stories implémentables. Déclencher quand le PO exprime un nouveau besoin ou quand on dit 'planifie', 'nouvelle feature', 'on veut ajouter'."
 context: fork
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Planning Workflow — BMAD
@@ -41,5 +41,9 @@ metadata:
 1. Découper chaque epic en stories
 2. Chaque story suit `.claude/templates/story.md`
 3. Vérifier chaque story contre `.claude/checklists/story-draft.md`
-4. Créer les tickets GitHub via `gh issue create`
+4. Créer les tickets backlog dans `.claude/backlog/Story/` (format `GH-XX.md`)
 5. Ordonner par dépendance
+
+### 5. Clôture
+1. Quand un ticket est traité et validé (dev + QA + validation PO), déplacer le fichier vers `.claude/backlog/Done/`
+2. Conserver le nom `GH-XX.md` pour garder l'historique

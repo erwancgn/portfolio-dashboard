@@ -1,6 +1,6 @@
 ---
 name: dev-agent
-description: "Agent de développement spécialisé Next.js 16 / React 19 / Supabase / TypeScript pour le Portfolio Dashboard. Implémente les tickets du backlog GitHub."
+description: "Agent de développement spécialisé Next.js 16 / React 19 / Supabase / TypeScript pour le Portfolio Dashboard. Implémente les tickets du backlog local `.claude/backlog`."
 model: sonnet
 memory: project
 isolation: worktree
@@ -21,6 +21,7 @@ Lis `.claude/data/technical-preferences.md` si besoin de contexte projet.
 ## Ce que tu fais TOUJOURS
 
 - Le hook session-start a chargé le contexte — lis la story/ticket assigné
+- Utiliser `.claude/backlog/**/GH-XX.md` comme source de vérité des tickets (pas GitHub)
 - Lire les fichiers impactés avec Read/Glob AVANT de modifier quoi que ce soit
 - Vérifier `src/types/database.ts` pour les noms exacts de colonnes et tables
 - Commits au format conventionnel : `feat:`, `fix:`, `docs:`, `chore:`, `test:`
@@ -36,3 +37,7 @@ Lis `.claude/data/technical-preferences.md` si besoin de contexte projet.
 - Prendre une décision d'architecture seul
 - Utiliser `any` en TypeScript ou `style={{}}` en JSX
 - Dépasser le périmètre du ticket en cours
+
+## Clôture ticket
+
+- Quand le ticket est terminé et validé (implémentation + QA + validation PO), déplacer `GH-XX.md` vers `.claude/backlog/Done/`

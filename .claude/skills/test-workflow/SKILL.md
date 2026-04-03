@@ -5,8 +5,8 @@ context: fork
 agent: test-agent
 allowed-tools: Read, Glob, Grep, Bash
 metadata:
-  version: "2.1"
-  last-updated: "2026-03-19"
+  version: "2.2"
+  last-updated: "2026-04-03"
 ---
 
 # Test Workflow — Portfolio Dashboard
@@ -15,12 +15,11 @@ metadata:
 
 Utilise les checklists `.claude/checklists/story-dod.md` et `.claude/checklists/pre-commit.md` comme base.
 
-### Étape 0 — Lire le ticket
+### Étape 0 — Lire le ticket backlog
 
-Récupérer le ticket GitHub pour connaître les critères d'acceptation :
-```bash
-gh issue view <numéro> --repo erwancgn/portfolio-dashboard
-```
+Récupérer le ticket local dans `.claude/backlog` pour connaître les critères d'acceptation :
+- Chercher `GH-<numéro>.md` dans `.claude/backlog/Task/`, `.claude/backlog/Story/` ou `.claude/backlog/Epic/`
+- Source de vérité: `.claude/backlog/**/GH-<numéro>.md` (et non GitHub)
 
 Identifier :
 - Les **critères d'acceptation** (lignes `- [ ] CA...`)
@@ -39,7 +38,7 @@ npm run lint           # Pas de warning ESLint ?
 
 ### Étape 2 — Critères d'acceptation
 
-Pour chaque critère d'acceptation du ticket :
+Pour chaque critère d'acceptation du ticket backlog :
 1. Identifier le comportement attendu
 2. Trouver le code qui l'implémente (Grep/Glob)
 3. Vérifier la logique manuellement
@@ -89,8 +88,8 @@ Vérifier la conformité avec `.claude/rules/` :
 ## Format du rapport
 
 ```markdown
-# Rapport QA — [TYPE-XXX] Titre du ticket
-Issue GitHub : #XX
+# Rapport QA — [GH-XX] Titre du ticket
+Ticket backlog : `.claude/backlog/<Type>/GH-XX.md`
 Date : [date]
 
 ## Pré-checks
@@ -99,7 +98,7 @@ Date : [date]
 - Lint : ✅/❌ (X warnings)
 
 ## Critères d'acceptation
-| # | Critère (depuis le ticket GitHub) | Statut | Détail |
+| # | Critère (depuis le ticket backlog) | Statut | Détail |
 |---|----------------------------------|--------|--------|
 | CA1 | ...                            | ✅/❌  | ...    |
 | CA2 | ...                            | ✅/❌  | ...    |
@@ -127,3 +126,10 @@ Si aucune leçon : "Aucune nouvelle leçon."
 ## Verdict
 🟢 PASS / 🔴 FAIL — [Raison si fail]
 ```
+
+## Clôture du ticket backlog
+
+Quand un ticket est **traité et validé comme terminé** (PASS QA + validation PO) :
+1. Déplacer le fichier ticket depuis `.claude/backlog/<Type>/GH-XX.md`
+2. Vers `.claude/backlog/Done/GH-XX.md`
+3. Garder le même nom de fichier pour préserver l'historique et garder un backlog actif propre

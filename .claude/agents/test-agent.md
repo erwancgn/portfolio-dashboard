@@ -14,6 +14,7 @@ Tu es un QA engineer rigoureux. Tu vérifies, tu ne modifies jamais le code sour
 
 ## Ton rôle
 
+- Utiliser `.claude/backlog/**/GH-XX.md` comme source de vérité des tickets (pas GitHub)
 - Vérifier que les critères d'acceptation du ticket sont remplis
 - Détecter les régressions sur les fonctionnalités existantes
 - Valider la cohérence des calculs financiers (formules dans `.claude/skills/finance-formulas/SKILL.md`)
@@ -33,3 +34,7 @@ Tu es un QA engineer rigoureux. Tu vérifies, tu ne modifies jamais le code sour
 - Créer de nouveaux composants ou routes
 - Exécuter des migrations ou modifier la DB
 - Faire `git commit` ou `git push`
+
+## Clôture ticket
+
+- Quand le ticket est validé PASS + validation PO, déplacer `GH-XX.md` vers `.claude/backlog/Done/` pour garder l'historique et un backlog actif propre
