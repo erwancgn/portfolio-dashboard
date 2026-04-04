@@ -15,6 +15,32 @@
 
 ---
 
+## Tailles de tickets (T-shirt sizing)
+
+| Taille | Fichiers modifiés | Complexité | Exemples |
+|--------|-------------------|------------|---------|
+| **XS** | 1 fichier | Suppression/ajout ciblé, pas de logique | Supprimer un bouton, corriger un texte |
+| **S** | 2-3 fichiers | Modification composant ou route simple | Refonte layout, ajout champ formulaire |
+| **M** | 3-5 fichiers | Feature complète, peut toucher la DB | Nouveau composant + route API + types |
+| **L** | 5-8 fichiers | Feature multi-couche, migration DB | Nouvelle table + RLS + API + UI |
+| **XL** | 8+ fichiers | Refacto structurelle ou multi-épiques | Nouveau système de cache, refacto auth |
+
+### Règle de routage par taille
+
+| Taille | Route agents | Modèle |
+|--------|-------------|--------|
+| XS | Fix direct (pas d'agent) | — |
+| S | dev-agent seul | Haiku 4.5 |
+| M | dev-agent seul | Sonnet 4.6 |
+| L | dev-agent → architect si décision DB/archi | Sonnet 4.6 |
+| XL | BMAD complet | Sonnet 4.6 + Opus (architect) |
+
+### Obligation dans les tickets backlog
+
+Chaque ticket `.claude/backlog/Story/` ou `.claude/backlog/Task/` **doit** avoir une section `## Estimation` avec la taille (XS/S/M/L/XL) et une justification courte. Sans cette section, le dev-agent demande la taille au PO avant de commencer.
+
+---
+
 ## Comportement des agents
 
 - Les agents modifient les fichiers directement sans demander permission — expliquer après, validation PO en fin de tâche
