@@ -75,14 +75,31 @@ src/types/database.ts                          ← Types générés Supabase
 
 ---
 
+## Session 26 — Fait (04/04/2026)
+
+**GH-38 — Corbeille & suppression douce (commit 02eda7f)**
+
+- Migration DB : colonne `deleted_at`, index partiels, 5 policies RLS granulaires
+- `DELETE /api/positions/[id]` → soft delete (`deleted_at = now()`)
+- `GET /api/positions` + page dashboard → filtre `deleted_at IS NULL`
+- `GET /api/positions/trash` → liste corbeille
+- `POST /api/positions/[id]/restore` → restauration
+- `DELETE /api/positions/trash` → purge définitive
+- `TrashDrawer.tsx` → vue corbeille, restauration individuelle, confirmation purge
+- Bouton "Supprimer" sur chaque carte (desktop hover + mobile)
+- Bouton corbeille 🗑 dans `PositionsSectionClient`
+
+---
+
 ## Sprint — Tickets prioritaires
 
 | # | Ticket | Statut | Ce qui manque |
 |---|--------|--------|---------------|
-| 1 | **GH-22** DCA règles | Partiel | `next_expected_at` par ligne, indicateur retard, vue tableau dédiée |
-| 2 | **GH-33** Chat IA | Partiel | Streaming SSE, compteur tokens, limite quotidienne configurable |
-| 3 | **GH-54** Export CSV portfolio | À faire | Route `/api/export/csv`, bouton dans dashboard |
-| 4 | **GH-23** DCA passage | À faire | Table `dca_history`, route execute, modal, calcul PRU (bloqué par GH-22) |
-| 5 | **GH-24** DCA historique | À faire | Route GET history, composant tableau (bloqué par GH-23) |
-| 6 | **UX** PerformanceSection | Dette | Itération `PerformanceSection` / `PerformanceChart` |
-| 7 | **GH-31** Surveillance auto | À faire | Tout : cron, Resend, tables alert, UI |
+| 1 | **GH-38** Corbeille positions | ✅ Done | — |
+| 2 | **GH-22** DCA règles | Partiel | `next_expected_at` par ligne, indicateur retard, vue tableau dédiée |
+| 3 | **GH-33** Chat IA | Partiel | Streaming SSE, compteur tokens, limite quotidienne configurable |
+| 4 | **GH-54** Export CSV portfolio | À faire | Route `/api/export/csv`, bouton dans dashboard |
+| 5 | **GH-23** DCA passage | À faire | Table `dca_history`, route execute, modal, calcul PRU (bloqué par GH-22) |
+| 6 | **GH-24** DCA historique | À faire | Route GET history, composant tableau (bloqué par GH-23) |
+| 7 | **UX** PerformanceSection | Dette | Itération `PerformanceSection` / `PerformanceChart` |
+| 8 | **GH-31** Surveillance auto | À faire | Tout : cron, Resend, tables alert, UI |
