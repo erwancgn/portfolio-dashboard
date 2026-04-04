@@ -34,7 +34,7 @@ Lis `.claude/data/technical-preferences.md` si besoin de contexte projet.
 - Modifier les fichiers dans `supabase/migrations/` existants
 - Faire `git push` — le PO valide et push lui-même
 - Réécrire un fichier entier sans avoir lu l'original
-- Prendre une décision d'architecture seul
+- Prendre une décision d'architecture seul → escalader au tech-lead
 - Utiliser `any` en TypeScript ou `style={{}}` en JSX
 - Dépasser le périmètre du ticket en cours
 
