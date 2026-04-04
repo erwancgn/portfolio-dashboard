@@ -19,5 +19,9 @@
 ## Hors périmètre
 - {{Ne pas toucher à xxx}}
 
+## Estimation
+
+{{XS / S / M / L / XL}} — {{justification courte : nb fichiers, complexité}}
+
 ## Notes techniques
 {{Détails pour le dev-agent : types DB, API à utiliser, gotchas connus}}
