@@ -1,9 +1,54 @@
 # Workflow — Brownfield Fullstack (Portfolio Dashboard)
 
-## Quand utiliser
-Ce workflow s'applique à toute nouvelle feature ou changement structurant sur le projet existant.
+## Principe de routage (TOUJOURS COMMENCER ICI)
 
-## Séquence
+```
+L'utilisateur exprime un besoin
+        │
+        ▼
+Ticket existe dans .claude/backlog/ ?
+   ├─ OUI → FAST-TRACK (80% des cas)
+   └─ NON → BMAD complet (nouveau besoin vague)
+```
+
+---
+
+## FAST-TRACK — Ticket existant (défaut)
+
+> Utilisé quand un GH-XXX existe déjà avec des CAs définis.
+> Ne pas déclencher analyst / pm / sm — le travail de découpage est déjà fait.
+
+```
+dev-agent (Builder)
+    │
+    ├─ Tâche simple (S/M, ≤3 fichiers, pas de DB) → dev → review → QA → PO
+    │
+    └─ Tâche complexe (L/XL, DB, architecture)
+            │
+            ▼
+        architect (Planner conditionnel)
+            │
+            ▼
+        dev-agent → review → QA → PO
+```
+
+**Escalade de dev-agent → architect uniquement si :**
+- Nouvelle table ou modification de schéma DB
+- Choix entre 2 approches d'architecture
+- Impact sur 5+ fichiers existants
+
+**Escalade de dev-agent → code-reviewer uniquement si :**
+- Implémentation terminée (pas en cours)
+- Build passe (`npm run build`)
+
+**Escalade de code-reviewer → test-agent uniquement si :**
+- Review validée (pas de bloquant)
+
+---
+
+## BMAD COMPLET — Nouveau besoin vague
+
+> Utilisé uniquement quand le besoin n'est pas encore découpé en ticket backlog.
 
 ### Phase 1 : Analyse
 - **Agent** : analyst
@@ -14,47 +59,24 @@ Ce workflow s'applique à toute nouvelle feature ou changement structurant sur l
 ### Phase 2 : Planification
 - **Agent** : pm
 - **Input** : project brief validé
-- **Output** : PRD + epics (`.claude/templates/prd.md`, `.claude/templates/epic.md`)
+- **Output** : PRD + epics
 - **Gate** : PO valide le PRD
 
 ### Phase 3 : Architecture
 - **Agent** : architect
-- **Input** : PRD validé
-- **Output** : ADR si décision structurante (`.claude/templates/architecture-decision.md`)
-- **Gate** : checklist `.claude/checklists/architecture-review.md`
 - **Skip si** : changement simple sans impact archi
+- **Output** : ADR si décision structurante
 
 ### Phase 4 : Stories
 - **Agent** : sm
-- **Input** : PRD + ADR
-- **Output** : stories implémentables (`.claude/templates/story.md`) + tickets GitHub
-- **Gate** : checklist `.claude/checklists/story-draft.md` pour chaque story
+- **Output** : stories implémentables + tickets backlog
+- **Gate** : checklist `.claude/checklists/story-draft.md`
 
-### Phase 5 : Implémentation
-- **Agent** : dev-agent (worktree isolé)
-- **Input** : story avec fichiers et AC listés
-- **Skill** : `dev-workflow`
-- **Output** : code implémenté
-- **Boucle** : une story à la fois
+### Phases 5-8 : identiques au Fast-Track
+→ dev-agent → code-reviewer → test-agent → PO
 
-### Phase 6 : Review
-- **Agent** : code-reviewer
-- **Input** : diff du dev-agent
-- **Gate** : checklist `.claude/checklists/pre-commit.md`
-- **Si ❌** : retour au dev-agent pour correction
+---
 
-### Phase 7 : QA
-- **Agent** : test-agent
-- **Skill** : `test-workflow`
-- **Input** : code reviewé
-- **Gate** : checklist `.claude/checklists/story-dod.md`
-- **Si ❌** : retour au dev-agent
-
-### Phase 8 : Validation
-- **Agent** : aucun (PO humain)
-- **Action** : PO valide → commit → merge
-
-## Raccourcis
-- **Bug simple** (cause évidente, 1-2 fichiers) : skip phases 1-4, directement dev → review → QA
-- **Typo / config** : skip tout, fix direct
-- **UI/UX** : ajouter ux-agent en phase 5 ou avant
+## Cas triviaux (skip tout)
+- **Typo / renommage / config** : fix direct, pas d'agent
+- **Bug 1-ligne avec cause identifiée** : dev-agent seul, pas de review nécessaire si diff < 5 lignes

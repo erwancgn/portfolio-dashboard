@@ -1,5 +1,20 @@
 # Protocole agents et économie de tokens
 
+## Routing — décision avant TOUT appel d'agent
+
+| Situation | Action |
+|-----------|--------|
+| Ticket GH-XXX existe dans backlog + tâche S/M | dev-agent direct (Builder only) |
+| Ticket GH-XXX existe + tâche L ou touche DB/archi | dev-agent → architect si bloqué |
+| Bug avec cause identifiée, ≤ 2 fichiers | Fix direct, pas d'agent |
+| Typo, config, renommage | Edit direct, pas d'agent |
+| Nouveau besoin sans ticket | BMAD complet (analyst → pm → architect → sm → dev) |
+| Refacto multi-système ou migration | BMAD complet |
+
+**Règle d'or : dev-agent est le défaut. Tous les autres agents sont conditionnels.**
+
+---
+
 ## Comportement des agents
 
 - Les agents modifient les fichiers directement sans demander permission — expliquer après, validation PO en fin de tâche
