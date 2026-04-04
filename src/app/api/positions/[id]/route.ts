@@ -83,9 +83,11 @@ export async function PATCH(
 
 /**
  * DELETE /api/positions/[id]
- * Supprime une position appartenant à l'utilisateur connecté.
- * Double protection : filtre sur user_id en plus de l'id, conforme RLS.
- * Retourne 204 si succès, 401 si non authentifié, 404 si introuvable, 500 si erreur DB.
+ * Soft-delete une position appartenant à l'utilisateur connecté.
+ * Positionne `deleted_at = now()` sans supprimer la ligne en base.
+ * Le filtre `.is('deleted_at', null)` garantit l'idempotence :
+ * une position déjà en corbeille retourne 404.
+ * Retourne 204 si succès, 401 si non authentifié, 404 si introuvable ou déjà supprimée, 500 si erreur DB.
  */
 export async function DELETE(
   _request: NextRequest,
@@ -109,9 +111,10 @@ export async function DELETE(
 
   const { error, count } = await supabase
     .from('positions')
-    .delete({ count: 'exact' })
+    .update({ deleted_at: new Date().toISOString() }, { count: 'exact' })
     .eq('id', id)
     .eq('user_id', user.id)
+    .is('deleted_at', null)
 
   if (error) {
     return NextResponse.json(

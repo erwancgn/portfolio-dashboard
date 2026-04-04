@@ -20,8 +20,6 @@ const MOAT_CLASSES = {
 
 const MOAT_LABELS = { wide: 'Moat large', narrow: 'Moat étroit', none: 'Pas de moat' } as const
 
-const TYPE_LABELS: Record<string, string> = { stock: 'Action', etf: 'ETF', crypto: 'Crypto' }
-
 /** Formate l'âge d'un cache ISO → "il y a Xh" ou date */
 function fmtAge(iso: string): string {
   const hours = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000)

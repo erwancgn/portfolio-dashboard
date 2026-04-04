@@ -307,6 +307,36 @@ export type Database = {
           },
         ]
       }
+      dividends_cache: {
+        Row: {
+          computed_at: string
+          expires_at: string
+          id: string
+          payload: Json
+          source: string | null
+          ticker: string
+          user_id: string
+        }
+        Insert: {
+          computed_at?: string
+          expires_at: string
+          id?: string
+          payload: Json
+          source?: string | null
+          ticker: string
+          user_id: string
+        }
+        Update: {
+          computed_at?: string
+          expires_at?: string
+          id?: string
+          payload?: Json
+          source?: string | null
+          ticker?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fair_value_cache: {
         Row: {
           analysis: string | null
@@ -400,6 +430,7 @@ export type Database = {
           created_at: string | null
           currency: string | null
           current_price: number | null
+          deleted_at: string | null
           description: string | null
           envelope: string | null
           id: string
@@ -420,6 +451,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           current_price?: number | null
+          deleted_at?: string | null
           description?: string | null
           envelope?: string | null
           id?: string
@@ -440,6 +472,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           current_price?: number | null
+          deleted_at?: string | null
           description?: string | null
           envelope?: string | null
           id?: string
@@ -718,3 +751,4 @@ export const Constants = {
     },
   },
 } as const
+

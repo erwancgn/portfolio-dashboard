@@ -21,6 +21,7 @@ export default async function DashboardPage() {
   const { data: positions } = await supabase
     .from('positions')
     .select('*')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
   const safePositions = positions ?? []

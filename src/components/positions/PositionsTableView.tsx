@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import AddBuyButton from './AddBuyButton'
 import SellButton from './SellButton'
 import DcaButton from './DcaButton'
@@ -45,9 +46,15 @@ function MetricCell({ label, children }: { label: string; children: React.ReactN
  * - Ligne 2  : métriques justify-between
  */
 export default function PositionsTableView({ rows, dcaRules }: Props) {
+  const router = useRouter()
   const [sortKey, setSortKey] = useState<SortKey>('pnl')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [selected, setSelected] = useState<PositionRow | null>(null)
+
+  async function handleDelete(id: string) {
+    await fetch(`/api/positions/${id}`, { method: 'DELETE' })
+    router.refresh()
+  }
 
   const handleSort = useCallback((key: SortKey) => {
     setSortKey((prev) => {
@@ -139,6 +146,13 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                   <DcaButton positionId={row.id} ticker={row.ticker} hasActiveDca={dcaRules[row.id]?.is_active === true} activeDcaId={dcaRules[row.id]?.id} />
                   <div className="h-4 w-px bg-[var(--color-border)]" />
                   <FairValueCell ticker={row.ticker} />
+                  <div className="h-4 w-px bg-[var(--color-border)]" />
+                  <button
+                    onClick={() => handleDelete(row.id)}
+                    className="rounded-lg border border-red-500/30 px-2.5 py-1 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                  >
+                    Supprimer
+                  </button>
                 </div>
 
                 {/* ── Mobile : badges qty×PRU + montant ── */}
@@ -177,6 +191,12 @@ export default function PositionsTableView({ rows, dcaRules }: Props) {
                     <SellButton id={row.id} ticker={row.ticker} maxQuantity={row.quantity} pru={row.pru} envelope={row.envelope} />
                     <DcaButton positionId={row.id} ticker={row.ticker} hasActiveDca={dcaRules[row.id]?.is_active === true} activeDcaId={dcaRules[row.id]?.id} />
                     <FairValueCell ticker={row.ticker} />
+                    <button
+                      onClick={() => handleDelete(row.id)}
+                      className="rounded-lg border border-red-500/30 px-2.5 py-1 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      Supprimer
+                    </button>
                   </div>
 
                   {/* Desktop : métriques justify-between */}
