@@ -93,14 +93,24 @@ src/types/database.ts                          ← Types générés Supabase
 
 ## Session 27 — Fait (04/04/2026)
 
-**Optimisation architecture IA (commit b2a276e)**
+**Optimisation architecture IA — routing agents + sizing tickets**
 
 - Analyse critique du plan ChatGPT "Builder/Planner/Reviewer" → appliqué à la couche dev
-- Routing agents inversé : fast-track (ticket existant) = défaut, BMAD = exception
+- Routing agents inversé : fast-track (ticket existant) = défaut, BMAD = exception pour nouveaux besoins vagues
 - Table de routage explicite ajoutée en tête de `agent-protocol.md`
+- Définition T-shirt sizing (XS/S/M/L/XL) avec règle de routage par taille
+- `## Estimation` ajouté dans `templates/story.md` et `checklists/story-draft.md` → obligatoire à la création
+- SM appelé uniquement en BMAD (nouveau besoin) — jamais sur ticket existant
 - EPIC GH-89 créé + 6 stories (GH-90→95) : améliorations IA prod + dev workflow
   - GH-90 AIService unifié · GH-91 Structured output · GH-92 Cache FMP
   - GH-93 Quota serveur · GH-94 Haiku tier · GH-95 Fast-track tickets
+
+**Fichiers modifiés**
+- `.claude/rules/agent-protocol.md` — routing + T-shirt sizing
+- `.claude/workflows/brownfield-fullstack.md` — fast-track = défaut
+- `.claude/templates/story.md` — ajout ## Estimation
+- `.claude/checklists/story-draft.md` — vérification taille obligatoire
+- `.claude/backlog/Epic/GH-89.md` + Stories GH-90→95
 
 ---
 
