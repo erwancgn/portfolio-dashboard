@@ -91,16 +91,42 @@ src/types/database.ts                          ← Types générés Supabase
 
 ---
 
-## Sprint — Tickets prioritaires
+## Session 27 — Fait (04/04/2026)
 
-| # | Ticket | Statut | Ce qui manque |
-|---|--------|--------|---------------|
-| 1 | **GH-38** Corbeille positions | ✅ Done | — |
-| 2 | **GH-32/GH-33** Chat IA | ✅ Done | — |
-| 3 | **GH-30/GH-31** Surveillance auto | ❌ Abandonné | Trop complexe pour la valeur apportée |
-| 4 | 🔴 **GH-88** Passe UX/UI fluidité | **Urgent** | GH-82 nav · GH-83 donut · GH-84 chat · GH-85 autocomplete · GH-86 auto-fill · GH-87 changelog |
-| 5 | **GH-22** DCA règles | Partiel | `next_expected_at` par ligne, indicateur retard, vue tableau dédiée |
-| 6 | **GH-54** Export CSV portfolio | À faire | Route `/api/export/csv`, bouton dans dashboard |
-| 7 | **GH-23** DCA passage | À faire | Table `dca_history`, route execute, modal, calcul PRU (bloqué par GH-22) |
-| 8 | **GH-24** DCA historique | À faire | Route GET history, composant tableau (bloqué par GH-23) |
-| 9 | **UX** PerformanceSection | Dette | Itération `PerformanceSection` / `PerformanceChart` |
+**Optimisation architecture IA (commit b2a276e)**
+
+- Analyse critique du plan ChatGPT "Builder/Planner/Reviewer" → appliqué à la couche dev
+- Routing agents inversé : fast-track (ticket existant) = défaut, BMAD = exception
+- Table de routage explicite ajoutée en tête de `agent-protocol.md`
+- EPIC GH-89 créé + 6 stories (GH-90→95) : améliorations IA prod + dev workflow
+  - GH-90 AIService unifié · GH-91 Structured output · GH-92 Cache FMP
+  - GH-93 Quota serveur · GH-94 Haiku tier · GH-95 Fast-track tickets
+
+---
+
+## Sprint — Prochaine session (2 options)
+
+### Option A — Coût prod IA (EPIC GH-89)
+| # | Ticket | Impact | Effort |
+|---|--------|--------|--------|
+| 1 | **GH-90** AIService unifié | Code DRY, fiabilité, circuit-breaker | M |
+| 2 | **GH-91** Structured output Gemini | Zéro regex fragile | M |
+| 3 | **GH-92** Cache FMP 24h | −500ms / requête analyse | M |
+
+### Option B — UX/UI fluidité (EPIC GH-88) 🔴 Urgent
+| # | Ticket | Impact | Effort |
+|---|--------|--------|--------|
+| 1 | **GH-82** Supprimer bouton retour | Nav fluide | XS |
+| 2 | **GH-83** Donut chart | Visual polish | S |
+| 3 | **GH-84** Chat UX | Confort quotidien | S |
+| 4 | **GH-85** Autocomplete | Saisie ticker | S |
+| 5 | **GH-86** Auto-fill | Formulaire position | S |
+| 6 | **GH-87** Changelog | Info utilisateur | XS |
+
+### Backlog restant
+| Ticket | Statut | Bloqué par |
+|--------|--------|-----------|
+| GH-22 DCA règles | Partiel | — |
+| GH-54 Export CSV | À faire | — |
+| GH-23 DCA passage | À faire | GH-22 |
+| GH-24 DCA historique | À faire | GH-23 |
