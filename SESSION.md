@@ -96,10 +96,11 @@ src/types/database.ts                          ← Types générés Supabase
 | # | Ticket | Statut | Ce qui manque |
 |---|--------|--------|---------------|
 | 1 | **GH-38** Corbeille positions | ✅ Done | — |
-| 2 | **GH-22** DCA règles | Partiel | `next_expected_at` par ligne, indicateur retard, vue tableau dédiée |
-| 3 | **GH-33** Chat IA | Partiel | Streaming SSE, compteur tokens, limite quotidienne configurable |
-| 4 | **GH-54** Export CSV portfolio | À faire | Route `/api/export/csv`, bouton dans dashboard |
-| 5 | **GH-23** DCA passage | À faire | Table `dca_history`, route execute, modal, calcul PRU (bloqué par GH-22) |
-| 6 | **GH-24** DCA historique | À faire | Route GET history, composant tableau (bloqué par GH-23) |
-| 7 | **UX** PerformanceSection | Dette | Itération `PerformanceSection` / `PerformanceChart` |
-| 8 | **GH-31** Surveillance auto | À faire | Tout : cron, Resend, tables alert, UI |
+| 2 | **GH-32/GH-33** Chat IA | ✅ Done | — |
+| 3 | **GH-30/GH-31** Surveillance auto | ❌ Abandonné | Trop complexe pour la valeur apportée |
+| 4 | 🔴 **GH-88** Passe UX/UI fluidité | **Urgent** | GH-82 nav · GH-83 donut · GH-84 chat · GH-85 autocomplete · GH-86 auto-fill · GH-87 changelog |
+| 5 | **GH-22** DCA règles | Partiel | `next_expected_at` par ligne, indicateur retard, vue tableau dédiée |
+| 6 | **GH-54** Export CSV portfolio | À faire | Route `/api/export/csv`, bouton dans dashboard |
+| 7 | **GH-23** DCA passage | À faire | Table `dca_history`, route execute, modal, calcul PRU (bloqué par GH-22) |
+| 8 | **GH-24** DCA historique | À faire | Route GET history, composant tableau (bloqué par GH-23) |
+| 9 | **UX** PerformanceSection | Dette | Itération `PerformanceSection` / `PerformanceChart` |
