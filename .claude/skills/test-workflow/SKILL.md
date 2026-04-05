@@ -47,7 +47,11 @@ Pour chaque critère d'acceptation du ticket backlog :
 ### Étape 3 — Vérifications spécifiques
 
 **Si le ticket touche des calculs financiers :**
-- Comparer les formules implémentées avec celles de `.claude/skills/finance-formulas/SKILL.md`
+- Vérifier les formules clés :
+  - Performance : `(cours actuel - PRU) / PRU × 100`
+  - Allocation : `valeur position / valeur totale portefeuille × 100`
+  - Yield on cost : `dividende annuel par action / PRU × 100`
+  - Plus-value latente : `(cours actuel - PRU) × quantité`
 - Vérifier les cas limites : division par zéro, quantité nulle, valeur négative
 - Vérifier que les pourcentages somment à 100% quand applicable
 - Vérifier la précision décimale (centimes vs euros)

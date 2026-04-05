@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: "Workflow de code review structuré pre-commit. Déclencher après le dev-agent, ou quand on dit 'review', 'vérifie le code', 'avant de commit'."
-agent: code-reviewer
+agent: tech-lead
 context: fork
 metadata:
   version: "1.0"
@@ -25,7 +25,7 @@ npm run lint
 ### 2. Review manuelle
 - Lire chaque fichier modifié (git diff ou Read)
 - Vérifier contre `.claude/rules/coding-style.md`
-- Vérifier contre `.claude/rules/security.md`
+- Vérifier contre `.claude/rules/stack.md` (sécurité, Supabase, Next.js)
 
 ### 3. Points de contrôle
 - [ ] Conventions nommage respectées
